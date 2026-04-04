@@ -93,10 +93,10 @@ C'est tout. Le VPS est sécurisé.
 
 ## Guide interactif (optionnel)
 
-Ouvre [`guide.html`](./guide.html) dans ton navigateur avant de commencer.
+Ouvre [`guide_installation.html`](./guide_installation.html) dans ton navigateur avant de commencer.
 Il te guide étape par étape et te permet d'exporter ta configuration en `.txt` ou `.pdf`.
 
-<!-- VIDEO_PLACEHOLDER -->
+<!-- VIDEO_PLACEHOLDER --> 
 <!-- 📹 Vidéo de démonstration à venir -->
 
 ---

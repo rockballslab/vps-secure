@@ -46,6 +46,17 @@ Avant de commencer, tu as besoin de :
 
 ## Installation
 
+### Étape 0 — Utilise le guide interactif (recommandé)
+
+Avant de commencer, ouvre [`guide_installation.html`](./guide_installation.html) dans ton navigateur.
+
+Il te permet de :
+- Noter ton IP et ta clé SSH au même endroit
+- Exporter ta config en `.txt` ou `.pdf`
+- Déverrouiller la commande de lancement quand tout est prêt
+
+> 💡 Télécharge le fichier `guide_installation.html` depuis le repo GitHub, puis ouvre-le avec ton navigateur (double-clic ou clic droit → Ouvrir avec).
+
 ### Étape 1 — Génère ta clé SSH (sur ton ordinateur)
 
 Ouvre un terminal sur ton ordinateur :
@@ -97,16 +108,6 @@ ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/id_ed25519_vps
 ```
 
 C'est tout. Le VPS est sécurisé.
-
----
-
-## Guide interactif (optionnel)
-
-Ouvre [`guide_installation.html`](./guide_installation.html) dans ton navigateur avant de commencer.
-Il te guide étape par étape et te permet d'exporter ta configuration en `.txt` ou `.pdf`.
-
-<!-- VIDEO_PLACEHOLDER --> 
-<!-- 📹 Vidéo de démonstration à venir -->
 
 ---
 

@@ -48,15 +48,24 @@ Avant de commencer, tu as besoin de :
 
 ### Étape 1 — Génère ta clé SSH (sur ton ordinateur)
 
+Ouvre un terminal sur ton ordinateur :
+- **Mac** → Spotlight (`Cmd+Espace`) → tape `Terminal` → Entrée
+- **Windows** → touche `Windows` → tape `Windows Terminal` ou `PowerShell` → Entrée
+- **Linux** → `Ctrl+Alt+T`
+
+Puis lance cette commande :
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_vps
 ```
 
-Récupère la clé publique — tu en auras besoin pendant le script :
+Appuie sur Entrée 3 fois (pas besoin de mot de passe).
 
+Récupère la clé publique — tu en auras besoin pendant le script :
 ```bash
 cat ~/.ssh/id_ed25519_vps.pub
 ```
+
+Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`).
 
 ### Étape 2 — Connecte-toi en root
 

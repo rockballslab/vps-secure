@@ -241,6 +241,13 @@
 
 <main id="main"></main>
 
+<!-- LAUNCH BAS — visible quand on arrive en bas du formulaire -->
+<div class="launch-wrap" style="margin-top:8px;">
+  <button class="btn-launch locked" id="btn-launch-bottom" onclick="openModal()">
+    🔒 &nbsp; Complète les 4 prérequis pour déverrouiller
+  </button>
+</div>
+
 <div class="actions">
   <button class="btn-sec" onclick="exportTxt()">💾 Exporter config (.txt)</button>
   <button class="btn-sec" onclick="exportPdf()">🖨️ Exporter config (.pdf)</button>
@@ -397,6 +404,13 @@ function updateScore(){
   const btn=document.getElementById("btn-launch");
   if(score===100){btn.className="btn-launch unlocked";btn.disabled=false;btn.textContent="🚀   Lancer install.sh";}
   else{btn.className="btn-launch locked";btn.disabled=true;const r=mand.length-okCnt;btn.textContent="🔒   "+r+" prérequis restant"+(r>1?"s":"");}
+  // Synchroniser le bouton du bas
+  const btnBottom=document.getElementById("btn-launch-bottom");
+  if(btnBottom){
+    btnBottom.className=btn.className;
+    btnBottom.disabled=btn.disabled;
+    btnBottom.textContent=btn.textContent;
+  }
   STEPS.forEach(s=>{
     const el=document.getElementById("sc-"+s.id);if(!el)return;
     const sp=PREREQS.filter(p=>p.step===s.id&&p.req);const dn=sp.filter(p=>isOk(p.id)).length;

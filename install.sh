@@ -1314,12 +1314,12 @@ echo -e "  ${VERT}✅${RESET} Services inutiles   : ${BLANC}avahi · cups · blu
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
     echo -e "  ${VERT}✅${RESET} Endlessh            : ${BLANC}Honeypot actif — bots piégés sur le port 22${RESET}"
 else
-    echo -e "  ${JAUNE}⚠️ ${RESET} Endlessh            : ${BLANC}Container non actif — sudo docker start endlessh${RESET}"
+    echo -e "  ${BLANC}ℹ️ ${RESET} Endlessh            : ${BLANC}Container non actif — sudo docker start endlessh${RESET}"
 fi
 if [[ -f /var/lib/aide/aide.db ]]; then
     echo -e "  ${VERT}✅${RESET} AIDE                : ${BLANC}Integrity monitoring — baseline enregistrée · scan 03h00${RESET}"
 else
-    echo -e "  ${JAUNE}⚠️ ${RESET} AIDE                : ${BLANC}Baseline non créée — voir instructions ci-dessus${RESET}"
+    echo -e "  ${BLANC}ℹ️ ${RESET} AIDE                : ${BLANC}Baseline non créée — voir instructions ci-dessus${RESET}"
 fi
 if command -v aa-status &>/dev/null && aa-status 2>/dev/null | grep -q "apparmor module is loaded"; then
     echo -e "  ${VERT}✅${RESET} AppArmor            : ${BLANC}Actif — profils en mode enforcing${RESET}"

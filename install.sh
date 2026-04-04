@@ -1218,6 +1218,16 @@ if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
     docker rm -f endlessh >/dev/null 2>&1 || true
 fi
 
+# Créer le banner avant de lancer le container
+mkdir -p /etc/endlessh
+cat > /etc/endlessh/banner.txt << 'EOF'
+Congratulations.
+You have successfully connected to a tar pit.
+Your IP has been logged.
+Your session will now last approximately forever.
+Your bot will be late for dinner.
+EOF
+
 # ⚠️  MAINTENEUR : épingler le digest avant chaque release pour éviter un supply chain risk.
 # Commande pour obtenir le digest actuel :
 #   docker pull ghcr.io/shizunge/endlessh-go && \
@@ -1231,11 +1241,14 @@ docker run -d \
     --cap-add NET_BIND_SERVICE \
     --read-only \
     -p 22:2222 \
+    -v /etc/endlessh/banner.txt:/banner.txt:ro \
     ghcr.io/shizunge/endlessh-go \
     -logtostderr \
     -v=1 \
     -conn_type=both \
     -max_clients=4096 \
+    -banner_file=/banner.txt \
+    -max_line_length=64 \
     >/dev/null 2>&1
 
 # Vérifier que le container tourne

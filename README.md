@@ -8,6 +8,12 @@ Un VPS Hostinger livré nu tourne avec root ouvert sur le port 22, sans firewall
 
 ---
 
+<p align="center">
+  <img src="./WATCHME.jpg" alt="Mon VPS avant et après install.sh" width="100%">
+</p>
+
+---
+
 ## Ce que fait `install.sh`
 
 15 étapes automatiques, zéro compétence technique requise.

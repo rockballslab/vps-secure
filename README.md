@@ -184,6 +184,21 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 | DISA STIG Ubuntu 24.04 | ~70% |
 | OWASP Infrastructure | Supply chain (GPG + empreinte vérifiée), secrets, logging |
 
+| CIS Benchmark
+CIS = Center for Internet Security. C'est une organisation américaine à but non lucratif qui publie des guides de configuration sécurisée pour tous les OS majeurs.
+Les niveaux :
+
+Level 1 — sécurité raisonnable sans impact sur les fonctionnalités. C'est le minimum recommandé pour n'importe quel serveur en production. Pas "basique" au sens débutant — c'est le standard utilisé par les entreprises pour leurs serveurs. La majorité des orgas visent Level 1.
+Level 2 — sécurité maximale, souvent au détriment des fonctionnalités. Désactive des services que certaines apps utilisent, restreint des comportements kernel qui peuvent casser des choses. Réservé aux environnements très sensibles (défense, finance, santé). Inapplicable sur un VPS avec Docker sans casser des choses.
+
+> Donc 80% CIS L1 c'est bien — tu couvres 4 contrôles sur 5 du standard que les entreprises appliquent. Les 20% restants sont soit des contrôles non applicables sur VPS (partitions dédiées /var, /home), soit des contrôles volontairement exclus pour garder le script accessible.
+
+| DISA STIG
+DISA = Defense Information Systems Agency. C'est l'agence IT du Département de la Défense américain. Les STIGs (Security Technical Implementation Guides) sont leurs guides de configuration — plus stricts que CIS, obligatoires pour tous les systèmes du gouvernement US.
+
+> 70% DISA STIG c'est très bien pour un script public. Les 30% restants sont soit des contrôles militaires sans sens pour un VPS perso (accès physique, smartcard auth), soit des contrôles qui nécessitent une infrastructure d'entreprise (LDAP, SIEM centralisé).
+
+
 > ⚠️ **Note sur sudo :** `vpsadmin` a un accès sudo sans mot de passe (`NOPASSWD`). C'est intentionnel pour simplifier l'usage. Le script ajoute `use_pty` pour bloquer le sudo hijacking depuis un terminal détaché, mais si ta clé SSH privée est compromise, l'attaquant a root immédiatement. **Protège ta clé privée** — ne la stocke jamais dans le cloud, ne la copie pas sur un serveur.
 
 > ⚠️ **Note sur Docker :** `vpsadmin` est dans le groupe `docker`, ce qui donne un accès root effectif via les containers (`docker run` peut monter le système de fichiers complet). Traite ta clé SSH comme une clé root.

@@ -256,7 +256,7 @@ sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 
 ## Compatibilité
 
-Testé sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX · Vultr.
+Testé sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner AX ·
 
 ---
 

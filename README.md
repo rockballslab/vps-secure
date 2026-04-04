@@ -196,7 +196,7 @@ DISA = Defense Information Systems Agency. C'est l'agence IT du Département de 
 > 70% DISA STIG c'est très bien pour un script public. Les 30% restants sont soit des contrôles militaires sans sens pour un VPS perso (accès physique, smartcard auth), soit des contrôles qui nécessitent une infrastructure d'entreprise (LDAP, SIEM centralisé).
 
 
-IMPORTANT:
+A NOTER:
 
 > ⚠️ **Note sur sudo :** `vpsadmin` a un accès sudo sans mot de passe (`NOPASSWD`). C'est intentionnel pour simplifier l'usage. Le script ajoute `use_pty` pour bloquer le sudo hijacking depuis un terminal détaché, mais si ta clé SSH privée est compromise, l'attaquant a root immédiatement. **Protège ta clé privée** — ne la stocke jamais dans le cloud, ne la copie pas sur un serveur.
 

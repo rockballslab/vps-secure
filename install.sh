@@ -37,7 +37,7 @@ set -euo pipefail
 # $? capturé en premier — rm et les commandes suivantes écraseraient le code de sortie du script
 _cleanup() {
     local exit_code=$?
-    rm -f /tmp/tmpkey-* 2>/dev/null || true
+    rm -f /tmp/tmpkey-* 2>/dev/null || true  # optionnel : rm -f ne lève pas d'erreur si le fichier est absent — redondant mais explicite
     [[ $exit_code -ne 0 ]] && \
         echo -e "\n\033[1;33m[WARN]  Script interrompu — vérifie l'état du serveur.\033[0m" >&2
 }
@@ -336,7 +336,7 @@ if ! grep -q "tmpfs /tmp" /etc/fstab; then
         log_info "tmp.mount systemd masqué — gestion via fstab."
     fi
     echo "tmpfs /tmp tmpfs defaults,noexec,nosuid,nodev 0 0" >> /etc/fstab
-    mount -o remount /tmp 2>/dev/null || true
+    mount -o remount /tmp 2>/dev/null || true  # optionnel : remount échoue si le noyau n'a pas encore pris en compte l'entrée fstab — effectif au prochain reboot
     log_success "/tmp sécurisé (noexec, nosuid, nodev)."
 else
     log_warn "/tmp déjà configuré dans fstab — on continue."
@@ -388,7 +388,7 @@ fi
 # /var/tmp noexec (CIS Benchmark 1.1.x — persiste après reboot, vecteur malware)
 if ! grep -q "/var/tmp" /etc/fstab; then
     echo "tmpfs /var/tmp tmpfs defaults,noexec,nosuid,nodev 0 0" >> /etc/fstab
-    mount -o remount /var/tmp 2>/dev/null || true
+    mount -o remount /var/tmp 2>/dev/null || true  # optionnel : remount échoue si le noyau n'a pas encore pris en compte l'entrée fstab — effectif au prochain reboot
     log_success "/var/tmp sécurisé (noexec, nosuid, nodev)."
 else
     log_warn "/var/tmp déjà configuré dans fstab — on continue."
@@ -399,7 +399,7 @@ fi
 # Si un container plante après install, retire noexec : sudo mount -o remount,exec /dev/shm
 if ! grep -q "/dev/shm" /etc/fstab; then
     echo "tmpfs /dev/shm tmpfs defaults,noexec,nosuid,nodev 0 0" >> /etc/fstab
-    mount -o remount /dev/shm 2>/dev/null || true
+    mount -o remount /dev/shm 2>/dev/null || true  # optionnel : remount échoue si le noyau n'a pas encore pris en compte l'entrée fstab — effectif au prochain reboot
     log_success "/dev/shm sécurisé (noexec, nosuid, nodev)."
 else
     log_warn "/dev/shm déjà configuré dans fstab — on continue."
@@ -483,14 +483,28 @@ fi
 
 # CrowdSec API sur port 8081 (8080 souvent occupé)
 log_info "Configuration de CrowdSec sur le port 8081..."
-sed -i 's/listen_uri: 127.0.0.1:8080/listen_uri: 127.0.0.1:8081/' /etc/crowdsec/config.yaml 2>/dev/null || true
-sed -i 's/127.0.0.1:8080/127.0.0.1:8081/' /etc/crowdsec/local_api_credentials.yaml 2>/dev/null || true
-sed -i 's/127.0.0.1:8080/127.0.0.1:8081/' /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml 2>/dev/null || true
+sed -i 's/listen_uri: 127.0.0.1:8080/listen_uri: 127.0.0.1:8081/' /etc/crowdsec/config.yaml 2>/dev/null || true  # optionnel : fichier absent si arborescence CrowdSec modifiée
+sed -i 's/127.0.0.1:8080/127.0.0.1:8081/' /etc/crowdsec/local_api_credentials.yaml 2>/dev/null || true  # optionnel : même raison
+sed -i 's/127.0.0.1:8080/127.0.0.1:8081/' /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml 2>/dev/null || true  # optionnel : même raison
+
+# Vérification post-sed : si 8080 subsiste dans un fichier présent, la config est incohérente.
+# Le bouncer démarrerait, ne se connecterait pas à l'API, détecterait mais ne bannirait plus rien.
+_crowdsec_port_verify() {
+    local file="$1" name="$2"
+    [[ ! -f "$file" ]] && log_warn "CrowdSec : $name absent — port 8081 non appliqué pour ce composant." && return
+    if grep -q "127.0.0.1:8080" "$file"; then
+        log_warn "CrowdSec : $name contient encore ':8080' — sed n'a pas fonctionné (clé renommée ?)."
+        log_warn "  Correction manuelle : sudo grep -n '8080' $file"
+    fi
+}
+_crowdsec_port_verify /etc/crowdsec/config.yaml "config.yaml"
+_crowdsec_port_verify /etc/crowdsec/local_api_credentials.yaml "local_api_credentials.yaml"
+_crowdsec_port_verify /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml "crowdsec-firewall-bouncer.yaml"
 
 systemctl enable crowdsec
 systemctl restart crowdsec
 systemctl enable crowdsec-firewall-bouncer
-systemctl restart crowdsec-firewall-bouncer 2>/dev/null || true
+systemctl restart crowdsec-firewall-bouncer 2>/dev/null || true  # optionnel : le bouncer peut échouer au 1er démarrage si CrowdSec n'est pas encore prêt — vérifié par sleep+is-active ci-dessous
 
 # Valider que le bouncer est actif — sans lui CrowdSec détecte mais ne bannit pas
 sleep 3
@@ -509,7 +523,7 @@ log_success "CrowdSec actif — protection SSH + HTTP communautaire."
 # ============================================================
 etape "5" "$TOTAL_ETAPES" "Configuration du pare-feu UFW"
 
-ufw --force reset >/dev/null 2>&1
+ufw --force reset
 ufw default deny incoming
 ufw default allow outgoing
 ufw default deny forward
@@ -525,9 +539,17 @@ if [[ -z "$MAIN_IFACE" ]]; then
     log_warn "  Si tes containers n'ont pas internet après installation, lance :"
     log_warn "  sudo ufw route allow in on docker0 out on <ton_interface>"
 else
-    ufw route allow in on docker0 out on "$MAIN_IFACE" 2>/dev/null || true
-    ufw route allow in on "$MAIN_IFACE" out on docker0 2>/dev/null || true
-    log_success "Forwarding Docker bridge via $MAIN_IFACE autorisé."
+    UFW_ROUTE_OK=true
+    ufw route allow in on docker0 out on "$MAIN_IFACE" 2>/dev/null \
+        || { log_warn "ufw route allow docker0→$MAIN_IFACE échoué."; UFW_ROUTE_OK=false; }  # optionnel : ufw route absent sur UFW < 0.36
+    ufw route allow in on "$MAIN_IFACE" out on docker0 2>/dev/null \
+        || { log_warn "ufw route allow $MAIN_IFACE→docker0 échoué."; UFW_ROUTE_OK=false; }  # optionnel : même raison
+    if [[ "$UFW_ROUTE_OK" == "true" ]]; then
+        log_success "Forwarding Docker bridge via $MAIN_IFACE autorisé."
+    else
+        log_warn "Forwarding Docker bridge incomplet — les containers pourraient ne pas avoir internet."
+        log_warn "  Vérifie : sudo ufw status verbose | grep docker"
+    fi
 fi
 
 ufw --force enable
@@ -593,7 +615,7 @@ DOCKEREOF
     log_success "Docker Engine installé : $(docker --version)"
 else
     log_warn "Docker déjà installé : $(docker --version)"
-    usermod -aG docker "$USERNAME" 2>/dev/null || true
+    usermod -aG docker "$USERNAME" 2>/dev/null || true  # optionnel : l'utilisateur est peut-être déjà dans le groupe docker
 fi
 
 if docker compose version &>/dev/null; then
@@ -608,26 +630,40 @@ fi
 # malgré les règles UFW route allow (qui ouvrent le FORWARD mais pas le NAT).
 log_info "Ajout de la règle NAT Docker dans UFW (requis avec iptables:false)..."
 DOCKER_SUBNET=$(docker network inspect bridge \
-    --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null || echo "172.17.0.0/16")
+    --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null || true)  # optionnel : docker inspect peut échouer si le daemon vient de démarrer — fallback ligne suivante
+DOCKER_SUBNET="${DOCKER_SUBNET:-172.17.0.0/16}"
+if [[ -z "$DOCKER_SUBNET" ]]; then
+    log_warn "Subnet Docker bridge vide après inspect — fallback 172.17.0.0/16."
+    DOCKER_SUBNET="172.17.0.0/16"
+fi
 
-if ! grep -q "DOCKER-MASQ" /etc/ufw/before.rules; then
-    # Insérer le bloc *nat AVANT la section *filter dans before.rules
-    sed -i "/^\*filter/i # vps-secure — Docker NAT (requis avec iptables:false)\n*nat\n:POSTROUTING ACCEPT [0:0]\n-A POSTROUTING -s ${DOCKER_SUBNET} ! -o docker0 -j MASQUERADE -m comment --comment \"DOCKER-MASQ\"\nCOMMIT\n" \
-        /etc/ufw/before.rules
-    # Vérifier que l'insertion a réussi (sed échoue silencieusement si *filter absent)
-    if grep -q "DOCKER-MASQ" /etc/ufw/before.rules; then
-        ufw reload >/dev/null 2>&1
-        log_success "Règle NAT Docker ajoutée (subnet : $DOCKER_SUBNET) — containers avec accès internet."
-    else
-        log_warn "⚠️  Insertion NAT Docker échouée — la ligne *filter est absente de before.rules."
-        log_warn "   Ajoute manuellement dans /etc/ufw/before.rules AVANT *filter :"
-        log_warn "   *nat"
-        log_warn "   :POSTROUTING ACCEPT [0:0]"
-        log_warn "   -A POSTROUTING -s ${DOCKER_SUBNET} ! -o docker0 -j MASQUERADE"
-        log_warn "   COMMIT"
-    fi
+if [[ ! -f /etc/ufw/before.rules ]]; then
+    log_warn "⚠️  /etc/ufw/before.rules absent — UFW non initialisé, règle NAT Docker ignorée."
+    log_warn "   Lance 'sudo ufw enable' puis relance le script."
 else
-    log_info "Règle NAT Docker déjà présente dans before.rules."
+    if ! grep -q "DOCKER-MASQ" /etc/ufw/before.rules; then
+        # Insérer le bloc *nat AVANT la section *filter dans before.rules
+        sed -i "/^\*filter/i # vps-secure — Docker NAT (requis avec iptables:false)\n*nat\n:POSTROUTING ACCEPT [0:0]\n-A POSTROUTING -s ${DOCKER_SUBNET} ! -o docker0 -j MASQUERADE -m comment --comment \"DOCKER-MASQ\"\nCOMMIT\n" \
+            /etc/ufw/before.rules
+        # Vérifier que l'insertion a réussi (sed échoue silencieusement si *filter absent)
+        if grep -q "DOCKER-MASQ" /etc/ufw/before.rules; then
+            if ufw reload >/dev/null 2>&1; then
+                log_success "Règle NAT Docker ajoutée et UFW rechargé (subnet : $DOCKER_SUBNET) — containers avec accès internet."
+            else
+                log_warn "Règle NAT Docker écrite dans before.rules mais ufw reload a échoué."
+                log_warn "  Relance : sudo ufw reload"
+            fi
+        else
+            log_warn "⚠️  Insertion NAT Docker échouée — la ligne *filter est absente de before.rules."
+            log_warn "   Ajoute manuellement dans /etc/ufw/before.rules AVANT *filter :"
+            log_warn "   *nat"
+            log_warn "   :POSTROUTING ACCEPT [0:0]"
+            log_warn "   -A POSTROUTING -s ${DOCKER_SUBNET} ! -o docker0 -j MASQUERADE"
+            log_warn "   COMMIT"
+        fi
+    else
+        log_info "Règle NAT Docker déjà présente dans before.rules."
+    fi
 fi
 
 # ============================================================
@@ -725,15 +761,24 @@ net.ipv4.conf.default.secure_redirects = 0
 kernel.perf_event_paranoid = 3
 SYSEOF
 
-sysctl --system > /dev/null 2>&1
-log_success "Noyau durci — anti-spoofing, SYN flood, ICMP, forwarding Docker OK."
+SYSCTL_OUTPUT=$(sysctl --system 2>&1)
+SYSCTL_ERRORS=$(echo "$SYSCTL_OUTPUT" | grep -c "^sysctl: " 2>/dev/null || echo "0")
+if [[ "$SYSCTL_ERRORS" -gt 0 ]]; then
+    log_warn "sysctl --system : $SYSCTL_ERRORS paramètre(s) rejeté(s) par le noyau :"
+    echo "$SYSCTL_OUTPUT" | grep "^sysctl: " | head -5 | while IFS= read -r line; do
+        log_warn "  $line"
+    done
+    log_warn "  Vérifie l'intégralité : sudo sysctl --system 2>&1 | grep '^sysctl:'"
+else
+    log_success "Noyau durci — anti-spoofing, SYN flood, ICMP, forwarding Docker OK."
+fi
 
 # ============================================================
 # Étape 9 : Audit système (auditd)
 # ============================================================
 etape "9" "$TOTAL_ETAPES" "Activation de l'audit système (auditd)"
 
-apt-get install -y -qq auditd audispd-plugins 2>/dev/null || apt-get install -y -qq auditd
+apt-get install -y -qq auditd audispd-plugins 2>/dev/null || apt-get install -y -qq auditd  # optionnel : audispd-plugins absent sur certaines versions Ubuntu — fallback sur auditd seul
 
 cat > /etc/audit/rules.d/vps-secure.rules << 'AUDITEOF'
 # vps-secure — Règles d'audit ciblées
@@ -809,9 +854,9 @@ disk_full_action = ROTATE
 disk_error_action = SYSLOG
 AUDITCONFEOF
 else
-    sed -i 's/^max_log_file .*/max_log_file = 50/'         /etc/audit/auditd.conf 2>/dev/null || true
-    sed -i 's/^num_logs .*/num_logs = 5/'                  /etc/audit/auditd.conf 2>/dev/null || true
-    sed -i 's/^space_left_action .*/space_left_action = ROTATE/' /etc/audit/auditd.conf 2>/dev/null || true
+    sed -i 's/^max_log_file .*/max_log_file = 50/'         /etc/audit/auditd.conf 2>/dev/null || true  # optionnel : clé absente si auditd.conf.d est utilisé (branche précédente)
+    sed -i 's/^num_logs .*/num_logs = 5/'                  /etc/audit/auditd.conf 2>/dev/null || true  # optionnel : même raison
+    sed -i 's/^space_left_action .*/space_left_action = ROTATE/' /etc/audit/auditd.conf 2>/dev/null || true  # optionnel : même raison
 fi
 
 systemctl enable auditd
@@ -873,7 +918,14 @@ else
     # Optimiser pour un serveur (swap utilisé en dernier recours)
     echo "vm.swappiness=10"         >> /etc/sysctl.d/99-vps-secure.conf
     echo "vm.vfs_cache_pressure=50" >> /etc/sysctl.d/99-vps-secure.conf
-    sysctl -p /etc/sysctl.d/99-vps-secure.conf > /dev/null 2>&1
+    SYSCTL_SWAP_OUTPUT=$(sysctl -p /etc/sysctl.d/99-vps-secure.conf 2>&1)
+    SYSCTL_SWAP_ERRORS=$(echo "$SYSCTL_SWAP_OUTPUT" | grep -c "^sysctl: " 2>/dev/null || echo "0")
+    if [[ "$SYSCTL_SWAP_ERRORS" -gt 0 ]]; then
+        log_warn "sysctl -p : $SYSCTL_SWAP_ERRORS paramètre(s) rejeté(s) (swappiness/vfs_cache_pressure) :"
+        echo "$SYSCTL_SWAP_OUTPUT" | grep "^sysctl: " | while IFS= read -r line; do
+            log_warn "  $line"
+        done
+    fi
 
     log_success "Swap de $SWAP_SIZE actif (swappiness=10 — utilisé en dernier recours)."
 fi
@@ -886,13 +938,13 @@ etape "11" "$TOTAL_ETAPES" "Installation du scanner de rootkits (rkhunter)"
 apt-get install -y -qq rkhunter
 
 # Mettre à jour la base de données des signatures
-rkhunter --update --nocolors > /dev/null 2>&1 || true
+rkhunter --update --nocolors > /dev/null 2>&1 || true  # optionnel : mise à jour réseau peut échouer (timeout) — non bloquant, baseline créée avec signatures locales
 
 # Construire la baseline (empreinte initiale du système — état "sain")
-rkhunter --propupd --nocolors > /dev/null 2>&1 || true
+rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : peut échouer si des fichiers sont verrouillés — non bloquant, scan quotidien continuera
 
 # Premier scan silencieux pour valider l'installation
-rkhunter --check --sk --nocolors > /tmp/rkhunter-first-scan.log 2>&1 || true
+rkhunter --check --sk --nocolors > /tmp/rkhunter-first-scan.log 2>&1 || true  # optionnel : warnings attendus sur install fraîche (Docker, etc.) — résultat dans le log, non bloquant
 
 log_success "rkhunter installé — baseline système enregistrée."
 log_warn "  Baseline créée après Docker — les fichiers Docker sont inclus dans l'état 'sain'."
@@ -918,14 +970,14 @@ rm -f /tmp/rkhunter-first-scan.log
 etape "12" "$TOTAL_ETAPES" "Désactivation des services inutiles"
 
 # Ctrl-Alt-Delete désactivé (DISA STIG V-238330 — empêche reboot non intentionnel)
-systemctl mask ctrl-alt-del.target 2>/dev/null || true
+systemctl mask ctrl-alt-del.target 2>/dev/null || true  # optionnel : déjà masqué sur certaines images hébergeur
 log_success "Ctrl-Alt-Delete désactivé."
 
 # Services réseau inutiles — chaque service actif = surface d'attaque (CIS 2.x)
 SERVICES_INUTILES=(avahi-daemon cups bluetooth ModemManager whoopsie apport)
 for svc in "${SERVICES_INUTILES[@]}"; do
     if systemctl is-active "$svc" &>/dev/null || systemctl is-enabled "$svc" &>/dev/null; then
-        systemctl disable --now "$svc" 2>/dev/null || true
+        systemctl disable --now "$svc" 2>/dev/null || true  # optionnel : service peut ne pas être installé sur cette image
         log_success "Service $svc désactivé."
     fi
 done
@@ -1209,13 +1261,13 @@ log_info "Les bots cherchent le port 22 en priorité : Endlessh les maintient co
 log_info "des heures en envoyant un banner SSH infini, les empêchant d'attaquer ailleurs."
 
 # Ouvrir le port 22 dans UFW pour le honeypot
-ufw allow 22/tcp comment 'Honeypot Endlessh' >/dev/null 2>&1
+ufw allow 22/tcp comment 'Honeypot Endlessh'
 log_success "Port 22 ouvert dans UFW pour le honeypot."
 
 # Lancer le container Endlessh
 if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
     log_warn "Container Endlessh déjà présent — redémarrage."
-    docker rm -f endlessh >/dev/null 2>&1 || true
+    docker rm -f endlessh 2>/dev/null || true  # optionnel : rm -f retourne 1 si le container n'existe pas — cas normal à la première installation
 fi
 
 # Créer le banner avant de lancer le container
@@ -1249,7 +1301,8 @@ docker run -d \
     -max_clients=4096 \
     -banner_file=/banner.txt \
     -max_line_length=64 \
-    >/dev/null 2>&1
+    > /dev/null
+    # stdout supprimé (container ID inutile) — stderr conservé pour diagnostic en cas d'échec
 
 # Vérifier que le container tourne
 sleep 2
@@ -1274,7 +1327,7 @@ apt-get install -y -qq aide aide-common
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)
 log_info "Création de la baseline AIDE — 1 à 2 minutes..."
-aideinit --yes --force >/dev/null 2>&1 || aideinit >/dev/null 2>&1 || true
+aideinit --yes --force >/dev/null 2>&1 || aideinit >/dev/null 2>&1 || true  # optionnel : --yes --force non disponible sur certaines versions de aide — fallback sur forme courte
 
 if [[ -f /var/lib/aide/aide.db.new ]]; then
     cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db

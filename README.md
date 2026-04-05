@@ -49,6 +49,7 @@ Avant de commencer, tu as besoin de :
 - ✅ Une **clé SSH** générée sur ton ordinateur
 
 > 💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1)
+ou 20 euros offert sur Hetzner - https://hetzner.cloud/?ref=9x8yLdZS8Btd
 
 ---
 

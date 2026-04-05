@@ -5,7 +5,7 @@
 "Si tu veux ton propre serveur, par exemple un VPS, pour faire tourner n8n / OpenClaw / ton SaaS. Avant d'installer quoi que ce soit, lance ce script. 
 15 minutes, une seule commande, ton serveur passe du stade 'cible facile' à 'cible qui n'en vaut pas la peine'."
 
-Un VPS Hostinger, livré nu, tourne avec root ouvert sur le port 22, sans firewall, sans détection d'intrusion. 
+Un VPS, livré nu, tourne avec root ouvert sur le port 22, sans firewall, sans détection d'intrusion. 
 Les bots le trouvent en moins de 2 minutes. Ce script change ça en moins de 15.
 
 ---

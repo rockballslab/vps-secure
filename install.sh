@@ -631,7 +631,6 @@ fi
 log_info "Ajout de la règle NAT Docker dans UFW (requis avec iptables:false)..."
 DOCKER_SUBNET=$(docker network inspect bridge \
     --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null || true)  # optionnel : docker inspect peut échouer si le daemon vient de démarrer — fallback ligne suivante
-DOCKER_SUBNET="${DOCKER_SUBNET:-172.17.0.0/16}"
 if [[ -z "$DOCKER_SUBNET" ]]; then
     log_warn "Subnet Docker bridge vide après inspect — fallback 172.17.0.0/16."
     DOCKER_SUBNET="172.17.0.0/16"
@@ -1235,7 +1234,7 @@ SSHALERTEOF
             # Injecter la règle PAM dans /etc/pam.d/sshd (optionnel — ne bloque pas le login si erreur)
             PAM_SSHD="/etc/pam.d/sshd"
             if ! grep -q "vps-secure-ssh-alert" "$PAM_SSHD" 2>/dev/null; then
-                echo "session optional pam_exec.so seteuid /usr/local/bin/vps-secure-ssh-alert.sh" >> "$PAM_SSHD"
+                echo "session optional pam_exec.so /usr/local/bin/vps-secure-ssh-alert.sh" >> "$PAM_SSHD"
                 log_success "Alerte SSH temps réel configurée — notification à chaque connexion."
             else
                 log_warn "Règle PAM SSH déjà présente — non dupliquée."
@@ -1327,7 +1326,7 @@ apt-get install -y -qq aide aide-common
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)
 log_info "Création de la baseline AIDE — 1 à 2 minutes..."
-aideinit --yes --force >/dev/null 2>&1 || aideinit >/dev/null 2>&1 || true  # optionnel : --yes --force non disponible sur certaines versions de aide — fallback sur forme courte
+aideinit --yes --force >/dev/null 2>&1 || aideinit >/dev/null 2>&1 </dev/null || true  # optionnel : --yes --force absent sur certaines versions ; </dev/null évite le hang sur re-run si db existe
 
 if [[ -f /var/lib/aide/aide.db.new ]]; then
     cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db

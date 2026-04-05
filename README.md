@@ -186,19 +186,9 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 | DISA STIG Ubuntu 24.04 | ~70% |
 | OWASP Infrastructure | Supply chain (GPG + empreinte vérifiée), secrets, logging |
 
-| CIS Benchmark
-CIS = Center for Internet Security. C'est une organisation américaine à but non lucratif qui publie des guides de configuration sécurisée pour tous les OS majeurs.
-Level 1 — sécurité raisonnable sans impact sur les fonctionnalités. C'est le minimum recommandé pour n'importe quel serveur en production. Pas "basique" au sens débutant — c'est le standard utilisé par les entreprises pour leurs serveurs. La majorité des orgas visent Level 1.
+**CIS Benchmark** — CIS = Center for Internet Security, organisation américaine à but non lucratif qui publie des guides de configuration sécurisée pour tous les OS majeurs. Le Level 1 cible une sécurité raisonnable sans impact sur les fonctionnalités — c'est le standard utilisé par les entreprises pour leurs serveurs en production. 80% CIS L1 signifie 4 contrôles sur 5 couverts. Les 20% restants sont des contrôles non applicables sur VPS (partitions dédiées `/var`, `/home`) ou volontairement exclus pour garder le script accessible.
 
-> Donc 80% CIS L1 c'est bien — tu couvres 4 contrôles sur 5 du standard que les entreprises appliquent. Les 20% restants sont soit des contrôles non applicables sur VPS (partitions dédiées /var, /home), soit des contrôles volontairement exclus pour garder le script accessible.
-
-| DISA STIG
-DISA = Defense Information Systems Agency. C'est l'agence IT du Département de la Défense américain. Les STIGs (Security Technical Implementation Guides) sont leurs guides de configuration — plus stricts que CIS, obligatoires pour tous les systèmes du gouvernement US.
-
-> 70% DISA STIG c'est très bien pour un script public. Les 30% restants sont soit des contrôles militaires sans sens pour un VPS perso (accès physique, smartcard auth), soit des contrôles qui nécessitent une infrastructure d'entreprise (LDAP, SIEM centralisé).
-
-
-A NOTER:
+**DISA STIG** — DISA = Defense Information Systems Agency, l'agence IT du Département de la Défense américain. Les STIGs sont leurs guides de configuration, plus stricts que CIS, obligatoires pour tous les systèmes du gouvernement US. 70% DISA STIG est très bon pour un script public — les 30% restants concernent des contrôles militaires sans sens pour un VPS perso (accès physique, smartcard auth) ou nécessitant une infrastructure d'entreprise (LDAP, SIEM centralisé).
 
 > ⚠️ **Note sur sudo :** `vpsadmin` a un accès sudo sans mot de passe (`NOPASSWD`). C'est intentionnel pour simplifier l'usage. Le script ajoute `use_pty` pour bloquer le sudo hijacking depuis un terminal détaché, mais si ta clé SSH privée est compromise, l'attaquant a root immédiatement. **Protège ta clé privée** — ne la stocke jamais dans le cloud, ne la copie pas sur un serveur.
 
@@ -214,6 +204,43 @@ A NOTER:
 ---
 
 ## Commandes utiles après installation
+
+```bash
+# Tableau de bord de sécurité instantané
+sudo vps-secure-stats
+```
+
+```
+╔══════════════════════════════════════════════════════╗
+║          vps-secure — Tableau de bord               ║
+╚══════════════════════════════════════════════════════╝
+  monvps · 05/04/2026 07:00
+
+  🍯 HONEYPOT (Endlessh)          actif
+     Bots piégés (24h)     : 247
+     Bots piégés (total)   : 1834
+
+  🛡️  CROWDSEC                     actif
+     IP bannies actives    : 97
+     Alertes (24h)         : 12
+
+  🔥 PARE-FEU (UFW)
+     Blocages totaux       : 4521
+
+  📋 AUDIT (auditd)
+     Escalades privilèges  : 0 aujourd'hui
+
+  🔍 ROOTKITS (rkhunter)          OK
+     Dernier scan          : 2026-04-05 04:00:01
+
+  🔐 INTÉGRITÉ (AIDE)
+     Dernier scan          : Aucune modification
+
+  💻 SYSTÈME
+     Uptime                : 3 weeks, 2 days
+     Charge                : 0.08, 0.12, 0.09
+     Mémoire               : 1.2Gi / 3.8Gi
+```
 
 ```bash
 # Voir les alertes CrowdSec (dernières 24h)
@@ -256,7 +283,7 @@ sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 
 ## Compatibilité
 
-Testé sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner AX ·
+Testé sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner AX · Vultr.
 
 ---
 

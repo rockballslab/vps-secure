@@ -26,7 +26,7 @@
 #   chmod +x install.sh && ./install.sh
 #
 # Après le script :
-#   ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/TA_CLE_PRIVEE
+#   ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/id_ed25519_vps
 #
 # Testé sur : Ubuntu 24.04 LTS (Hostinger KVM2/KVM4, Hetzner CX, Vultr)
 # Repo      : https://github.com/rockballslab/vps-secure
@@ -1302,8 +1302,138 @@ log_info "  Log quotidien     : /var/log/aide-daily.log"
 log_info "  Scanner manuellement : sudo aide --check"
 log_info "  Après mise à jour OS : sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db"
 
-
 # ============================================================
+# Installation de vps-secure-stats
+# ============================================================
+cat > /usr/local/bin/vps-secure-stats << 'STATSEOF'
+#!/usr/bin/env bash
+# ============================================================
+# vps-secure-stats — Tableau de bord de sécurité instantané
+# Usage : sudo vps-secure-stats
+# ============================================================
+
+VERT='\033[0;32m'
+ROUGE='\033[0;31m'
+JAUNE='\033[1;33m'
+BLANC='\033[0;37m'
+CYAN='\033[0;36m'
+GRAS='\033[1m'
+RESET='\033[0m'
+
+# ── Endlessh ──
+if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
+    BOTS_24H=$(docker logs endlessh --since 24h 2>&1 | grep -ci "accept" || echo "0")
+    BOTS_TOTAL=$(docker logs endlessh 2>&1 | grep -ci "accept" || echo "0")
+    ENDLESSH_STATUS="${VERT}actif${RESET}"
+else
+    BOTS_24H="0"
+    BOTS_TOTAL="0"
+    ENDLESSH_STATUS="${ROUGE}inactif${RESET}"
+fi
+
+# ── CrowdSec ──
+if command -v cscli &>/dev/null; then
+    CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
+        | python3 -c "import sys,json
+try:
+    d=json.load(sys.stdin)
+    print(len(d) if d else 0)
+except:
+    print(0)" 2>/dev/null || echo "0")
+    CS_ALERTS_24H=$(cscli alerts list --since 24h -o json 2>/dev/null \
+        | python3 -c "import sys,json
+try:
+    d=json.load(sys.stdin)
+    print(len(d) if d else 0)
+except:
+    print(0)" 2>/dev/null || echo "0")
+    CS_STATUS="${VERT}actif${RESET}"
+else
+    CS_BANNED="0"
+    CS_ALERTS_24H="0"
+    CS_STATUS="${ROUGE}inactif${RESET}"
+fi
+
+# ── UFW ──
+UFW_BLOCKS=$(grep -c "\[UFW BLOCK\]" /var/log/ufw.log 2>/dev/null || echo "0")
+
+# ── auditd ──
+AUDIT_PRIVESC=$(ausearch -k privilege_escalation --start today -i 2>/dev/null \
+    | grep -c "type=" || echo "0")
+
+# ── rkhunter ──
+if [[ -f /var/log/rkhunter-cron.log ]]; then
+    RK_LAST=$(stat -c "%y" /var/log/rkhunter-cron.log 2>/dev/null \
+        | cut -d'.' -f1 || echo "jamais")
+    RK_WARN=$(grep -c "Warning" /var/log/rkhunter-cron.log 2>/dev/null || echo "0")
+    if [[ "$RK_WARN" -eq 0 ]]; then
+        RK_STATUS="${VERT}OK${RESET}"
+    else
+        RK_STATUS="${ROUGE}${RK_WARN} warning(s)${RESET}"
+    fi
+else
+    RK_LAST="jamais"
+    RK_STATUS="${JAUNE}pas encore exécuté${RESET}"
+fi
+
+# ── AIDE ──
+if [[ -f /var/log/aide-daily.exit ]]; then
+    AIDE_EXIT=$(cat /var/log/aide-daily.exit)
+    if [[ "$AIDE_EXIT" -eq 0 ]]; then
+        AIDE_STATUS="${VERT}Aucune modification${RESET}"
+    else
+        AIDE_STATUS="${ROUGE}Modifications détectées — sudo aide --check${RESET}"
+    fi
+else
+    AIDE_STATUS="${JAUNE}Pas encore exécuté (scan à 03h00)${RESET}"
+fi
+
+# ── Système ──
+UPTIME=$(uptime -p 2>/dev/null | sed 's/up //' || echo "inconnu")
+LOAD=$(uptime | awk -F'load average:' '{print $2}' | xargs || echo "inconnu")
+MEM_USED=$(free -h | awk '/^Mem:/ {print $3}')
+MEM_TOTAL=$(free -h | awk '/^Mem:/ {print $2}')
+
+# ── Affichage ──
+echo ""
+echo -e "${GRAS}${VERT}╔══════════════════════════════════════════════════════╗${RESET}"
+echo -e "${GRAS}${VERT}║          vps-secure — Tableau de bord               ║${RESET}"
+echo -e "${GRAS}${VERT}╚══════════════════════════════════════════════════════╝${RESET}"
+echo -e "  ${BLANC}$(hostname) · $(date '+%d/%m/%Y %H:%M')${RESET}"
+echo ""
+echo -e "  ${GRAS}${CYAN}🍯 HONEYPOT (Endlessh)${RESET}          ${ENDLESSH_STATUS}"
+echo -e "  ${BLANC}   Bots piégés (24h)     :${RESET} ${GRAS}${JAUNE}${BOTS_24H}${RESET}"
+echo -e "  ${BLANC}   Bots piégés (total)   :${RESET} ${GRAS}${BOTS_TOTAL}${RESET}"
+echo ""
+echo -e "  ${GRAS}${CYAN}🛡️  CROWDSEC${RESET}                     ${CS_STATUS}"
+echo -e "  ${BLANC}   IP bannies actives    :${RESET} ${GRAS}${JAUNE}${CS_BANNED}${RESET}"
+echo -e "  ${BLANC}   Alertes (24h)         :${RESET} ${GRAS}${CS_ALERTS_24H}${RESET}"
+echo ""
+echo -e "  ${GRAS}${CYAN}🔥 PARE-FEU (UFW)${RESET}"
+echo -e "  ${BLANC}   Blocages totaux       :${RESET} ${GRAS}${UFW_BLOCKS}${RESET}"
+echo ""
+echo -e "  ${GRAS}${CYAN}📋 AUDIT (auditd)${RESET}"
+echo -e "  ${BLANC}   Escalades privilèges  :${RESET} ${GRAS}${AUDIT_PRIVESC}${RESET} aujourd'hui"
+echo ""
+echo -e "  ${GRAS}${CYAN}🔍 ROOTKITS (rkhunter)${RESET}          ${RK_STATUS}"
+echo -e "  ${BLANC}   Dernier scan          :${RESET} ${RK_LAST}"
+echo ""
+echo -e "  ${GRAS}${CYAN}🔐 INTÉGRITÉ (AIDE)${RESET}"
+echo -e "  ${BLANC}   Dernier scan          :${RESET} ${AIDE_STATUS}"
+echo ""
+echo -e "  ${GRAS}${CYAN}💻 SYSTÈME${RESET}"
+echo -e "  ${BLANC}   Uptime                :${RESET} ${UPTIME}"
+echo -e "  ${BLANC}   Charge                :${RESET} ${LOAD}"
+echo -e "  ${BLANC}   Mémoire               :${RESET} ${MEM_USED} / ${MEM_TOTAL}"
+echo ""
+echo -e "${VERT}$(printf '─%.0s' {1..56})${RESET}"
+echo -e "  ${BLANC}Rapport complet : sudo /usr/local/bin/vps-secure-check.sh${RESET}"
+echo ""
+STATSEOF
+
+chmod +x /usr/local/bin/vps-secure-stats
+log_success "Tableau de bord installé — commande disponible : sudo vps-secure-stats"
+
 # Résumé final
 # ============================================================
 echo ""
@@ -1344,10 +1474,11 @@ if [[ -f /etc/vps-secure/telegram.conf ]]; then
 else
     echo -e "  ${JAUNE}⏭️ ${RESET} Alertes Telegram    : ${BLANC}Non configurées${RESET}"
 fi
+echo -e "  ${VERT}✅${RESET} Stats rapides       : ${BLANC}sudo vps-secure-stats${RESET}"
 echo ""
 echo -e "${GRAS}  Se connecter ensuite :${RESET}"
 echo ""
-echo -e "    ${VERT}ssh $USERNAME@$VPS_IP -p 2222 -i ~/.ssh/TA_CLE_PRIVEE${RESET}"
+echo -e "    ${VERT}ssh $USERNAME@$VPS_IP -p 2222 -i ~/.ssh/id_ed25519_vps${RESET}"
 echo ""
 echo -e "${GRAS}${VERT}  🎉 VPS sécurisé et prêt.${RESET}"
 echo ""
@@ -1366,7 +1497,7 @@ if [[ "$reboot_answer" == "oui" ]]; then
     echo ""
     echo -e "${VERT}  Redémarrage dans 5 secondes...${RESET}"
     echo -e "${BLANC}  Reconnecte-toi ensuite avec :${RESET}"
-    echo -e "    ${VERT}ssh $USERNAME@$VPS_IP -p 2222 -i ~/.ssh/TA_CLE_PRIVEE${RESET}"
+    echo -e "    ${VERT}ssh $USERNAME@$VPS_IP -p 2222 -i ~/.ssh/id_ed25519_vps${RESET}"
     echo ""
     sleep 5
     reboot

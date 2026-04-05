@@ -44,7 +44,7 @@ Les bots le trouvent en moins de 2 minutes. Ce script change ça en moins de 15.
 
 Avant de commencer, tu as besoin de :
 
-- ✅ Un VPS **Ubuntu 24.04 LTS** (Hostinger, Hetzner,…)
+- ✅ Un VPS vierge **Ubuntu 24.04 LTS** (Hostinger, Hetzner,…)
 - ✅ L'**IP** et le **mot de passe root** fournis par ton hébergeur
 - ✅ Une **clé SSH** générée sur ton ordinateur
 

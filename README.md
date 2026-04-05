@@ -253,7 +253,9 @@ sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 
 # Tableau de bord de sécurité instantané
 sudo vps-secure-stats
+```
 
+---
 ╔══════════════════════════════════════════════════════╗
 ║          vps-secure — Tableau de bord               ║
 ╚══════════════════════════════════════════════════════╝
@@ -283,7 +285,6 @@ sudo vps-secure-stats
      Uptime                : 3 weeks, 2 days
      Charge                : 0.08, 0.12, 0.09
      Mémoire               : 1.2Gi / 3.8Gi
-```
 
 ---
 

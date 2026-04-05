@@ -121,6 +121,15 @@ Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/id_ed25519_vps
 ```
 
+### Étape 5 — Vérifie l'installation
+
+```bash
+curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh
+chmod +x vps-secure-verify.sh && sudo ./vps-secure-verify.sh
+```
+
+Chaque composant retourne `[PASS]` ou `[FAIL]` avec la raison. Tout doit être PASS.
+
 C'est tout. Le VPS est sécurisé.
 
 ---

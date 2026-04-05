@@ -92,6 +92,12 @@ Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`).
 ssh root@IP_DU_VPS
 ```
 
+Remplace `IP_DU_VPS` par l'IP que tu as notée dans le guide interactif.
+
+Le serveur va te demander un mot de passe — c'est le mot de passe root fourni par ton hébergeur par email après provisioning.
+
+> 💡 C'est la seule fois où ce mot de passe est utilisé. Après l'installation, la connexion root par mot de passe est définitivement désactivée.
+
 ### Étape 3 — Lance le script
 
 ```bash

@@ -1438,7 +1438,7 @@ log_success "Tableau de bord installé — commande disponible : sudo vps-secure
 # ============================================================
 echo ""
 echo -e "${GRAS}${VERT}╔══════════════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${GRAS}${VERT}║             vps-secure — Bootstrap terminé ✓                    ║${RESET}"
+echo -e "${GRAS}${VERT}║             vps-secure — Installation terminée ✓                 ║${RESET}"
 echo -e "${GRAS}${VERT}╚══════════════════════════════════════════════════════════════════╝${RESET}"
 echo ""
 echo -e "  ${VERT}✅${RESET} Utilisateur         : ${BLANC}$USERNAME · sudo NOPASSWD + use_pty${RESET}"

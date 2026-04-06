@@ -78,6 +78,11 @@ log_success() { echo -e "${VERT}[OK]    $*${RESET}"; }
 log_warn()    { echo -e "${JAUNE}[WARN]  $*${RESET}"; }
 log_error()   { echo -e "${ROUGE}[ERR]   $*${RESET}" >&2; }
 
+_wait_dpkg() {
+    timeout 120 bash -c 'while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done' \
+        || true  # optionnel : timeout 120s — si le verrou ne se libère pas on tente quand même
+}
+
 etape() {
     local num="$1" total="$2" label="$3"
     echo -e "\n${GRAS}${VERT}[$num/$total] $label${RESET}"
@@ -323,6 +328,7 @@ etape "3" "$TOTAL_ETAPES" "Mise à jour du système"
 log_info "Vérification du verrou dpkg (unattended-upgrades peut tourner au boot)..."
 timeout 120 bash -c 'while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done' \
     || true  # optionnel : timeout 120s — si toujours verrouillé on tente quand même
+_wait_dpkg
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
@@ -677,6 +683,11 @@ fi
 # Étape 7 : Mises à jour de sécurité automatiques
 # ============================================================
 etape "7" "$TOTAL_ETAPES" "Activation des mises à jour de sécurité automatiques"
+
+log_info "Vérification du verrou dpkg..."
+timeout 120 bash -c 'while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done' \
+    || true  # optionnel : timeout 120s — si toujours verrouillé on tente quand même
+_wait_dpkg
 
 apt-get install -y -qq unattended-upgrades
 

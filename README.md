@@ -95,6 +95,7 @@ Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`).
 > ```bash
 > ssh-keygen -R IP_DU_VPS
 > ```
+Puis
 ```bash
 ssh root@IP_DU_VPS
 ```

@@ -1521,6 +1521,12 @@ STATSEOF
 chmod +x /usr/local/bin/vps-secure-stats
 log_success "Tableau de bord installé — commande disponible : sudo vps-secure-stats"
 
+# Installer vps-secure-verify pour usage post-reboot (évite le curl manuel)
+curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh \
+    -o /usr/local/bin/vps-secure-verify 2>/dev/null || true  # optionnel : réseau peut échouer — non bloquant
+chmod +x /usr/local/bin/vps-secure-verify 2>/dev/null || true
+log_success "vps-secure-verify installé — commande disponible : sudo vps-secure-verify"
+
 # Résumé final
 # ============================================================
 echo ""
@@ -1586,8 +1592,7 @@ if [[ "$reboot_answer" == "oui" ]]; then
     echo -e "    ${VERT}ssh $USERNAME@$VPS_IP -p 2222 -i ~/.ssh/id_ed25519_vps${RESET}"
     echo ""
     echo -e "${BLANC}  Une fois reconnecté, vérifie l'installation :${RESET}"
-    echo -e "    ${VERT}curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh${RESET}"
-    echo -e "    ${VERT}chmod +x vps-secure-verify.sh && sudo ./vps-secure-verify.sh${RESET}"
+    echo -e "    ${VERT}sudo vps-secure-verify${RESET}"
     echo ""
     read -rp "  Prêt ? Appuie sur Entrée pour redémarrer..." _
     reboot
@@ -1596,7 +1601,6 @@ else
     echo -e "${JAUNE}  Pense à redémarrer dès que possible : ${VERT}sudo reboot${RESET}"
     echo ""
     echo -e "${BLANC}  Après le redémarrage, vérifie l'installation :${RESET}"
-    echo -e "    ${VERT}curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh${RESET}"
-    echo -e "    ${VERT}chmod +x vps-secure-verify.sh && sudo ./vps-secure-verify.sh${RESET}"
+    echo -e "    ${VERT}sudo vps-secure-verify${RESET}"
     echo ""
 fi

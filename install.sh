@@ -760,6 +760,18 @@ net.ipv4.conf.default.secure_redirects = 0
 kernel.perf_event_paranoid = 3
 SYSEOF
 
+# Restriction dmesg aux non-root — évite la fuite d'infos kernel (CIS 1.5.1)
+kernel.dmesg_restrict = 1
+
+# Masquer les adresses kernel dans /proc — anti-exploitation ASLR bypass (CIS 1.5.2)
+kernel.kptr_restrict = 2
+
+# Durcissement JIT eBPF — mitigation JIT spraying (CIS 1.5.5)
+net.core.bpf_jit_harden = 2
+
+# Interdire eBPF aux non-root — vecteur d'exploitation connu (CIS 1.5.5)
+kernel.unprivileged_bpf_disabled = 1
+
 SYSCTL_OUTPUT=$(sysctl --system 2>&1)
 SYSCTL_ERRORS=$(echo "$SYSCTL_OUTPUT" | grep -c "^sysctl: " 2>/dev/null || echo "0")
 if [[ "$SYSCTL_ERRORS" -gt 0 ]]; then
@@ -769,7 +781,7 @@ if [[ "$SYSCTL_ERRORS" -gt 0 ]]; then
     done
     log_warn "  Vérifie l'intégralité : sudo sysctl --system 2>&1 | grep '^sysctl:'"
 else
-    log_success "Noyau durci — anti-spoofing, SYN flood, ICMP, forwarding Docker OK."
+    log_success "Noyau durci — anti-spoofing, SYN flood, ICMP, dmesg/kptr/eBPF restreints, forwarding Docker OK."
 fi
 
 # ============================================================

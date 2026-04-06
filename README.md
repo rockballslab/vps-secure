@@ -337,6 +337,24 @@ sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 
 ---
 
+## Connexion rapide (optionnel)
+
+Ajoute ceci sur **ton ordinateur** dans `~/.ssh/config` :
+```
+Host monvps
+    HostName IP_DU_VPS
+    User vpsadmin
+    Port 2222
+    IdentityFile ~/.ssh/id_ed25519_vps
+```
+
+Ensuite tu te connectes avec juste :
+```bash
+ssh monvps
+```
+
+---
+
 ## Compatibilité
 
 Testé et vérifié le 6 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX ·

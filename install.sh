@@ -278,7 +278,7 @@ VPS_IP=$(ip route get 8.8.8.8 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src
 VPS_IP="${VPS_IP:-$(hostname -I | awk '{print $1}')}"
 echo ""
 echo -e "${GRAS}${JAUNE}╔══════════════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${GRAS}${JAUNE}║  🔐 TEST SSH OBLIGATOIRE — NE FERME PAS CETTE SESSION             ║${RESET}"
+echo -e "${GRAS}${JAUNE}║  🔐 TEST SSH OBLIGATOIRE — NE FERME PAS CETTE SESSION            ║${RESET}"
 echo -e "${GRAS}${JAUNE}╚══════════════════════════════════════════════════════════════════╝${RESET}"
 echo ""
 echo -e "  ${BLANC}1. Ouvre un NOUVEAU terminal sur ton ordinateur${RESET}"
@@ -792,8 +792,8 @@ net.ipv4.ip_unprivileged_port_start = 22
 SYSEOF
 
 SYSCTL_OUTPUT=$(sysctl --system 2>&1)
-SYSCTL_ERRORS=$(echo "$SYSCTL_OUTPUT" | grep -c "^sysctl: " 2>/dev/null | grep -E '^[0-9]+$' | head -1)
-SYSCTL_ERRORS="${SYSCTL_ERRORS:-0}"
+SYSCTL_ERRORS=$(echo "$SYSCTL_OUTPUT" | grep -c "^sysctl: " 2>/dev/null || echo "0")
+SYSCTL_ERRORS=$(echo "$SYSCTL_ERRORS" | tr -d '[:space:]' | grep -E '^[0-9]+$' || echo "0")
 if [[ "$SYSCTL_ERRORS" -gt 0 ]]; then
     log_warn "sysctl --system : $SYSCTL_ERRORS paramètre(s) rejeté(s) par le noyau :"
     echo "$SYSCTL_OUTPUT" | grep "^sysctl: " | head -5 | while IFS= read -r line; do

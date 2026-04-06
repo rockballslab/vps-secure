@@ -28,7 +28,7 @@
 # Après le script :
 #   ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/id_ed25519_vps
 #
-# Testé sur : Ubuntu 24.04 LTS (Hostinger KVM2/KVM4, Hetzner CX, Vultr)
+# Testé sur : Ubuntu 24.04 LTS (Hostinger KVM2/KVM4, Hetzner CX)
 # Repo      : https://github.com/rockballslab/vps-secure
 # ============================================================
 set -euo pipefail
@@ -949,6 +949,20 @@ etape "11" "$TOTAL_ETAPES" "Installation du scanner de rootkits (rkhunter)"
 
 apt-get install -y -qq rkhunter
 
+# Supprimer les faux positifs connus sur Ubuntu 24.04 + Docker
+# Sans ce fichier : chaque apt upgrade génère des warnings sur les binaires mis à jour,
+# et egrep/fgrep/which sont flagués "suspicious script replacement" dès le premier scan.
+cat > /etc/rkhunter.conf.local << 'RKHEOF'
+# vps-secure — Suppressions faux positifs rkhunter
+# Ubuntu 24.04 LTS + Docker Engine
+PKGMGR=DPKG
+SCRIPTWHITELIST=/usr/bin/egrep
+SCRIPTWHITELIST=/usr/bin/fgrep
+SCRIPTWHITELIST=/usr/bin/which
+SCRIPTWHITELIST=/usr/sbin/adduser
+RKHEOF
+chmod 640 /etc/rkhunter.conf.local
+
 # Mettre à jour la base de données des signatures
 rkhunter --update --nocolors > /dev/null 2>&1 || true  # optionnel : mise à jour réseau peut échouer (timeout) — non bloquant, baseline créée avec signatures locales
 
@@ -958,7 +972,7 @@ rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : peut écho
 # Premier scan silencieux pour valider l'installation
 rkhunter --check --sk --nocolors > /tmp/rkhunter-first-scan.log 2>&1 || true  # optionnel : warnings attendus sur install fraîche (Docker, etc.) — résultat dans le log, non bloquant
 
-log_success "rkhunter installé — baseline système enregistrée."
+log_success "rkhunter installé — baseline enregistrée · faux positifs Ubuntu/Docker supprimés."
 log_warn "  Baseline créée après Docker — les fichiers Docker sont inclus dans l'état 'sain'."
 log_warn "  Les futures modifications Docker ne déclencheront PAS d'alertes rkhunter."
 log_info "  Scanner manuellement : sudo rkhunter --check --report-warnings-only"

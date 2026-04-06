@@ -278,7 +278,7 @@ sudo vps-secure-stats
      Blocages totaux       : 4521
 
   📋 AUDIT (auditd)
-     Escalades privilèges  : 0 aujourd'hui
+     Escalades privilèges  : 1247 aujourd'hui
 
   🔍 ROOTKITS (rkhunter)          OK
      Dernier scan          : 2026-04-05 04:00:01
@@ -291,6 +291,10 @@ sudo vps-secure-stats
      Charge                : 0.08, 0.12, 0.09
      Mémoire               : 1.2Gi / 3.8Gi
 ```
+
+> ⓘ Le jour de l'installation, les escalades de privilèges affichent un nombre élevé (1000+).
+> C'est normal — le script install.sh tourne en root et chaque commande système est auditée.
+> Dès le lendemain, le compteur reflète uniquement tes actions réelles.
 
 ```bash
 # Voir les alertes CrowdSec (dernières 24h)

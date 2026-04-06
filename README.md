@@ -2,7 +2,7 @@
 
 **Le seul repo GitHub français qui sécurise vraiment ton serveur.**
 
-> "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un VPS — lance ce script avant d'installer quoi que ce soit.
+> "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un VPS, lance ce script avant d'installer quoi que ce soit.
 > 15 minutes, une seule commande. Ton serveur passe du stade *cible facile* à *cible qui n'en vaut pas la peine*."
 
 Un VPS livré nu tourne avec root ouvert sur le port 22, sans firewall, sans détection d'intrusion.

@@ -89,6 +89,14 @@ if [[ -f /etc/crowdsec/config.yaml ]]; then
     grep -q "127.0.0.1:8080" /etc/crowdsec/config.yaml \
         && CS_FAILS+=("config.yaml contient encore :8080 (migration port 8081 incomplète)")
 fi
+if [[ -f /etc/crowdsec/local_api_credentials.yaml ]]; then
+    grep -q "127.0.0.1:8080" /etc/crowdsec/local_api_credentials.yaml \
+        && CS_FAILS+=("local_api_credentials.yaml contient encore :8080")
+fi
+if [[ -f /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml ]]; then
+    grep -q "127.0.0.1:8080" /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml \
+        && CS_FAILS+=("bouncer.yaml contient encore :8080 — bannissement inopérant")
+fi
 
 if [[ ${#CS_FAILS[@]} -eq 0 ]]; then
     CS_COLS=$(cscli collections list -o raw 2>/dev/null | grep -c "enabled" || echo "?")

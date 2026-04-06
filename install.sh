@@ -319,6 +319,11 @@ log_success "Connexion SSH confirmée — le script continue."
 # ============================================================
 etape "3" "$TOTAL_ETAPES" "Mise à jour du système"
 
+# Attendre la libération du verrou dpkg
+log_info "Vérification du verrou dpkg (unattended-upgrades peut tourner au boot)..."
+timeout 120 bash -c 'while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done' \
+    || true  # optionnel : timeout 120s — si toujours verrouillé on tente quand même
+
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get upgrade -y -qq

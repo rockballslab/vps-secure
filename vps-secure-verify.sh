@@ -69,9 +69,11 @@ ufw status 2>/dev/null | grep -q "443/tcp" \
     || UFW_FAILS+=("port 443 absent")
 grep -q "DOCKER-MASQ" /etc/ufw/before.rules 2>/dev/null \
     || UFW_FAILS+=("règle NAT Docker absente de before.rules")
+ufw status verbose 2>/dev/null | grep -qi "^logging: medium\|^logging: high\|^logging: full" \
+    || UFW_FAILS+=("logging inactif — vps-secure-stats ne verra aucun blocage")
 
 if [[ ${#UFW_FAILS[@]} -eq 0 ]]; then
-    _pass "UFW" "actif · ports 2222/80/443 ouverts · règle NAT Docker présente"
+    _pass "UFW" "actif · ports 2222/80/443 ouverts · règle NAT Docker présente · logging medium"
 else
     _fail "UFW" "$(IFS=', '; echo "${UFW_FAILS[*]}")"
 fi

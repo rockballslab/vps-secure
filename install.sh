@@ -187,7 +187,7 @@ log_success "Clé SSH installée pour $USERNAME."
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config.backup."$(date '+%Y%m%d')"
 
 # Config SSH durcie
-cat > /etc/ssh/sshd_config.d/vps-secure.conf << 'SSHEOF'
+cat > /etc/ssh/sshd_config.d/00-vps-secure.conf << 'SSHEOF'
 # vps-secure — SSH Hardening
 # Port 2222, clés uniquement, root login désactivé
 Port 2222
@@ -233,7 +233,7 @@ echo "Authorized users only. All activity is monitored and logged." > /etc/issue
 # Valider la config AVANT de redémarrer
 if ! sshd -t 2>/dev/null; then
     log_error "Config SSH invalide — restauration du backup."
-    rm -f /etc/ssh/sshd_config.d/vps-secure.conf
+    rm -f /etc/ssh/sshd_config.d/00-vps-secure.conf
     systemctl restart ssh
     exit 1
 fi
@@ -1331,15 +1331,16 @@ EOF
 docker run -d \
     --name endlessh \
     --restart unless-stopped \
+    --network=host \
     --security-opt no-new-privileges:true \
     --cap-drop ALL \
     --cap-add NET_BIND_SERVICE \
     --read-only \
-    -p 22:2222 \
     -v /etc/endlessh/banner.txt:/banner.txt:ro \
     shizunge/endlessh-go \
     -logtostderr \
     -v=1 \
+    -port=22 \
     -conn_type=both \
     -max_clients=4096 \
     -banner_file=/banner.txt \

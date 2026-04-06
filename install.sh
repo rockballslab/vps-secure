@@ -79,8 +79,11 @@ log_warn()    { echo -e "${JAUNE}[WARN]  $*${RESET}"; }
 log_error()   { echo -e "${ROUGE}[ERR]   $*${RESET}" >&2; }
 
 _wait_dpkg() {
-    timeout 120 bash -c 'while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done' \
-        || true  # optionnel : timeout 120s — si le verrou ne se libère pas on tente quand même
+    if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+        log_info "Verrou dpkg occupé — attente (max 120s)..."
+        timeout 120 bash -c 'while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done' \
+            || true  # optionnel : timeout 120s — si toujours verrouillé on tente quand même
+    fi
 }
 
 etape() {
@@ -324,12 +327,7 @@ log_success "Connexion SSH confirmée — le script continue."
 # ============================================================
 etape "3" "$TOTAL_ETAPES" "Mise à jour du système"
 
-# Attendre la libération du verrou dpkg
-log_info "Vérification du verrou dpkg (unattended-upgrades peut tourner au boot)..."
-timeout 120 bash -c 'while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done' \
-    || true  # optionnel : timeout 120s — si toujours verrouillé on tente quand même
 _wait_dpkg
-
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get upgrade -y -qq
@@ -450,6 +448,7 @@ if ! command -v crowdsec &>/dev/null; then
 https://packagecloud.io/crowdsec/crowdsec/ubuntu \
 $(lsb_release -cs) main" > /etc/apt/sources.list.d/crowdsec.list
 
+    _wait_dpkg
     apt-get update -qq
     apt-get install -y -qq crowdsec crowdsec-firewall-bouncer-iptables
     log_success "CrowdSec installé via dépôt signé GPG."
@@ -602,7 +601,8 @@ if ! command -v docker &>/dev/null; then
       https://download.docker.com/linux/ubuntu \
       $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
       tee /etc/apt/sources.list.d/docker.list > /dev/null
-
+      
+    _wait_dpkg
     apt-get update -qq
     apt-get install -y -qq \
         docker-ce docker-ce-cli containerd.io \
@@ -684,11 +684,7 @@ fi
 # ============================================================
 etape "7" "$TOTAL_ETAPES" "Activation des mises à jour de sécurité automatiques"
 
-log_info "Vérification du verrou dpkg..."
-timeout 120 bash -c 'while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done' \
-    || true  # optionnel : timeout 120s — si toujours verrouillé on tente quand même
 _wait_dpkg
-
 apt-get install -y -qq unattended-upgrades
 
 cat > /etc/apt/apt.conf.d/20auto-upgrades << 'AUTOEOF'
@@ -809,6 +805,7 @@ fi
 # ============================================================
 etape "9" "$TOTAL_ETAPES" "Activation de l'audit système (auditd)"
 
+_wait_dpkg
 apt-get install -y -qq auditd audispd-plugins 2>/dev/null || apt-get install -y -qq auditd  # optionnel : audispd-plugins absent sur certaines versions Ubuntu — fallback sur auditd seul
 
 cat > /etc/audit/rules.d/vps-secure.rules << 'AUDITEOF'
@@ -966,6 +963,7 @@ fi
 # ============================================================
 etape "11" "$TOTAL_ETAPES" "Installation du scanner de rootkits (rkhunter)"
 
+_wait_dpkg
 apt-get install -y -qq rkhunter
 
 # Supprimer les faux positifs connus sur Ubuntu 24.04 + Docker
@@ -1367,6 +1365,7 @@ etape "15" "$TOTAL_ETAPES" "Integrity monitoring (AIDE)"
 log_info "AIDE hash tous les binaires système à l'installation."
 log_info "Un scan quotidien détecte toute modification — binaire remplacé, rootkit, backdoor."
 
+_wait_dpkg
 apt-get install -y -qq aide aide-common
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)

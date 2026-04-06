@@ -278,7 +278,7 @@ VPS_IP=$(ip route get 8.8.8.8 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src
 VPS_IP="${VPS_IP:-$(hostname -I | awk '{print $1}')}"
 echo ""
 echo -e "${GRAS}${JAUNE}╔══════════════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${GRAS}${JAUNE}║  🔐 TEST SSH OBLIGATOIRE — NE FERME PAS CETTE SESSION           ║${RESET}"
+echo -e "${GRAS}${JAUNE}║  🔐 TEST SSH OBLIGATOIRE — NE FERME PAS CETTE SESSION             ║${RESET}"
 echo -e "${GRAS}${JAUNE}╚══════════════════════════════════════════════════════════════════╝${RESET}"
 echo ""
 echo -e "  ${BLANC}1. Ouvre un NOUVEAU terminal sur ton ordinateur${RESET}"

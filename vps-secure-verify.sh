@@ -63,13 +63,13 @@ ufw status 2>/dev/null | grep -qi "^status: active" \
     || UFW_FAILS+=("UFW inactif")
 ufw status 2>/dev/null | grep -q "2222/tcp" \
     || UFW_FAILS+=("port 2222 absent")
-ufw status 2>/dev/null | grep -q " 80/tcp" \
+ufw status 2>/dev/null | grep -q "80/tcp" \
     || UFW_FAILS+=("port 80 absent")
 ufw status 2>/dev/null | grep -q "443/tcp" \
     || UFW_FAILS+=("port 443 absent")
 grep -q "DOCKER-MASQ" /etc/ufw/before.rules 2>/dev/null \
     || UFW_FAILS+=("règle NAT Docker absente de before.rules")
-ufw status verbose 2>/dev/null | grep -qi "^logging: medium\|^logging: high\|^logging: full" \
+ufw status verbose 2>/dev/null | grep -qi "^Logging: on" \
     || UFW_FAILS+=("logging inactif — vps-secure-stats ne verra aucun blocage")
 
 if [[ ${#UFW_FAILS[@]} -eq 0 ]]; then
@@ -233,8 +233,8 @@ fi
 DNS_FAILS=()
 systemctl is-active systemd-resolved &>/dev/null \
     || DNS_FAILS+=("systemd-resolved inactif")
-resolvectl show 2>/dev/null | grep -qi "^DNSOverTLS=yes" \
-    || DNS_FAILS+=("DNS over TLS non confirmé (resolvectl show | grep DNSOverTLS)")
+grep -qi "^DNSOverTLS=yes" /etc/systemd/resolved.conf.d/vps-secure-dns.conf 2>/dev/null \
+    || DNS_FAILS+=("DNS over TLS non confirmé — vérifie /etc/systemd/resolved.conf.d/vps-secure-dns.conf")
 RESOLV_LINK=$(readlink /etc/resolv.conf 2>/dev/null || echo "")
 [[ "$RESOLV_LINK" == "/run/systemd/resolve/stub-resolv.conf" ]] \
     || DNS_FAILS+=("/etc/resolv.conf ne pointe pas vers le stub systemd-resolved")

@@ -34,7 +34,7 @@ fi
 
 echo ""
 echo -e "${GRAS}${VERT}╔══════════════════════════════════════════════════════╗${RESET}"
-echo -e "${GRAS}${VERT}║     vps-secure — Vérification post-installation     ║${RESET}"
+echo -e "${GRAS}${VERT}║     vps-secure — Vérification post-installation      ║${RESET}"
 echo -e "${GRAS}${VERT}╚══════════════════════════════════════════════════════╝${RESET}"
 echo -e "  ${BLANC}$(hostname) · $(date '+%d/%m/%Y %H:%M')${RESET}"
 echo ""

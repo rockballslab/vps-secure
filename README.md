@@ -128,8 +128,7 @@ ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/id_ed25519_vps
 Le script t'a affiché cette commande à la fin — lance-la maintenant :
 
 ```bash
-curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh
-chmod +x vps-secure-verify.sh && sudo ./vps-secure-verify.sh
+sudo vps-secure-verify
 ```
 
 Chaque composant retourne `[PASS]` ou `[FAIL]` avec la raison. Tout doit être PASS.
@@ -226,20 +225,20 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 
 ```bash
 # Vérification post-installation — PASS / FAIL par composant
-sudo ./vps-secure-verify.sh
+sudo vps-secure-verify
 ```
 
 ```
   [PASS] SSH          : port 2222 actif · root désactivé · PasswordAuth off · socket override OK
-  [PASS] UFW          : actif · ports 2222/80/443 ouverts · règle NAT Docker présente
+  [PASS] UFW          : actif · ports 2222/80/443 ouverts · règle NAT Docker présente · logging medium
   [PASS] CrowdSec     : actif · bouncer actif · port 8081 · 2 collection(s)
-  [PASS] Docker       : actif · v26.1.4 · iptables:false confirmé
+  [PASS] Docker       : actif · v29.3.1 · iptables:false confirmé
   [PASS] Endlessh     : container actif · port 22 en écoute · règle UFW présente
   [PASS] AIDE         : baseline présente (âge : 0j) · cron 03h00 configuré
-  [PASS] rkhunter     : installé · baseline présente · cron 04h00 · dernier scan : 2026-04-05 04:00:01
-  [PASS] auditd       : actif · 15 règle(s) chargée(s)
+  [PASS] rkhunter     : installé · baseline présente · conf.local OK · cron 04h00 · dernier scan : jamais
+  [PASS] auditd       : actif · 26 règle(s) chargée(s)
   [PASS] Swap         : actif · 2048 MB · swappiness=10
-  [PASS] Kernel       : ASLR=2 · ptrace_scope=1 · syncookies=1 · ip_forward=1 · suid_dumpable=0
+  [PASS] Kernel       : ASLR=2 · ptrace_scope=1 · syncookies=1 · ip_forward=1 · suid_dumpable=0 · dmesg/kptr/eBPF restreints
   [PASS] DNS over TLS : systemd-resolved actif · DoT=yes · serveur principal : 9.9.9.9
   [PASS] Telegram     : config présente · API OK · bot : @monbot
 

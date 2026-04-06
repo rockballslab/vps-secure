@@ -88,6 +88,11 @@ Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`).
 
 ### Étape 2 — Connecte-toi en root
 
+> 💡 Si tu as déjà utilisé cette IP (rebuild VPS), supprime l'ancienne clé connue :
+> ```bash
+> ssh-keygen -R IP_DU_VPS
+> ```
+
 ```bash
 ssh root@IP_DU_VPS
 ```

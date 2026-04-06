@@ -935,8 +935,8 @@ else
     # Créer le fichier swap
     log_info "Création d'un swap de $SWAP_SIZE..."
     SWAP_MB=$(numfmt --from=iec "$SWAP_SIZE" 2>/dev/null \
-        | awk '{print int($1/1024/1024)}' \
-        | grep -E '^[0-9]+$' | head -1)
+        | awk '{print int($1/1024/1024)}' || echo "512")
+    SWAP_MB=$(echo "$SWAP_MB" | tr -d '[:space:]')
     SWAP_MB="${SWAP_MB:-512}"
     fallocate -l "$SWAP_SIZE" "$SWAP_FILE" 2>/dev/null || \
         dd if=/dev/zero of="$SWAP_FILE" bs=1M count="$SWAP_MB" status=none
@@ -954,6 +954,8 @@ else
     echo "vm.vfs_cache_pressure=50" >> /etc/sysctl.d/99-vps-secure.conf
     SYSCTL_SWAP_OUTPUT=$(sysctl -p /etc/sysctl.d/99-vps-secure.conf 2>&1)
     SYSCTL_SWAP_ERRORS=$(echo "$SYSCTL_SWAP_OUTPUT" | grep -c "^sysctl: " 2>/dev/null || echo "0")
+    SYSCTL_SWAP_ERRORS=$(echo "$SYSCTL_SWAP_ERRORS" | tr -d '[:space:]')
+    SYSCTL_SWAP_ERRORS="${SYSCTL_SWAP_ERRORS:-0}"
     if [[ "$SYSCTL_SWAP_ERRORS" -gt 0 ]]; then
         log_warn "sysctl -p : $SYSCTL_SWAP_ERRORS paramètre(s) rejeté(s) (swappiness/vfs_cache_pressure) :"
         echo "$SYSCTL_SWAP_OUTPUT" | grep "^sysctl: " | while IFS= read -r line; do

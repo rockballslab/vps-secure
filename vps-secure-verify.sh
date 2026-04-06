@@ -163,12 +163,15 @@ command -v rkhunter &>/dev/null \
     || RK_FAILS+=("baseline absente — sudo rkhunter --propupd")
 [[ -f /etc/cron.d/rkhunter-daily ]] \
     || RK_FAILS+=("cron quotidien absent")
+[[ -f /etc/rkhunter.conf.local ]] \
+    || RK_FAILS+=("conf.local absent — faux positifs non supprimés (alertes Telegram bruitées)")
+
 
 if [[ ${#RK_FAILS[@]} -eq 0 ]]; then
     RK_LAST="jamais"
     [[ -f /var/log/rkhunter-cron.log ]] \
         && RK_LAST=$(stat -c "%y" /var/log/rkhunter-cron.log 2>/dev/null | cut -d'.' -f1 || echo "?")
-    _pass "rkhunter" "installé · baseline présente · cron 04h00 · dernier scan : ${RK_LAST}"
+    _pass "rkhunter" "installé · baseline présente · conf.local OK · cron 04h00 · dernier scan : ${RK_LAST}"
 else
     _fail "rkhunter" "$(IFS=', '; echo "${RK_FAILS[*]}")"
 fi

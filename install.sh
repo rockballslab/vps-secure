@@ -792,7 +792,8 @@ net.ipv4.ip_unprivileged_port_start = 22
 SYSEOF
 
 SYSCTL_OUTPUT=$(sysctl --system 2>&1)
-SYSCTL_ERRORS=$(echo "$SYSCTL_OUTPUT" | grep -c "^sysctl: " 2>/dev/null || echo "0")
+SYSCTL_ERRORS=$(echo "$SYSCTL_OUTPUT" | grep -c "^sysctl: " 2>/dev/null | grep -E '^[0-9]+$' | head -1)
+SYSCTL_ERRORS="${SYSCTL_ERRORS:-0}"
 if [[ "$SYSCTL_ERRORS" -gt 0 ]]; then
     log_warn "sysctl --system : $SYSCTL_ERRORS paramètre(s) rejeté(s) par le noyau :"
     echo "$SYSCTL_OUTPUT" | grep "^sysctl: " | head -5 | while IFS= read -r line; do
@@ -933,7 +934,9 @@ elif [[ -f "$SWAP_FILE" ]]; then
 else
     # Créer le fichier swap
     log_info "Création d'un swap de $SWAP_SIZE..."
-    SWAP_MB=$(numfmt --from=iec "$SWAP_SIZE" 2>/dev/null | awk '{print int($1/1024/1024)}')
+    SWAP_MB=$(numfmt --from=iec "$SWAP_SIZE" 2>/dev/null \
+        | awk '{print int($1/1024/1024)}' \
+        | grep -E '^[0-9]+$' | head -1)
     SWAP_MB="${SWAP_MB:-512}"
     fallocate -l "$SWAP_SIZE" "$SWAP_FILE" 2>/dev/null || \
         dd if=/dev/zero of="$SWAP_FILE" bs=1M count="$SWAP_MB" status=none
@@ -993,8 +996,8 @@ rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : peut écho
 rkhunter --check --sk --nocolors > /tmp/rkhunter-first-scan.log 2>&1 || true  # optionnel : warnings attendus sur install fraîche (Docker, etc.) — résultat dans le log, non bloquant
 
 log_success "rkhunter installé — baseline enregistrée · faux positifs Ubuntu/Docker supprimés."
-log_warn "  Baseline créée après Docker — les fichiers Docker sont inclus dans l'état 'sain'."
-log_warn "  Les futures modifications Docker ne déclencheront PAS d'alertes rkhunter."
+log_info "  Baseline créée après Docker — les fichiers Docker sont inclus dans l'état 'sain'."
+log_info "  Les futures modifications Docker ne déclencheront PAS d'alertes rkhunter."
 log_info "  Scanner manuellement : sudo rkhunter --check --report-warnings-only"
 log_info "  Dernier rapport      : /var/log/rkhunter.log"
 
@@ -1539,7 +1542,7 @@ echo -e "  ${VERT}✅${RESET} SSH                 : ${BLANC}Port 2222 · clés u
 echo -e "  ${VERT}✅${RESET} CrowdSec            : ${BLANC}IDS/IPS communautaire SSH + HTTP${RESET}"
 echo -e "  ${VERT}✅${RESET} UFW                 : ${BLANC}Ports 2222 / 80 / 443 · NAT Docker · forwarding bridge${RESET}"
 echo -e "  ${VERT}✅${RESET} Docker              : ${BLANC}$(docker --version | grep -oP '\d+\.\d+\.\d+' | head -1) + Compose v2${RESET}"
-echo -e "  ${JAUNE}⚠️ ${RESET} Docker group        : ${BLANC}vpsadmin dans le groupe docker = root effectif — protège ta clé SSH${RESET}"
+echo -e "  ${JAUNE}⚠️ ${RESET} Docker group        : ${BLANC}vpsadmin dans le groupe docker — traite ta clé SSH comme une clé root${RESET}"
 echo -e "  ${VERT}✅${RESET} Auto-updates        : ${BLANC}Patches de sécurité automatiques${RESET}"
 echo -e "  ${VERT}✅${RESET} Kernel hardening    : ${BLANC}Anti-spoofing · SYN flood · ICMP · ASLR · ptrace · perf restreint${RESET}"
 echo -e "  ${VERT}✅${RESET} DNS chiffré         : ${BLANC}DNS over TLS — Quad9 + Cloudflare (activé avant les téléchargements)${RESET}"

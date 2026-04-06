@@ -1311,9 +1311,9 @@ EOF
 
 # ⚠️  MAINTENEUR : épingler le digest avant chaque release pour éviter un supply chain risk.
 # Commande pour obtenir le digest actuel :
-#   docker pull ghcr.io/shizunge/endlessh-go && \
-#   docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/shizunge/endlessh-go
-# Puis remplacer le tag par : ghcr.io/shizunge/endlessh-go@sha256:XXXX
+#   docker pull shizunge/endlessh-go && \
+#   docker inspect --format='{{index .RepoDigests 0}}' shizunge/endlessh-go
+# Puis remplacer le tag par : shizunge/endlessh-go@sha256:XXXX
 docker run -d \
     --name endlessh \
     --restart unless-stopped \
@@ -1323,15 +1323,14 @@ docker run -d \
     --read-only \
     -p 22:2222 \
     -v /etc/endlessh/banner.txt:/banner.txt:ro \
-    ghcr.io/shizunge/endlessh-go \
+    shizunge/endlessh-go \
     -logtostderr \
     -v=1 \
     -conn_type=both \
     -max_clients=4096 \
     -banner_file=/banner.txt \
     -max_line_length=64 \
-    > /dev/null
-    # stdout supprimé (container ID inutile) — stderr conservé pour diagnostic en cas d'échec
+    > /dev/null || true  # optionnel : échec docker run géré par le check docker ps ci-dessous
 
 # Vérifier que le container tourne
 sleep 2

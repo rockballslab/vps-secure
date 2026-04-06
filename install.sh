@@ -433,6 +433,8 @@ if ! command -v crowdsec &>/dev/null; then
     fi
     log_success "Empreinte GPG CrowdSec vérifiée ✓"
 
+    chmod a+r /usr/share/keyrings/crowdsec.gpg
+
     echo "deb [signed-by=/usr/share/keyrings/crowdsec.gpg] \
 https://packagecloud.io/crowdsec/crowdsec/ubuntu \
 $(lsb_release -cs) main" > /etc/apt/sources.list.d/crowdsec.list

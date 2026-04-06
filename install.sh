@@ -759,7 +759,6 @@ net.ipv4.conf.default.secure_redirects = 0
 
 # Perf events — lecture des compteurs kernel restreinte (CIS 1.5.4)
 kernel.perf_event_paranoid = 3
-SYSEOF
 
 # Restriction dmesg aux non-root — évite la fuite d'infos kernel (CIS 1.5.1)
 kernel.dmesg_restrict = 1
@@ -772,6 +771,8 @@ net.core.bpf_jit_harden = 2
 
 # Interdire eBPF aux non-root — vecteur d'exploitation connu (CIS 1.5.5)
 kernel.unprivileged_bpf_disabled = 1
+
+SYSEOF
 
 SYSCTL_OUTPUT=$(sysctl --system 2>&1)
 SYSCTL_ERRORS=$(echo "$SYSCTL_OUTPUT" | grep -c "^sysctl: " 2>/dev/null || echo "0")

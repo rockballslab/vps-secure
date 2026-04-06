@@ -786,6 +786,9 @@ net.core.bpf_jit_harden = 2
 # Interdire eBPF aux non-root — vecteur d'exploitation connu (CIS 1.5.5)
 kernel.unprivileged_bpf_disabled = 1
 
+# Port non-privilégié minimum abaissé à 22 — requis pour Endlessh (honeypot port 22)
+net.ipv4.ip_unprivileged_port_start = 22
+
 SYSEOF
 
 SYSCTL_OUTPUT=$(sysctl --system 2>&1)
@@ -1313,16 +1316,6 @@ if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
     docker rm -f endlessh 2>/dev/null || true  # optionnel : rm -f retourne 1 si le container n'existe pas — cas normal à la première installation
 fi
 
-# Créer le banner avant de lancer le container
-mkdir -p /etc/endlessh
-cat > /etc/endlessh/banner.txt << 'EOF'
-Congratulations.
-You have successfully connected to a tar pit.
-Your IP has been logged.
-Your session will now last approximately forever.
-Your bot will be late for dinner.
-EOF
-
 # ⚠️  MAINTENEUR : épingler le digest avant chaque release pour éviter un supply chain risk.
 # Commande pour obtenir le digest actuel :
 #   docker pull shizunge/endlessh-go && \
@@ -1341,10 +1334,7 @@ docker run -d \
     -logtostderr \
     -v=1 \
     -port=22 \
-    -conn_type=both \
-    -max_clients=4096 \
-    -banner_file=/banner.txt \
-    -max_line_length=64 \
+    -line_length=64 \
     > /dev/null || true  # optionnel : échec docker run géré par le check docker ps ci-dessous
 
 # Vérifier que le container tourne

@@ -132,6 +132,8 @@ fi
 ENDLESSH_FAILS=()
 docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$' \
     || ENDLESSH_FAILS+=("container endlessh non actif — sudo docker start endlessh")
+sysctl net.ipv4.ip_unprivileged_port_start 2>/dev/null | grep -q "= 22" \
+    || ENDLESSH_FAILS+=("ip_unprivileged_port_start != 22 — Endlessh ne peut pas binder le port 22")
 ss -tlnp 2>/dev/null | grep -qP ':22\s' \
     || ENDLESSH_FAILS+=("port 22 n'écoute pas")
 ufw status 2>/dev/null | grep -q "22/tcp" \

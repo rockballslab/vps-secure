@@ -1541,20 +1541,16 @@ log_success "vps-secure-verify installé — commande disponible : sudo vps-secu
 chmod -x /etc/update-motd.d/* 2>/dev/null || true  # optionnel : certains fichiers peuvent être absents
 cat > /etc/update-motd.d/00-vps-secure << 'MOTDEOF'
 #!/usr/bin/env bash
-VERT='\033[0;32m'
-JAUNE='\033[1;33m'
-BLANC='\033[0;37m'
-RESET='\033[0m'
 
 CPU_CORES=$(nproc 2>/dev/null || echo "?")
-LOAD=$(uptime 2>/dev/null | awk -F'load average:' '{print $2}' | awk '{print $1}' | tr -d ', ' || echo "?")
+LOAD=$(uptime 2>/dev/null | awk -F'load average:' '{print $2}' | awk '{print $1}' | tr -d ', ')
 MEM_USED=$(free -m 2>/dev/null | awk '/^Mem:/ {print $3}')
 MEM_TOTAL=$(free -m 2>/dev/null | awk '/^Mem:/ {print $2}')
-MEM_PCT=$(( MEM_USED * 100 / MEM_TOTAL )) 2>/dev/null || MEM_PCT="?"
+MEM_PCT=$(( MEM_USED * 100 / MEM_TOTAL ))
 DISK_USED=$(df -h / 2>/dev/null | awk 'NR==2 {print $3}')
 DISK_TOTAL=$(df -h / 2>/dev/null | awk 'NR==2 {print $2}')
 DISK_PCT=$(df / 2>/dev/null | awk 'NR==2 {print $5}')
-UPTIME=$(uptime -p 2>/dev/null | sed 's/up //' || echo "?")
+UPTIME=$(uptime -p 2>/dev/null | sed 's/up //')
 CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
     | python3 -c "import sys,json
 try: print(len(json.load(sys.stdin) or []))
@@ -1562,36 +1558,23 @@ except: print(0)" 2>/dev/null || echo "0")
 BOTS=$(docker logs endlessh --since 24h 2>&1 | { grep -ci "accept" || true; })
 UFW_BLOCKS=$(grep -c "\[UFW BLOCK\]" /var/log/ufw.log 2>/dev/null || echo "0")
 
-pad() {
-    local str="$1" width=40
-    local len=${#str}
-    local spaces=$(( width - len ))
-    [[ $spaces -lt 0 ]] && spaces=0
-    printf '%*s' "$spaces" ''
-}
+G='\033[0;32m'
+Y='\033[1;33m'
+W='\033[0;37m'
+R='\033[0m'
 
-L1="${CPU_CORES} cores · load ${LOAD}"
-L2="${MEM_USED} MB / ${MEM_TOTAL} MB (${MEM_PCT}%)"
-L3="${DISK_USED} / ${DISK_TOTAL} (${DISK_PCT})"
-L4="${UPTIME}"
-L5="actif · ${CS_BANNED} IP bannies"
-L6="${BOTS} bots piégés/24h"
-L7="${UFW_BLOCKS} blocages"
-
-echo -e "${VERT}"
-echo -e "  ┌─────────────────────────────────────────────────┐"
-echo -e "  │  🔐 $(hostname) · vps-secure$(pad "$(hostname) · vps-secure")     │"
-echo -e "  ├─────────────────────────────────────────────────┤"
-echo -e "  │  ${BLANC}CPU   ${VERT}: ${BLANC}${L1}$(pad "$L1")${VERT}│"
-echo -e "  │  ${BLANC}RAM   ${VERT}: ${BLANC}${L2}$(pad "$L2")${VERT}│"
-echo -e "  │  ${BLANC}Disk  ${VERT}: ${BLANC}${L3}$(pad "$L3")${VERT}│"
-echo -e "  │  ${BLANC}Uptime${VERT}: ${BLANC}${L4}$(pad "$L4")${VERT}│"
-echo -e "  ├─────────────────────────────────────────────────┤"
-echo -e "  │  ${JAUNE}🛡  CrowdSec${VERT}: ${BLANC}${L5}$(pad "CrowdSec: $L5")${VERT}│"
-echo -e "  │  ${JAUNE}🍯 Endlessh ${VERT}: ${BLANC}${L6}$(pad "Endlessh: $L6")${VERT}│"
-echo -e "  │  ${JAUNE}🔥 UFW      ${VERT}: ${BLANC}${L7}$(pad "UFW: $L7")${VERT}│"
-echo -e "  └─────────────────────────────────────────────────┘${RESET}"
-echo ""
+echo -e "${G}"
+echo -e "  🔐 $(hostname) · vps-secure"
+echo -e "  ──────────────────────────────────"
+echo -e "  ${W}CPU     ${G}${CPU_CORES} cores · load ${LOAD}"
+echo -e "  ${W}RAM     ${G}${MEM_USED} MB / ${MEM_TOTAL} MB (${MEM_PCT}%)"
+echo -e "  ${W}Disk    ${G}${DISK_USED} / ${DISK_TOTAL} (${DISK_PCT})"
+echo -e "  ${W}Uptime  ${G}${UPTIME}"
+echo -e "  ${G}──────────────────────────────────"
+echo -e "  ${Y}🛡  CrowdSec  ${W}actif · ${CS_BANNED} IP bannies"
+echo -e "  ${Y}🍯 Endlessh  ${W}${BOTS} bots pieges/24h"
+echo -e "  ${Y}🔥 UFW       ${W}${UFW_BLOCKS} blocages"
+echo -e "${R}"
 MOTDEOF
 chmod +x /etc/update-motd.d/00-vps-secure
 log_success "MOTD personnalisé installé — affiché à chaque connexion SSH."

@@ -1489,7 +1489,7 @@ MEM_TOTAL=$(free -h | awk '/^Mem:/ {print $2}')
 # ── Affichage ──
 echo ""
 echo -e "${GRAS}${VERT}╔══════════════════════════════════════════════════════╗${RESET}"
-echo -e "${GRAS}${VERT}║          vps-secure — Tableau de bord               ║${RESET}"
+echo -e "${GRAS}${VERT}║          vps-secure — Tableau de bord                ║${RESET}"
 echo -e "${GRAS}${VERT}╚══════════════════════════════════════════════════════╝${RESET}"
 echo -e "  ${BLANC}$(hostname) · $(date '+%d/%m/%Y %H:%M')${RESET}"
 echo ""

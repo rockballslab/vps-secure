@@ -1452,6 +1452,8 @@ UFW_BLOCKS=$(grep -c "\[UFW BLOCK\]" /var/log/ufw.log 2>/dev/null || echo "0")
 # ── auditd ──
 AUDIT_PRIVESC=$(ausearch -k privilege_escalation --start today -i 2>/dev/null \
     | grep -c "type=" || echo "0")
+AUDIT_PRIVESC=$(echo "$AUDIT_PRIVESC" | tr -d '[:space:]')
+AUDIT_PRIVESC="${AUDIT_PRIVESC:-0}"
 
 # ── rkhunter ──
 if [[ -f /var/log/rkhunter-cron.log ]]; then
@@ -1506,6 +1508,8 @@ echo -e "  ${BLANC}   Blocages totaux       :${RESET} ${GRAS}${UFW_BLOCKS}${RESE
 echo ""
 echo -e "  ${GRAS}${CYAN}📋 AUDIT (auditd)${RESET}"
 echo -e "  ${BLANC}   Escalades privilèges  :${RESET} ${GRAS}${AUDIT_PRIVESC}${RESET} aujourd'hui"
+[[ "$AUDIT_PRIVESC" -gt 100 ]] && \
+    echo -e "  ${BLANC}   ⓘ  Nombre élevé normal le jour d'installation — le script tourne en root${RESET}"
 echo ""
 echo -e "  ${GRAS}${CYAN}🔍 ROOTKITS (rkhunter)${RESET}          ${RK_STATUS}"
 echo -e "  ${BLANC}   Dernier scan          :${RESET} ${RK_LAST}"

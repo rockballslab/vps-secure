@@ -378,7 +378,7 @@ systemctl restart systemd-resolved
 # Forcer /etc/resolv.conf vers le stub systemd-resolved
 ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
-if resolvectl query quad9.net &>/dev/null 2>&1; then
+if resolvectl query quad9.net &>/dev/null; then
     log_success "DNS over TLS actif — Quad9 + Cloudflare (mDNS/LLMNR désactivés)."
 else
     log_warn "DNS over TLS configuré — vérification transitoire échouée."
@@ -864,7 +864,7 @@ systemctl restart auditd
 # Note : les règles auditd sont immuables (-e 2).
 # Pour les modifier, un reboot est nécessaire.
 
-rules_count=$(auditctl -l 2>/dev/null | wc -l || echo "0")
+rules_count=$(auditctl -l 2>/dev/null | grep -cv "^No rules" || echo "0")
 if (( rules_count > 0 )); then
     log_success "Auditd actif — ${rules_count} règles chargées."
     log_info "  Surveillance : identité, SSH, Docker socket, sudo, CrowdSec"

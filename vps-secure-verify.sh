@@ -201,15 +201,25 @@ PTRACE=$(cat /proc/sys/kernel/yama/ptrace_scope 2>/dev/null || echo "?")
 SYNCOOKIES=$(cat /proc/sys/net/ipv4/tcp_syncookies 2>/dev/null || echo "?")
 IPFORWARD=$(cat /proc/sys/net/ipv4/ip_forward 2>/dev/null || echo "?")
 SUID_DUMP=$(cat /proc/sys/fs/suid_dumpable 2>/dev/null || echo "?")
+DMESG=$(cat /proc/sys/kernel/dmesg_restrict 2>/dev/null || echo "?")
+KPTR=$(cat /proc/sys/kernel/kptr_restrict 2>/dev/null || echo "?")
+BPF_HARDEN=$(cat /proc/sys/net/core/bpf_jit_harden 2>/dev/null || echo "?")
+BPF_UNPRIV=$(cat /proc/sys/kernel/unprivileged_bpf_disabled 2>/dev/null || echo "?")
+
 
 [[ "$ASLR" == "2" ]]       || KERNEL_FAILS+=("ASLR=${ASLR} (attendu 2)")
 [[ "$PTRACE" == "1" ]]     || KERNEL_FAILS+=("ptrace_scope=${PTRACE} (attendu 1)")
 [[ "$SYNCOOKIES" == "1" ]] || KERNEL_FAILS+=("tcp_syncookies=${SYNCOOKIES} (attendu 1)")
 [[ "$IPFORWARD" == "1" ]]  || KERNEL_FAILS+=("ip_forward=${IPFORWARD} (attendu 1 pour Docker)")
 [[ "$SUID_DUMP" == "0" ]]  || KERNEL_FAILS+=("suid_dumpable=${SUID_DUMP} (attendu 0)")
+[[ "$DMESG" == "1" ]]      || KERNEL_FAILS+=("dmesg_restrict=${DMESG} (attendu 1)")
+[[ "$KPTR" == "2" ]]       || KERNEL_FAILS+=("kptr_restrict=${KPTR} (attendu 2)")
+[[ "$BPF_HARDEN" == "2" ]] || KERNEL_FAILS+=("bpf_jit_harden=${BPF_HARDEN} (attendu 2)")
+[[ "$BPF_UNPRIV" == "1" ]] || KERNEL_FAILS+=("unprivileged_bpf_disabled=${BPF_UNPRIV} (attendu 1)")
+
 
 if [[ ${#KERNEL_FAILS[@]} -eq 0 ]]; then
-    _pass "Kernel" "ASLR=2 · ptrace_scope=1 · syncookies=1 · ip_forward=1 · suid_dumpable=0"
+    _pass "Kernel" "ASLR=2 · ptrace_scope=1 · syncookies=1 · ip_forward=1 · suid_dumpable=0 · dmesg/kptr/eBPF restreints"
 else
     _fail "Kernel" "$(IFS=', '; echo "${KERNEL_FAILS[*]}")"
 fi

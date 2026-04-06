@@ -1564,7 +1564,8 @@ W='\033[0;37m'
 R='\033[0m'
 
 echo -e "${G}"
-echo -e "  🔐 $(hostname) · vps-secure"
+VPS_IP=$(ip route get 8.8.8.8 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1); exit}')
+echo -e "  🔐 $(hostname) · ${VPS_IP} · vps-secure"
 echo -e "  ──────────────────────────────────"
 echo -e "  ${W}CPU     ${G}${CPU_CORES} cores · load ${LOAD}"
 echo -e "  ${W}RAM     ${G}${MEM_USED} MB / ${MEM_TOTAL} MB (${MEM_PCT}%)"

@@ -1409,8 +1409,8 @@ RESET='\033[0m'
 
 # ── Endlessh ──
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
-    BOTS_24H=$(docker logs endlessh --since 24h 2>&1 | grep -ci "accept" || echo "0")
-    BOTS_TOTAL=$(docker logs endlessh 2>&1 | grep -ci "accept" || echo "0")
+    BOTS_24H=$(docker logs endlessh --since 24h 2>&1 | { grep -ci "accept" || true; })
+    BOTS_TOTAL=$(docker logs endlessh 2>&1 | { grep -ci "accept" || true; })
     ENDLESSH_STATUS="${VERT}actif${RESET}"
 else
     BOTS_24H="0"

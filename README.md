@@ -99,7 +99,9 @@ Remplace `IP_DU_VPS` par l'IP que tu as notée dans le guide interactif.
 > ssh-keygen -R IP_DU_VPS
 > ```
 
-Le serveur va te demander un mot de passe — c'est le mot de passe root fourni par ton hébergeur par email après provisioning.
+
+Ensuite, le serveur va te demander un mot de passe — c'est le mot de passe root fourni par ton hébergeur par email après provisioning.
+
 
 > 💡 C'est la seule fois où ce mot de passe est utilisé. Après l'installation, la connexion root par mot de passe est définitivement désactivée.
 

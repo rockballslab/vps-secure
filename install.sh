@@ -553,6 +553,7 @@ else
 fi
 
 ufw --force enable
+ufw logging medium
 
 log_success "UFW activé : ports 2222/80/443 uniquement."
 log_warn "⚠️  Docker : les ports exposés via -p doivent être déclarés dans UFW."

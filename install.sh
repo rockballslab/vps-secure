@@ -1547,14 +1547,21 @@ echo ""
 read -rp "  Redémarrer maintenant ? (oui/non) : " reboot_answer
 if [[ "$reboot_answer" == "oui" ]]; then
     echo ""
-    echo -e "${VERT}  Redémarrage dans 5 secondes...${RESET}"
     echo -e "${BLANC}  Reconnecte-toi ensuite avec :${RESET}"
     echo -e "    ${VERT}ssh $USERNAME@$VPS_IP -p 2222 -i ~/.ssh/id_ed25519_vps${RESET}"
     echo ""
-    sleep 5
+    echo -e "${BLANC}  Une fois reconnecté, vérifie l'installation :${RESET}"
+    echo -e "    ${VERT}curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh${RESET}"
+    echo -e "    ${VERT}chmod +x vps-secure-verify.sh && sudo ./vps-secure-verify.sh${RESET}"
+    echo ""
+    read -rp "  Prêt ? Appuie sur Entrée pour redémarrer..." _
     reboot
 else
     echo ""
     echo -e "${JAUNE}  Pense à redémarrer dès que possible : ${VERT}sudo reboot${RESET}"
+    echo ""
+    echo -e "${BLANC}  Après le redémarrage, vérifie l'installation :${RESET}"
+    echo -e "    ${VERT}curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh${RESET}"
+    echo -e "    ${VERT}chmod +x vps-secure-verify.sh && sudo ./vps-secure-verify.sh${RESET}"
     echo ""
 fi

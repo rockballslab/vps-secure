@@ -112,16 +112,20 @@ Le script est interactif. Il te pose **2 questions obligatoires** :
 
 Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 
+À la toute fin, le script affiche la commande pour te reconnecter et la commande de vérification — puis attend que tu appuies sur Entrée avant de redémarrer. Prends le temps de les noter.
+
 > ⚠️ **Ne ferme pas cette session root avant que le script te le demande.**
 > Il vérifie lui-même que tu peux te reconnecter avant de désactiver root.
 
-### Étape 4 — Reconnecte-toi en vpsadmin
+### Étape 4 — Reconnecte-toi en vpsadmin (après le redémarrage)
 
 ```bash
 ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/id_ed25519_vps
 ```
 
 ### Étape 5 — Vérifie l'installation
+
+Le script t'a affiché cette commande à la fin — lance-la maintenant :
 
 ```bash
 curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh

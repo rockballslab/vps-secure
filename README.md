@@ -94,7 +94,7 @@ ssh root@IP_DU_VPS
 
 Remplace `IP_DU_VPS` par l'IP que tu as notée dans le guide interactif.
 
-> 💡 Si tu as déjà utilisé cette IP (rebuild VPS), supprime l'ancienne clé connue :
+> 💡 Si tu as déjà utilisé cette IP (rebuild VPS), supprime l'ancienne clé connue avant de lancer ssh root@IP_DU_VPS:
 > ```bash
 > ssh-keygen -R IP_DU_VPS
 > ```

@@ -29,7 +29,7 @@ Les bots le trouvent en moins de 2 minutes. Ce script change ça en moins de 15.
 | 5 | **UFW** (pare-feu) | Tout bloqué sauf les ports 2222, 80 et 443. Le forwarding Docker est ciblé — pas global |
 | 6 | **Docker** Engine + Compose v2 | Docker permet de faire tourner des applications dans des "boîtes isolées" (containers). Configuré pour ne **pas** bypasser UFW — les ports exposés restent sous contrôle du pare-feu. Règle NAT ajoutée dans UFW — les containers ont accès à internet |
 | 7 | unattended-upgrades | Patches de sécurité installés automatiquement chaque nuit |
-| 8 | Kernel hardening | 26 paramètres : réseau (spoofing, SYN flood, ICMP, redirections sécurisées) + ASLR + protection ptrace + core dumps désactivés + perf events restreints |
+| 8 | Kernel hardening | 33 paramètres : réseau (spoofing, SYN flood, ICMP, redirections sécurisées) + ASLR + protection ptrace + core dumps désactivés + perf events restreints |
 | 9 | **auditd** | Journalise tout : SSH, sudo, Docker, fichiers sensibles, crontabs (vecteur de persistence) et `/etc/hosts` (MITM DNS local) |
 | 10 | Swap 2 GB | Mémoire virtuelle d'urgence — évite les crashs |
 | 11 | **rkhunter** | Scanne les backdoors et rootkits. Scan quotidien automatique à 04h00 — indépendant de Telegram |

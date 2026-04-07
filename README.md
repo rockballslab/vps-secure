@@ -357,7 +357,7 @@ ssh monvps
 
 ## Compatibilité
 
-Testé et vérifié le 6 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX ·
+Testé et vérifié le 7 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX ·
 
 ---
 

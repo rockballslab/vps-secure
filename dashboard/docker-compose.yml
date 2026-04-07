@@ -8,10 +8,10 @@ services:
   metrics-api:
     build: ./api
     container_name: vps-monitor-api
-    network_mode: host          # Accès direct aux sockets host (docker.sock, logs)
+    network_mode: host
     volumes:
-      - /var/log:/var/log:ro                        # ufw.log, auth.log, rkhunter, aide
-      - /var/run/docker.sock:/var/run/docker.sock   # docker logs endlessh + cscli
+      - /var/log:/var/log:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       API_HOST:           "127.0.0.1"
       API_PORT:           "5055"
@@ -26,15 +26,12 @@ services:
   caddy:
     image: caddy:2-alpine
     container_name: vps-monitor-caddy
-    network_mode: host          # Écoute sur 80/443 sans NAT Docker
+    network_mode: host
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./frontend:/srv:ro
       - caddy_data:/data
       - caddy_config:/config
-    environment:
-      DASHBOARD_USER:      "${DASHBOARD_USER:-admin}"
-      DASHBOARD_PASS_HASH: "${DASHBOARD_PASS_HASH}"
     depends_on:
       - metrics-api
     restart: unless-stopped

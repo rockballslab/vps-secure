@@ -368,7 +368,8 @@ Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots pi
 Accessible depuis un navigateur, protégé par mot de passe, déployé en Docker.
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard.sh)
+curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard.sh
+chmod +x install-dashboard.sh && ./install-dashboard.sh
 ```
 
 Le script te demande ton domaine, ton mot de passe, et lance tout automatiquement.

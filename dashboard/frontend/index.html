@@ -549,10 +549,13 @@
         <div class="logo-icon">🛡️</div>
         <div>
           <h1>Dashboard Overview</h1>
-          <div class="header-sub" id="header-sub">VPS_DOMAIN · Chargement…</div>
+          <div class="header-sub" id="header-sub">monvps.aiforceone.fr · Chargement…</div>
         </div>
       </div>
       <div class="header-right">
+        <div class="badge" id="badge-ip">
+          🌐 <span id="val-ip">…</span>
+        </div>
         <span class="countdown" id="countdown">30s</span>
         <div class="badge">
           <div class="dot" id="status-dot"></div>
@@ -797,7 +800,7 @@
       $('bar-mem-a').style.width = Math.round(mp * 0.75) + '%';
       $('bar-mem-b').style.width = Math.round(mp * 0.25) + '%';
 
-      $('header-sub').textContent = `VPS_DOMAIN · Uptime ${s.uptime || '—'}`;
+      $('header-sub').textContent = `monvps.aiforceone.fr · Uptime ${s.uptime || '—'}`;
     }
 
     function pushHistory(d) {
@@ -877,6 +880,12 @@
     // ── Auth ─────────────────────────────────────────────────────────────────────
     const AUTH = sessionStorage.getItem('vps_auth');
     if (!AUTH) { window.location.href = '/login.html'; }
+    
+    // ── IP publique ───────────────────────────────────────────────────────────────
+    fetch('https://api.ipify.org?format=json')
+      .then(r => r.json())
+      .then(d => { $('val-ip').textContent = d.ip; })
+      .catch(() => { $('badge-ip').style.display = 'none'; });
 
     function logout() {
       sessionStorage.removeItem('vps_auth');

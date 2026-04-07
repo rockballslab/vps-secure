@@ -1,1 +1,44 @@
+# ─── Réseau : network_mode: host sur les deux services ───────────────────────
+# Compatible avec Docker iptables:false + UFW NAT.
+# metrics-api écoute sur 127.0.0.1:5055 (jamais exposé directement).
+# Caddy écoute sur 0.0.0.0:80/443 (UFW autorise déjà ces ports).
 
+services:
+
+  metrics-api:
+    build: ./api
+    container_name: vps-monitor-api
+    network_mode: host          # Accès direct aux sockets host (docker.sock, logs)
+    volumes:
+      - /var/log:/var/log:ro                        # ufw.log, auth.log, rkhunter, aide
+      - /var/run/docker.sock:/var/run/docker.sock   # docker logs endlessh + cscli
+    environment:
+      API_HOST:           "127.0.0.1"
+      API_PORT:           "5055"
+      CACHE_TTL:          "30"
+      CROWDSEC_URL:       "http://127.0.0.1:8081"
+      CROWDSEC_API_KEY:   "${CROWDSEC_API_KEY:-}"
+      ENDLESSH_CONTAINER: "${ENDLESSH_CONTAINER:-endlessh}"
+      CROWDSEC_CONTAINER: "${CROWDSEC_CONTAINER:-crowdsec}"
+      HOSTFS:             "/"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: vps-monitor-caddy
+    network_mode: host          # Écoute sur 80/443 sans NAT Docker
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend:/srv:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      DASHBOARD_USER:      "${DASHBOARD_USER:-admin}"
+      DASHBOARD_PASS_HASH: "${DASHBOARD_PASS_HASH}"
+    depends_on:
+      - metrics-api
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

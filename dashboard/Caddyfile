@@ -1,1 +1,46 @@
+{
+  admin off
+  # TLS auto via Let's Encrypt — DNS A record requis sur monvps.aiforceone.fr
+}
 
+monvps.aiforceone.fr {
+
+  # ── Authentification basique ──────────────────────────────────────────────
+  # Hash généré avec : docker run --rm caddy:2-alpine caddy hash-password --plaintext "MOTDEPASSE"
+  basicauth * {
+    {$DASHBOARD_USER} {$DASHBOARD_PASS_HASH}
+  }
+
+  # ── API proxy → metrics-api sur 127.0.0.1:5055 ───────────────────────────
+  handle /api/* {
+    reverse_proxy 127.0.0.1:5055 {
+      header_up Host {host}
+    }
+  }
+
+  # ── Fichiers statiques (frontend) ─────────────────────────────────────────
+  handle {
+    root * /srv
+    file_server
+    try_files {path} /index.html
+  }
+
+  # ── Logs ──────────────────────────────────────────────────────────────────
+  log {
+    output file /data/access.log {
+      roll_size    50mb
+      roll_keep    3
+    }
+    format console
+    level  WARN
+  }
+
+  # ── Headers sécurité ──────────────────────────────────────────────────────
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Frame-Options           "DENY"
+    X-Content-Type-Options    "nosniff"
+    Referrer-Policy           "no-referrer"
+    -Server
+  }
+}

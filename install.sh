@@ -1471,11 +1471,11 @@ else
 fi
 
 # ── UFW ──
-UFW_BLOCKS=$(grep -c "\[UFW BLOCK\]" /var/log/ufw.log 2>/dev/null || echo "0")
+UFW_BLOCKS=$(grep -c "\[UFW BLOCK\]" /var/log/ufw.log 2>/dev/null) || UFW_BLOCKS=0
 
 # ── auditd ──
 AUDIT_PRIVESC=$(ausearch -k privilege_escalation --start today -i 2>/dev/null \
-    | grep -c "type=" || echo "0")
+    | grep -c "^----" ) || AUDIT_PRIVESC=0
 AUDIT_PRIVESC=$(echo "$AUDIT_PRIVESC" | tr -d '[:space:]')
 AUDIT_PRIVESC="${AUDIT_PRIVESC:-0}"
 
@@ -1483,7 +1483,7 @@ AUDIT_PRIVESC="${AUDIT_PRIVESC:-0}"
 if [[ -f /var/log/rkhunter-cron.log ]]; then
     RK_LAST=$(stat -c "%y" /var/log/rkhunter-cron.log 2>/dev/null \
         | cut -d'.' -f1 || echo "jamais")
-    RK_WARN=$(grep -c "Warning" /var/log/rkhunter-cron.log 2>/dev/null || echo "0")
+    RK_WARN=$(grep -c "Warning" /var/log/rkhunter-cron.log 2>/dev/null) || RK_WARN=0
     if [[ "$RK_WARN" -eq 0 ]]; then
         RK_STATUS="${VERT}OK${RESET}"
     else

@@ -374,7 +374,9 @@ Accessible depuis un navigateur, protégé par une page de connexion, déployé 
 
 Le script te demande ton domaine et ton mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.
  
- > Prérequis : un enregistrement DNS A pointant sur l'IP de ton VPS · ports 80/443 déjà ouverts par `install.sh`
+> Prérequis : un enregistrement DNS A pointant sur l'IP de ton VPS · ports 80/443 déjà ouverts par `install.sh`
+
+> 💡 Pour générer un mot de passe sécurisé : `openssl rand -base64 32`
 
 ---
 

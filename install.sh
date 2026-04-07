@@ -185,6 +185,8 @@ log_success "Clé SSH installée pour $USERNAME."
 
 # Backup de la config SSH d'origine
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config.backup."$(date '+%Y%m%d')"
+# rkhunter ne gère pas les Include SSH — aligner le fichier de base avec le drop-in
+sed -i 's/^#*PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
 
 # Config SSH durcie
 cat > /etc/ssh/sshd_config.d/00-vps-secure.conf << 'SSHEOF'
@@ -985,6 +987,8 @@ SCRIPTWHITELIST=/usr/bin/egrep
 SCRIPTWHITELIST=/usr/bin/fgrep
 SCRIPTWHITELIST=/usr/bin/which
 SCRIPTWHITELIST=/usr/sbin/adduser
+ALLOWHIDDENFILE=/etc/.resolv.conf.systemd-resolved.bak
+ALLOWHIDDENFILE=/etc/.updated
 RKHEOF
 chmod 640 /etc/rkhunter.conf.local
 
@@ -1391,6 +1395,9 @@ else
     log_warn "  Lance manuellement après installation :"
     log_warn "  sudo aideinit && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db"
 fi
+
+# Mise à jour baseline rkhunter — _aide user/group créés par AIDE absent de la baseline initiale (étape 11)
+rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : non bloquant
 
 # Cron quotidien AIDE à 03h00 (4h avant le rapport Telegram de 07h00)
 # Le résultat est lu par vps-secure-check.sh pour le rapport Telegram

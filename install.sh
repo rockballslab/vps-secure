@@ -1380,6 +1380,9 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/var/lib/dpkg/triggers
 !/var/log/sysstat
 !/var/log/aide
+!/run/
+!/var/log/crowdsec
+!/var/log/audit/
 AIDEEXCLEOF
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)

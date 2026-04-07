@@ -561,6 +561,9 @@
         <button class="btn-refresh" id="btn-refresh" onclick="refresh()">
           <span id="refresh-icon">↻</span> Actualiser
         </button>
+        <button class="btn-refresh" style="background:#9a9085;box-shadow:none" onclick="logout()">
+          Déconnexion
+        </button>
       </div>
     </div>
 
@@ -858,7 +861,7 @@
       btn.classList.add('loading'); icon.className = 'spinning';
       clearTimeout(refreshTimer);
       try {
-        const res = await fetch('/api/metrics', { cache: 'no-store' });
+        const res = await fetch('/api/metrics', { cache: 'no-store', headers: { 'Authorization': AUTH } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         updateCards(data); pushHistory(data); setStatus(true);
@@ -869,6 +872,15 @@
         btn.classList.remove('loading'); icon.className = ''; icon.textContent = '↻';
         startCountdown(); refreshTimer = setTimeout(refresh, 30_000);
       }
+    }
+
+    // ── Auth ─────────────────────────────────────────────────────────────────────
+    const AUTH = sessionStorage.getItem('vps_auth');
+    if (!AUTH) { window.location.href = '/login.html'; }
+
+    function logout() {
+      sessionStorage.removeItem('vps_auth');
+      window.location.href = '/login.html';
     }
 
     initChart();

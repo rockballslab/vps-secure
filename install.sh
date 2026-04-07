@@ -1201,13 +1201,13 @@ if command -v aide &>/dev/null; then
         elif [[ "$AIDE_EXIT" -eq 1 ]]; then
             ISSUES=$((ISSUES + 1))
             DETAILS+="🔴 AIDE : modifications système détectées
-  → Détail : sudo aide --check
+  → Détail : sudo aide --check --config /etc/aide/aide.conf
   → Si mise à jour OS : sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 
 "
         else
             DETAILS+="⚠️ AIDE : erreur lors du scan (code $AIDE_EXIT)
-  → Relance : sudo aide --check
+  → Relance : sudo aide --check --config /etc/aide/aide.conf
 "
         fi
     else
@@ -1364,6 +1364,20 @@ log_info "Un scan quotidien détecte toute modification — binaire remplacé, r
 _wait_dpkg
 apt-get install -y -qq aide aide-common
 
+# Exclure les fichiers dynamiques — évite les faux positifs permanents
+cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
+
+# ── vps-secure — exclusions fichiers dynamiques ──────────────────
+!/home/.+/\.bash_history$
+!/var/lib/crowdsec/data
+!/var/cache/apt/pkgcache\.bin$
+!/var/lib/snapd/state\.json$
+!/var/lib/update-notifier
+!/var/lib/dpkg/triggers
+!/var/log/sysstat
+!/var/log/aide
+AIDEEXCLEOF
+
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)
 log_info "Création de la baseline AIDE — 1 à 2 minutes..."
 aideinit --yes --force >/dev/null 2>&1 || aideinit >/dev/null 2>&1 </dev/null || true  # optionnel : --yes --force absent sur certaines versions ; </dev/null évite le hang sur re-run si db existe
@@ -1384,7 +1398,7 @@ cat > /etc/cron.d/aide-daily << 'AIDECRONEOF'
 # vps-secure — AIDE integrity check quotidien à 03h00
 # Résultat lu par vps-secure-check.sh pour le rapport Telegram 07h00
 # Exit code : 0=OK, 1=différences, 2+=erreur
-0 3 * * * root aide --check > /var/log/aide-daily.log 2>&1; echo $? > /var/log/aide-daily.exit
+0 3 * * * root aide --check --config /etc/aide/aide.conf > /var/log/aide-daily.log 2>&1; echo $? > /var/log/aide-daily.exit
 AIDECRONEOF
 chmod 644 /etc/cron.d/aide-daily
 
@@ -1475,9 +1489,12 @@ if [[ -f /var/log/aide-daily.exit ]]; then
     AIDE_EXIT=$(cat /var/log/aide-daily.exit)
     if [[ "$AIDE_EXIT" -eq 0 ]]; then
         AIDE_STATUS="${VERT}Aucune modification${RESET}"
+    elif [[ "$AIDE_EXIT" -eq 1 ]]; then
+        AIDE_STATUS="${ROUGE}Modifications détectées — sudo aide --check --config /etc/aide/aide.conf${RESET}"
     else
-        AIDE_STATUS="${ROUGE}Modifications détectées — sudo aide --check${RESET}"
+        AIDE_STATUS="${JAUNE}Erreur AIDE (exit $AIDE_EXIT) — sudo aide --check --config /etc/aide/aide.conf${RESET}"
     fi
+
 else
     AIDE_STATUS="${JAUNE}Pas encore exécuté (scan à 03h00)${RESET}"
 fi

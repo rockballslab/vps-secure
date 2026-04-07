@@ -365,15 +365,14 @@ Testé et vérifié le 7 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2,
  
  Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
  
--Accessible depuis un navigateur, protégé par mot de passe, déployé en Docker.
-+Accessible depuis un navigateur, protégé par une page de connexion, déployé en Docker. CrowdSec et Endlessh sont détectés automatiquement.
+Accessible depuis un navigateur, protégé par une page de connexion, déployé en Docker. CrowdSec et Endlessh sont détectés automatiquement.
 ```bash
  curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard.sh
  chmod +x install-dashboard.sh && ./install-dashboard.sh
 ```
- 
--Le script te demande ton domaine, ton mot de passe, et lance tout automatiquement.
-+Le script te demande ton domaine et ton mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.
+
+
+Le script te demande ton domaine et ton mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.
  
  > Prérequis : un enregistrement DNS A pointant sur l'IP de ton VPS · ports 80/443 déjà ouverts par `install.sh`
 

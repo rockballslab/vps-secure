@@ -253,8 +253,16 @@ def get_system() -> dict:
         }
     except Exception:
         pass
+        
+    # IP publique du VPS
+    vps_ip = "—"
+    try:
+        with urllib.request.urlopen("https://api.ipify.org?format=json", timeout=5) as resp:
+            vps_ip = json.loads(resp.read()).get("ip", "—")
+    except Exception:
+        pass
 
-    return {"uptime": uptime_str, "load": load, "memory": memory, "disk": disk_info}
+    return {"uptime": uptime_str, "load": load, "memory": memory, "disk": disk_info, "ip": vps_ip}
 
 
 def get_ssh_last() -> dict:

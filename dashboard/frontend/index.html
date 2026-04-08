@@ -573,10 +573,10 @@
           <div class="header-sub" id="header-sub">monvps.aiforceone.fr · Chargement…</div>
         </div>
       </div>
+      <div class="badge" id="badge-ip">
+        🌐 <span id="val-ip">—</span>
+      </div>
       <div class="header-right">
-        <div class="badge" id="badge-ip">
-          🌐 <span id="val-ip">…</span>
-        </div>
         <span class="countdown" id="countdown">30s</span>
         <div class="badge">
           <div class="dot" id="status-dot"></div>
@@ -852,6 +852,7 @@
 
       // System
       $('sys-uptime').textContent = s.uptime || '—';
+      $('val-ip').textContent = s.ip || '—';
       $('sys-load').textContent = s.load?.['1m'] || '—';
       $('sys-mem').textContent = mem.pct != null ? `${mem.pct}%` : '—';
       $('sys-disk').textContent = dsk.pct != null ? `${dsk.pct}%` : '—';
@@ -970,10 +971,7 @@
     if (!AUTH) { window.location.href = '/login.html'; }
     
     // ── IP publique ───────────────────────────────────────────────────────────────
-    fetch('https://api.ipify.org?format=json')
-      .then(r => r.json())
-      .then(d => { $('val-ip').textContent = d.ip; })
-      .catch(() => { $('badge-ip').style.display = 'none'; });
+    // IP récupérée via l'API au premier refresh
 
     function logout() {
       sessionStorage.removeItem('vps_auth');

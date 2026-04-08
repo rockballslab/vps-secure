@@ -165,10 +165,10 @@ def get_rkhunter() -> dict:
         with open("/var/log/rkhunter.log", errors="replace") as f:
             content = f.read()
 
-        if "No warnings found" in content:
-            status = "clean"
-        elif "Warning:" in content:
+        if "Warning:" in content:
             status = "warning"
+        elif len(content) > 100:  # optionnel : log non vide = scan effectué
+            status = "clean"
 
         dates = re.findall(r"Start date is\s+(.+?)\n", content)
         if dates:

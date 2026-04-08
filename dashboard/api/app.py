@@ -93,7 +93,10 @@ def get_crowdsec() -> dict:
     alerts_24h  = 0
 
     if CROWDSEC_KEY:
-        decisions = _lapi("/v1/decisions?limit=500")
+        count = _lapi("/v1/decisions?limit=1")
+        # CrowdSec retourne X-Total-Count dans le header — non accessible via urllib simplement
+        # Alternative : limit élevée
+        decisions = _lapi("/v1/decisions?limit=50000")
         active_bans = len(decisions) if decisions else 0
 
         alerts = _lapi("/v1/alerts?limit=500")

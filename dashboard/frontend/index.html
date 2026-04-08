@@ -549,7 +549,7 @@
         <div class="logo-icon">🛡️</div>
         <div>
           <h1>Dashboard Overview</h1>
-          <div class="header-sub" id="header-sub">monvps.monsite.fr · Chargement…</div>
+          <div class="header-sub" id="header-sub">monvps.aiforceone.fr · Chargement…</div>
         </div>
       </div>
       <div class="header-right">
@@ -578,9 +578,9 @@
           <div class="card-label">Endlessh</div>
           <div class="icon-chip ic-rose">🪤</div>
         </div>
-        <div class="card-value" id="val-endlessh"><span class="skel"></span></div>
-        <div class="card-sub">bots piégés <b>24h</b></div>
-        <div class="card-sub" style="margin-top:4px" id="sub-endlessh">Total : —</div>
+        <div class="card-value" id="val-endlessh-total"><span class="skel"></span></div>
+        <div class="card-sub">bots piégés <b>total</b></div>
+        <div class="card-sub" style="margin-top:4px" id="sub-endlessh">24h : —</div>
         <div class="bar-wrap">
           <div class="bar-seg bs-rose" id="bar-endlessh-a" style="width:0"></div>
           <div class="bar-seg bs-gold" id="bar-endlessh-b" style="width:0"></div>
@@ -676,10 +676,12 @@
           <div class="sys-item">
             <div class="sys-lbl">Mémoire</div>
             <div class="sys-val" id="sys-mem">—</div>
+            <div class="sys-lbl" style="margin-top:4px" id="sys-mem-total"></div>
           </div>
           <div class="sys-item">
             <div class="sys-lbl">Disque /</div>
             <div class="sys-val" id="sys-disk">—</div>
+            <div class="sys-lbl" style="margin-top:4px" id="sys-disk-total"></div>
           </div>
         </div>
         <div class="bar-wrap" style="margin-top:16px">
@@ -722,7 +724,7 @@
   <script>
     'use strict';
 
-    const MAX_POINTS = 30;
+    const MAX_POINTS = 2880;  // 24h à 30s
     const history = { labels: [], endlessh: [], crowdsec: [], ufw: [] };
     let chart = null, countdown = 30, cdTimer = null, refreshTimer = null;
 
@@ -753,8 +755,8 @@
       const mem = s.memory || {}, dsk = s.disk || {};
 
       // Endlessh — barres multi-segments
-      $('val-endlessh').textContent = fmt(e.last24h);
-      $('sub-endlessh').innerHTML = `Total : <b>${fmt(e.total)}</b>`;
+      $('val-endlessh-total').textContent = fmt(e.total);
+      $('sub-endlessh').innerHTML         = `24h : <b>${fmt(e.last24h)}</b>`;
       const ep = Math.min(Math.round((e.last24h || 0) / 200 * 100), 100);
       $('bar-endlessh-a').style.width = Math.round(ep * 0.55) + '%';
       $('bar-endlessh-b').style.width = Math.round(ep * 0.28) + '%';
@@ -796,11 +798,13 @@
       $('sys-load').textContent = s.load?.['1m'] || '—';
       $('sys-mem').textContent = mem.pct != null ? `${mem.pct}%` : '—';
       $('sys-disk').textContent = dsk.pct != null ? `${dsk.pct}%` : '—';
+      $('sys-mem-total').textContent  = mem.total_mb  ? `${Math.round(mem.total_mb / 1024 * 10) / 10} GB` : '';
+      $('sys-disk-total').textContent = dsk.total_gb  ? `${dsk.total_gb} GB total` : '';
       const mp = mem.pct || 0;
       $('bar-mem-a').style.width = Math.round(mp * 0.75) + '%';
       $('bar-mem-b').style.width = Math.round(mp * 0.25) + '%';
 
-      $('header-sub').textContent = `monvps.monsite.fr · Uptime ${s.uptime || '—'}`;
+      $('header-sub').textContent = `monvps.aiforceone.fr · Uptime ${s.uptime || '—'}`;
     }
 
     function pushHistory(d) {
@@ -894,6 +898,21 @@
 
     initChart();
     refresh();
+    async function loadHistory() {
+      try {
+           const res = await fetch('/api/history', { cache: 'no-store', headers: { 'Authorization': AUTH } });
+           if (!res.ok) return;
+           const pts = await res.json();
+           pts.forEach(p => {
+             history.labels.push(new Date(p.ts * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+             history.endlessh.push(p.endlessh);
+             history.crowdsec.push(p.crowdsec);
+             history.ufw.push(p.ufw);
+           });
+         } catch(e) { console.warn('[history]', e); }
+       }
+
+       loadHistory().then(() => { initChart(); refresh(); });
   </script>
 </body>
 

@@ -680,7 +680,7 @@
         <div class="card-sub" style="margin-top:12px" id="sub-aide">Dernier scan : —</div>
       </div>
 
-      <div class="card a-teal">
+      <div class="card a-teal" id="card-system">
         <div class="card-header">
           <div class="card-label">Système</div>
           <div class="icon-chip ic-teal">⚙️</div>
@@ -809,6 +809,10 @@
       const e = d.endlessh || {}, c = d.crowdsec || {}, u = d.ufw || {}, a = d.auditd || {};
       const rk = d.rkhunter || {}, ai = d.aide || {}, s = d.system || {};
       const mem = s.memory || {}, dsk = s.disk || {};
+      const sysOk = parseFloat(s.load?.['1m'] || 99) < 1
+                 && (mem.pct || 99) < 80
+                 && (dsk.pct || 99) < 80;
+      setCard('card-system', sysOk ? 'a-green' : 'a-teal');
 
       // Endlessh — barres multi-segments + accent dynamique
       $('val-endlessh-total').textContent = fmt(e.total);
@@ -876,7 +880,7 @@
         $('val-updates').textContent = '0';
         $('val-updates').style.cssText = '';
         $('val-updates').nextElementSibling.textContent = '✅ Serveur à jour';
-        setCard('card-updates', '');
+        setCard('card-updates', 'a-green');
       } else {
         $('val-updates').textContent = fmt(updCount);
         $('val-updates').style.cssText = '';

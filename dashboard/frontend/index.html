@@ -602,11 +602,6 @@
         <div class="card-value" id="val-endlessh-total"><span class="skel"></span></div>
         <div class="card-sub">bots piégés <b>total</b></div>
         <div class="card-sub" style="margin-top:4px" id="sub-endlessh">24h : —</div>
-        <div class="bar-wrap">
-          <div class="bar-seg bs-rose" id="bar-endlessh-a" style="width:0"></div>
-          <div class="bar-seg bs-gold" id="bar-endlessh-b" style="width:0"></div>
-          <div class="bar-seg bs-teal-l" id="bar-endlessh-c" style="width:0"></div>
-        </div>
       </div>
 
       <div class="card">
@@ -617,11 +612,6 @@
         <div class="card-value" id="val-crowdsec"><span class="skel"></span></div>
         <div class="card-sub">IP bannies <b>actives</b></div>
         <div class="card-sub" style="margin-top:4px" id="sub-crowdsec">Alertes 24h : —</div>
-        <div class="bar-wrap">
-          <div class="bar-seg bs-teal" id="bar-crowdsec-a" style="width:0"></div>
-          <div class="bar-seg bs-rose" id="bar-crowdsec-b" style="width:0"></div>
-          <div class="bar-seg bs-gold" id="bar-crowdsec-c" style="width:0"></div>
-        </div>
       </div>
 
       <div class="card">
@@ -631,11 +621,6 @@
         </div>
         <div class="card-value" id="val-ufw"><span class="skel"></span></div>
         <div class="card-sub">blocages <b>totaux</b></div>
-        <div class="bar-wrap">
-          <div class="bar-seg bs-gold" style="width:45%"></div>
-          <div class="bar-seg bs-teal" style="width:18%"></div>
-          <div class="bar-seg bs-rose" style="width:12%"></div>
-        </div>
       </div>
 
       <div class="card">
@@ -645,10 +630,6 @@
         </div>
         <div class="card-value" id="val-audit"><span class="skel"></span></div>
         <div class="card-sub">escalades <b>aujourd'hui</b></div>
-        <div class="bar-wrap">
-          <div class="bar-seg bs-teal" id="bar-audit-a" style="width:0"></div>
-          <div class="bar-seg bs-rose" id="bar-audit-b" style="width:0"></div>
-        </div>
       </div>
 
     </div>
@@ -704,10 +685,6 @@
             <div class="sys-val" id="sys-disk">—</div>
             <div class="sys-lbl" style="margin-top:4px" id="sys-disk-total"></div>
           </div>
-        </div>
-        <div class="bar-wrap" style="margin-top:16px">
-          <div class="bar-seg bs-teal" id="bar-mem-a" style="width:0"></div>
-          <div class="bar-seg bs-gold" id="bar-mem-b" style="width:0"></div>
         </div>
       </div>
 
@@ -818,18 +795,12 @@
       $('val-endlessh-total').textContent = fmt(e.total);
       $('sub-endlessh').innerHTML         = `24h : <b>${fmt(e.last24h)}</b>`;
       const ep = Math.min(Math.round((e.last24h || 0) / 200 * 100), 100);
-      $('bar-endlessh-a').style.width = Math.round(ep * 0.55) + '%';
-      $('bar-endlessh-b').style.width = Math.round(ep * 0.28) + '%';
-      $('bar-endlessh-c').style.width = Math.round(ep * 0.17) + '%';
       setCard('card-endlessh', e.last24h > 0 ? 'a-rose' : '');
 
       // CrowdSec — barres multi-segments
       $('val-crowdsec').textContent = fmt(c.active_bans);
       $('sub-crowdsec').innerHTML = `Alertes 24h : <b>${fmt(c.alerts_24h)}</b>`;
       const cp = Math.min(Math.round((c.active_bans || 0) / 50 * 100), 100);
-      $('bar-crowdsec-a').style.width = Math.round(cp * 0.60) + '%';
-      $('bar-crowdsec-b').style.width = Math.round(cp * 0.25) + '%';
-      $('bar-crowdsec-c').style.width = Math.round(cp * 0.15) + '%';
 
       // UFW (barres statiques indicatives)
       $('val-ufw').textContent = fmt(u.total);
@@ -837,8 +808,6 @@
       // Auditd
       $('val-audit').textContent = fmt(a.sudo_today);
       const ap = Math.min(Math.round((a.sudo_today || 0) / 20 * 100), 100);
-      $('bar-audit-a').style.width = Math.round(ap * 0.70) + '%';
-      $('bar-audit-b').style.width = Math.round(ap * 0.30) + '%';
 
       // rkhunter
       const rkSt = rk.status || 'unknown';
@@ -863,8 +832,6 @@
       $('sys-mem-total').textContent  = mem.total_mb  ? `${Math.round(mem.total_mb / 1024 * 10) / 10} GB` : '';
       $('sys-disk-total').textContent = dsk.total_gb  ? `${dsk.total_gb} GB total` : '';
       const mp = mem.pct || 0;
-      $('bar-mem-a').style.width = Math.round(mp * 0.75) + '%';
-      $('bar-mem-b').style.width = Math.round(mp * 0.25) + '%';
 
       $('header-sub').textContent = `monvps.aiforceone.fr · Uptime ${s.uptime || '—'}`;
 

@@ -574,7 +574,7 @@
         </div>
       </div>
       <div class="badge" id="badge-ip">
-        🌐 <span id="val-ip">—</span>
+        🛡️ IP Serveur : <span id="val-ip">—</span>
       </div>
       <div class="header-right">
         <span class="countdown" id="countdown">30s</span>
@@ -858,6 +858,7 @@
       // Connexions TCP
       const conn = d.connections || {};
       $('val-connections').textContent = fmt(conn.established ?? '—');
+      setCard('card-connections', (conn.established || 0) > 50 ? 'a-red' : 'a-green');
     }
 
     function pushHistory(d) {

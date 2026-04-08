@@ -175,7 +175,11 @@ def get_rkhunter() -> dict:
 
         dates = re.findall(r"Start date is\s+(.+?)\n", content)
         if dates:
-            last_scan = dates[-1].strip()
+            try:
+                dt = datetime.strptime(dates[-1].strip(), "%a %b %d %H:%M:%S %Z %Y")
+                last_scan = dt.strftime("%d/%m/%Y %H:%M")
+            except Exception:
+                last_scan = dates[-1].strip()
     except Exception:
         pass
 
@@ -310,13 +314,16 @@ def get_updates() -> dict:
 
 
 def get_connections() -> dict:
-    """Connexions réseau TCP établies."""
     count = 0
     try:
-        out = run(["ss", "-tn", "state", "established"], timeout=5)
-        # Première ligne = entête, reste = connexions
-        lines = [l for l in out.splitlines() if l and not l.startswith("Recv")]
-        count = len(lines)
+        # /proc/net/tcp : état 01 = ESTABLISHED, colonnes hex
+        for path in ["/proc/net/tcp", "/proc/net/tcp6"]:
+            try:
+                with open(path) as f:
+                    lines = f.readlines()[1:]  # skip header
+                count += sum(1 for l in lines if l.split()[3] == "01")
+            except Exception:
+                pass
     except Exception:
         pass
     return {"established": count}

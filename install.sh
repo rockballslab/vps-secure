@@ -1383,6 +1383,10 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/run/
 !/var/log/crowdsec
 !/var/log/audit/
+!/var/lib/docker
+!/var/lib/containerd
+!/run/docker
+!/var/run/docker
 AIDEEXCLEOF
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)

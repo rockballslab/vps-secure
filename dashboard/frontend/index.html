@@ -292,6 +292,15 @@
       letter-spacing: 0.7px;
     }
 
+    .card-desc {
+      font-size: 10.5px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 3px;
+      font-style: italic;
+      opacity: 0.8;
+    }
+
     .icon-chip {
       width: 36px;
       height: 36px;
@@ -569,7 +578,7 @@
       <div class="header-left">
         <div class="logo-icon">🛡️</div>
         <div>
-          <h1>Dashboard Overview</h1>
+          <h1>VPS Dashboard</h1>
           <div class="header-sub" id="header-sub">monvps.aiforceone.fr · Chargement…</div>
         </div>
       </div>
@@ -596,7 +605,10 @@
 
       <div class="card a-rose" id="card-endlessh">
         <div class="card-header">
-          <div class="card-label">Endlessh</div>
+          <div>
+            <div class="card-label">Endlessh</div>
+            <div class="card-desc">Piège les bots SSH port 22 en boucle infinie</div>
+          </div>
           <div class="icon-chip ic-rose">🪤</div>
         </div>
         <div class="card-value" id="val-endlessh-total"><span class="skel"></span></div>
@@ -606,7 +618,10 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-label">CrowdSec</div>
+          <div>
+            <div class="card-label">CrowdSec IPS</div>
+            <div class="card-desc">Détecte et bannit les IP malveillantes en temps réel</div>
+          </div>
           <div class="icon-chip ic-teal">🛡️</div>
         </div>
         <div class="card-value" id="val-crowdsec"><span class="skel"></span></div>
@@ -625,7 +640,10 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-label">Auditd</div>
+          <div>
+            <div class="card-label">Auditd</div>
+            <div class="card-desc">Journalise les commandes sudo et accès fichiers sensibles</div>
+          </div>
           <div class="icon-chip ic-teal">📋</div>
         </div>
         <div class="card-value" id="val-audit"><span class="skel"></span></div>
@@ -639,7 +657,10 @@
 
       <div class="card" id="card-rkhunter">
         <div class="card-header">
-          <div class="card-label">rkhunter</div>
+          <div>
+            <div class="card-label">rkhunter</div>
+            <div class="card-desc">Détecte rootkits, backdoors et binaires suspects</div>
+          </div>
           <div class="icon-chip ic-green">🔍</div>
         </div>
         <div class="status-row">
@@ -651,7 +672,10 @@
 
       <div class="card" id="card-aide">
         <div class="card-header">
-          <div class="card-label">AIDE</div>
+          <div>
+            <div class="card-label">AIDE File Integrity</div>
+            <div class="card-desc">Vérifie l'intégrité des fichiers système par hash SHA512</div>
+          </div>
           <div class="icon-chip ic-violet">🗂️</div>
         </div>
         <div class="status-row">

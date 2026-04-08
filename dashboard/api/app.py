@@ -257,6 +257,63 @@ def get_system() -> dict:
     return {"uptime": uptime_str, "load": load, "memory": memory, "disk": disk_info}
 
 
+def get_ssh_last() -> dict:
+    """Dernière connexion SSH réussie — IP + heure."""
+    last_ip   = "—"
+    last_time = "—"
+    today_iso = datetime.now().strftime("%Y-%m-%d")
+
+    for path in ["/var/log/auth.log", "/var/log/secure"]:
+        try:
+            with open(path, errors="replace") as f:
+                lines = f.readlines()
+            for line in reversed(lines):
+                if "Accepted" in line and "sshd" in line:
+                    # Format : "...Accepted publickey for vpsadmin from 1.2.3.4 port..."
+                    m = re.search(r"from\s+(\S+)\s+port", line)
+                    if m:
+                        last_ip = m.group(1)
+                    # Timestamp ISO
+                    m2 = re.match(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+                    if m2:
+                        try:
+                            dt = datetime.fromisoformat(m2.group(1))
+                            last_time = dt.strftime("%d/%m/%Y %H:%M")
+                        except Exception:
+                            pass
+                    break
+            break
+        except Exception:
+            continue
+
+    return {"ip": last_ip, "time": last_time}
+
+
+def get_updates() -> dict:
+    """Nombre de paquets avec mise à jour disponible."""
+    count = 0
+    try:
+        out = run(["apt", "list", "--upgradable"], timeout=15)
+        # Chaque ligne upgradable se termine par "[upgradable from: ...]"
+        count = len([l for l in out.splitlines() if "upgradable from" in l])
+    except Exception:
+        pass
+    return {"count": count}
+
+
+def get_connections() -> dict:
+    """Connexions réseau TCP établies."""
+    count = 0
+    try:
+        out = run(["ss", "-tn", "state", "established"], timeout=5)
+        # Première ligne = entête, reste = connexions
+        lines = [l for l in out.splitlines() if l and not l.startswith("Recv")]
+        count = len(lines)
+    except Exception:
+        pass
+    return {"established": count}
+
+
 # ── Cache & Aggregator ────────────────────────────────────────────────────────
 def collect() -> dict:
     return {
@@ -267,6 +324,9 @@ def collect() -> dict:
         "rkhunter":    get_rkhunter(),
         "aide":        get_aide(),
         "system":      get_system(),
+        "ssh_last":    get_ssh_last(),
+        "updates":     get_updates(),
+        "connections": get_connections(),
         "collected_at": int(time.time()),
     }
 

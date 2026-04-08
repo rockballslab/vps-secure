@@ -162,6 +162,27 @@
       opacity: 0.7;
       pointer-events: none;
     }
+      
+    .btn-icon {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: none; cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--teal);
+      color: #fff;
+      box-shadow: var(--shadow-teal);
+      transition: all 0.18s ease;
+    }
+    .btn-icon:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    .btn-icon:active { transform: translateY(0); }
+    .btn-icon.loading { opacity: 0.6; pointer-events: none; }
+    .btn-icon-muted {
+      background: var(--bg);
+      color: var(--muted);
+      box-shadow: var(--shadow-out);
+    }
+    .btn-icon-muted:hover { color: var(--text); }
 
     .countdown {
       font-family: 'DM Mono', monospace;
@@ -561,11 +582,11 @@
           <div class="dot" id="status-dot"></div>
           <span id="status-txt">Connexion…</span>
         </div>
-        <button class="btn-refresh" id="btn-refresh" onclick="refresh()">
-          <span id="refresh-icon">↻</span> Actualiser
+        <button class="btn-icon" id="btn-refresh" onclick="refresh()" title="Actualiser">
+          <span id="refresh-icon">↻</span>
         </button>
-        <button class="btn-refresh" style="background:#9a9085;box-shadow:none" onclick="logout()">
-          Déconnexion
+        <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion">
+          ⏻
         </button>
       </div>
     </div>
@@ -573,7 +594,7 @@
     <!-- Row 1 -->
     <div class="grid4">
 
-      <div class="card a-rose">
+      <div class="card a-rose" id="card-endlessh">
         <div class="card-header">
           <div class="card-label">Endlessh</div>
           <div class="icon-chip ic-rose">🪤</div>
@@ -588,7 +609,7 @@
         </div>
       </div>
 
-      <div class="card a-teal">
+      <div class="card">
         <div class="card-header">
           <div class="card-label">CrowdSec</div>
           <div class="icon-chip ic-teal">🛡️</div>
@@ -603,7 +624,7 @@
         </div>
       </div>
 
-      <div class="card a-gold">
+      <div class="card">
         <div class="card-header">
           <div class="card-label">UFW Firewall</div>
           <div class="icon-chip ic-gold">🔥</div>
@@ -617,7 +638,7 @@
         </div>
       </div>
 
-      <div class="card a-teal">
+      <div class="card">
         <div class="card-header">
           <div class="card-label">Auditd</div>
           <div class="icon-chip ic-teal">📋</div>
@@ -692,6 +713,41 @@
 
     </div>
 
+    <!-- Row 3 -->
+    <div class="grid3" style="grid-template-columns: 1fr 1fr 1fr;">
+
+      <!-- Dernière connexion SSH -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Dernière connexion SSH</div>
+          <div class="icon-chip ic-teal">🔑</div>
+        </div>
+        <div class="card-value" style="font-size:22px;letter-spacing:-0.5px" id="val-ssh-ip">—</div>
+        <div class="card-sub" style="margin-top:6px" id="val-ssh-time">—</div>
+      </div>
+
+      <!-- Mises à jour -->
+      <div class="card" id="card-updates">
+        <div class="card-header">
+          <div class="card-label">Mises à jour</div>
+          <div class="icon-chip ic-gold">📦</div>
+        </div>
+        <div class="card-value" id="val-updates"><span class="skel"></span></div>
+        <div class="card-sub">paquets <b>disponibles</b></div>
+      </div>
+
+      <!-- Connexions actives -->
+      <div class="card" id="card-connections">
+        <div class="card-header">
+          <div class="card-label">Connexions TCP</div>
+          <div class="icon-chip ic-rose">🔗</div>
+        </div>
+        <div class="card-value" id="val-connections"><span class="skel"></span></div>
+        <div class="card-sub">connexions <b>établies</b></div>
+      </div>
+
+    </div>
+
     <!-- Chart -->
     <div class="chart-card">
       <div class="chart-header">
@@ -754,13 +810,14 @@
       const rk = d.rkhunter || {}, ai = d.aide || {}, s = d.system || {};
       const mem = s.memory || {}, dsk = s.disk || {};
 
-      // Endlessh — barres multi-segments
+      // Endlessh — barres multi-segments + accent dynamique
       $('val-endlessh-total').textContent = fmt(e.total);
       $('sub-endlessh').innerHTML         = `24h : <b>${fmt(e.last24h)}</b>`;
       const ep = Math.min(Math.round((e.last24h || 0) / 200 * 100), 100);
       $('bar-endlessh-a').style.width = Math.round(ep * 0.55) + '%';
       $('bar-endlessh-b').style.width = Math.round(ep * 0.28) + '%';
       $('bar-endlessh-c').style.width = Math.round(ep * 0.17) + '%';
+      setCard('card-endlessh', e.last24h > 0 ? 'a-rose' : '');
 
       // CrowdSec — barres multi-segments
       $('val-crowdsec').textContent = fmt(c.active_bans);
@@ -805,6 +862,30 @@
       $('bar-mem-b').style.width = Math.round(mp * 0.25) + '%';
 
       $('header-sub').textContent = `monvps.aiforceone.fr · Uptime ${s.uptime || '—'}`;
+
+      // SSH dernière connexion
+      const ssh = d.ssh_last || {};
+      $('val-ssh-ip').textContent   = ssh.ip   || '—';
+      $('val-ssh-time').textContent = ssh.time  || '—';
+
+      // Mises à jour
+      const upd = d.updates || {};
+      const updCount = upd.count ?? null;
+      if (updCount === 0) {
+        $('val-updates').textContent = '0';
+        $('val-updates').style.cssText = '';
+        $('val-updates').nextElementSibling.textContent = '✅ Serveur à jour';
+        setCard('card-updates', '');
+      } else {
+        $('val-updates').textContent = fmt(updCount);
+        $('val-updates').style.cssText = '';
+        $('val-updates').nextElementSibling.textContent = 'paquets disponibles';
+        setCard('card-updates', updCount > 0 ? 'a-gold' : '');
+      }
+
+      // Connexions TCP
+      const conn = d.connections || {};
+      $('val-connections').textContent = fmt(conn.established ?? '—');
     }
 
     function pushHistory(d) {

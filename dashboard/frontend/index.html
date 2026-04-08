@@ -827,20 +827,21 @@
     }
 
     function initChart() {
+      if (chart) { chart.destroy(); chart = null; }
       const ctx = $('chart').getContext('2d');
       const grad = c => { const g = ctx.createLinearGradient(0, 0, 0, 220); g.addColorStop(0, c + '45'); g.addColorStop(1, c + '00'); return g; };
-      const ds = (label, color, data) => ({
+      const ds = (label, color, data, yAxisID) => ({
         label, data, borderColor: color, backgroundColor: grad(color),
-        tension: 0.45, fill: true, pointRadius: 5, pointHoverRadius: 7,
+        tension: 0.45, fill: false, pointRadius: 5, pointHoverRadius: 7,
         pointBackgroundColor: color, pointBorderColor: '#fff', pointBorderWidth: 2.5, borderWidth: 3,
+        yAxisID,
       });
       chart = new Chart(ctx, {
         type: 'line',
-        data: {
-          labels: history.labels, datasets: [
-            ds('Endlessh', '#e05a7a', history.endlessh),
-            ds('CrowdSec bans', '#2d7d6f', history.crowdsec),
-            ds('UFW blocks', '#c9a84c', history.ufw),
+        data: { labels: history.labels, datasets: [
+           ds('Endlessh', '#e05a7a', history.endlessh, 'y1'),
+           ds('CrowdSec bans', '#2d7d6f', history.crowdsec, 'y2'),
+           ds('UFW blocks', '#c9a84c', history.ufw, 'y3'),
           ]
         },
         options: {
@@ -857,7 +858,9 @@
           },
           scales: {
             x: { grid: { display: false }, ticks: { color: '#b0a89e', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8 } },
-            y: { grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { color: '#b0a89e', font: { family: 'DM Mono', size: 10 } }, beginAtZero: true },
+            y1: { type: 'linear', position: 'left',  display: false, beginAtZero: true },
+            y2: { type: 'linear', position: 'right', display: false, beginAtZero: true },
+            y3: { type: 'linear', position: 'right', display: false, beginAtZero: true },
           },
         },
       });

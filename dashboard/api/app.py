@@ -29,6 +29,22 @@ HOSTFS              = os.environ.get("HOSTFS", "/")
 _cache: dict | None = None
 _cache_time: float  = 0.0
 
+# ── Historique en mémoire (24h max) ──────────────────────────────────────────
+HISTORY_MAX_SECONDS = 86400  # 24h
+_history: list[dict] = []
+
+def push_history(metrics: dict) -> None:
+    now = time.time()
+    _history.append({
+        "ts":       now,
+        "endlessh": metrics["endlessh"].get("last24h", 0),
+        "crowdsec": metrics["crowdsec"].get("active_bans", 0),
+        "ufw":      metrics["ufw"].get("total", 0),
+    })
+    cutoff = now - HISTORY_MAX_SECONDS
+    while _history and _history[0]["ts"] < cutoff:
+        _history.pop(0)
+
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def run(cmd: list[str], timeout: int = 10) -> str:
@@ -126,16 +142,14 @@ def get_ufw() -> dict:
 
 def get_auditd() -> dict:
     sudo_today = 0
-    today_str  = datetime.now().strftime("%b %_d").strip()   # "Apr  6" → "Apr 6"
-    today_iso  = datetime.now().strftime("%Y-%m-%d")
+    today_iso = datetime.now().strftime("%Y-%m-%d")
 
     for path in ["/var/log/auth.log", "/var/log/secure"]:
         try:
             with open(path, errors="replace") as f:
                 for line in f:
-                    if "sudo:" in line and "COMMAND=" in line:
-                        if today_str in line or today_iso in line:
-                            sudo_today += 1
+                    if "sudo:" in line and "COMMAND=" in line and today_iso in line:
+                        sudo_today += 1
             break
         except Exception:
             continue
@@ -156,7 +170,7 @@ def get_rkhunter() -> dict:
         elif "Warning:" in content:
             status = "warning"
 
-        dates = re.findall(r"Starting:\s+(.+?)\n", content)
+        dates = re.findall(r"Start date is\s+(.+?)\n", content)
         if dates:
             last_scan = dates[-1].strip()
     except Exception:
@@ -176,9 +190,9 @@ def get_aide() -> dict:
                 continue
             content = p.read_text(errors="replace")
 
-            if re.search(r"found no differences|0 changed.*0 added.*0 removed|Looks okay", content, re.IGNORECASE):
+            if re.search(r"found no differences|0 changed.*0 added.*0 removed|Looks okay|No differences", content, re.IGNORECASE):
                 status = "clean"
-            elif re.search(r"[1-9]\d* changed|[1-9]\d* added|[1-9]\d* removed", content):
+            elif re.search(r"[1-9]\d* changed|[1-9]\d* added|[1-9]\d* removed|Changed entries:|Added entries:|Removed entries:", content):
                 status = "changes"
 
             last_scan = datetime.fromtimestamp(p.stat().st_mtime).strftime("%d/%m/%Y %H:%M")
@@ -261,6 +275,7 @@ def get_metrics() -> dict:
         return _cache
     _cache     = collect()
     _cache_time = now
+    push_history(_cache)
     return _cache
 
 
@@ -268,6 +283,7 @@ def get_metrics() -> dict:
 ROUTES = {
     "/api/metrics": lambda: get_metrics(),
     "/api/health":  lambda: {"status": "ok", "ts": int(time.time())},
+    "/api/history": lambda: _history,
 }
 
 

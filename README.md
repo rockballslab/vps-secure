@@ -250,7 +250,7 @@ sudo vps-secure-verify
   [PASS] DNS over TLS : systemd-resolved actif · DoT=yes · serveur principal : 9.9.9.9
   [PASS] Telegram     : config présente · API OK · bot : @monbot
 
-  ✅ Installation complète — tous les composants sont opérationnels.
+  ✅ Installation 100% complète — tous les composants sont opérationnels.
 ```
 
 > Retourne exit code 0 si tout PASS, 1 si au moins un FAIL — utilisable depuis un script de monitoring externe.

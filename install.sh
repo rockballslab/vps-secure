@@ -1556,7 +1556,7 @@ echo -e "  ${BLANC}   Charge                :${RESET} ${LOAD}"
 echo -e "  ${BLANC}   Mémoire               :${RESET} ${MEM_USED} / ${MEM_TOTAL}"
 echo ""
 echo -e "${VERT}$(printf '─%.0s' {1..56})${RESET}"
-echo -e "  ${BLANC}Rapport complet : sudo /usr/local/bin/vps-secure-check.sh${RESET}"
+echo -e "  ${BLANC}Rapport complet : sudo vps-secure-stats${RESET}"
 echo ""
 STATSEOF
 

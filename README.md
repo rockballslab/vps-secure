@@ -368,7 +368,7 @@ Accessible depuis un navigateur, protégé par une page de connexion, déployé 
 
 
 <p align="center">
-  <img src="./dashboard/dashboard-preview.jpeg" alt="VPS Secure Dashboard" width="100%">
+  <img src="./dashboard/dashboard-preview.jpg" alt="VPS Secure Dashboard" width="100%">
 </p>
 
 

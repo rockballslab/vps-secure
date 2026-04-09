@@ -29,9 +29,28 @@ HOSTFS              = os.environ.get("HOSTFS", "/")
 _cache: dict | None = None
 _cache_time: float  = 0.0
 
-# ── Historique en mémoire (24h max) ──────────────────────────────────────────
+# ── Historique en mémoire + persistance disque (24h max) ─────────────────────
 HISTORY_MAX_SECONDS = 86400  # 24h
+HISTORY_FILE        = "/var/log/vps-monitor-history.json"
 _history: list[dict] = []
+
+def _load_history() -> None:
+    global _history
+    try:
+        with open(HISTORY_FILE) as f:
+            data = json.load(f)
+        cutoff = time.time() - HISTORY_MAX_SECONDS
+        _history = [p for p in data if p.get("ts", 0) > cutoff]
+        print(f"[VPS Monitor] Historique chargé : {len(_history)} points", flush=True)
+    except Exception:
+        _history = []
+
+def _save_history() -> None:
+    try:
+        with open(HISTORY_FILE, "w") as f:
+            json.dump(_history, f)
+    except Exception:
+        pass
 
 def push_history(metrics: dict) -> None:
     now = time.time()
@@ -44,6 +63,7 @@ def push_history(metrics: dict) -> None:
     cutoff = now - HISTORY_MAX_SECONDS
     while _history and _history[0]["ts"] < cutoff:
         _history.pop(0)
+    _save_history()
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -225,6 +245,7 @@ def get_system() -> dict:
         with open("/proc/loadavg") as f:
             p = f.read().split()
         load = {"1m": p[0], "5m": p[1], "15m": p[2]}
+        load["cores"] = os.cpu_count() or 1
     except Exception:
         load = {"1m": "—", "5m": "—", "15m": "—"}
 
@@ -389,6 +410,7 @@ class Handler(BaseHTTPRequestHandler):
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
+    _load_history()
     srv = HTTPServer((API_HOST, API_PORT), Handler)
     print(f"[VPS Monitor] API on {API_HOST}:{API_PORT} — cache TTL {CACHE_TTL}s", flush=True)
     srv.serve_forever()

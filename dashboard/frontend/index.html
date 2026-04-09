@@ -764,25 +764,6 @@
 
     </div>
 
-    <!-- Chart -->
-    <div class="chart-card">
-      <div class="chart-header">
-        <div class="chart-title">Activité Sécurité — Historique session</div>
-        <div class="legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--rose)"></div>Endlessh
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--teal)"></div>CrowdSec bans
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--gold)"></div>UFW blocks
-          </div>
-        </div>
-      </div>
-      <canvas id="chart" height="90"></canvas>
-    </div>
-
     <div class="footer-bar">
       <div class="footer-badge">
         🕐 Dernière mise à jour : <b id="last-update">—</b>
@@ -795,10 +776,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
   <script>
     'use strict';
-
-    const MAX_POINTS = 2880;  // 24h à 30s
-    const history = { labels: [], endlessh: [], crowdsec: [], ufw: [] };
-    let chart = null, countdown = 30, cdTimer = null, refreshTimer = null;
 
     const $ = id => document.getElementById(id);
     const fmt = n => (n == null ? '—' : Number(n).toLocaleString('fr-FR'));
@@ -899,61 +876,6 @@
       setCard('card-connections', (conn.established || 0) > 500 ? 'a-red' : 'a-green');
     }
 
-    function pushHistory(d) {
-      const e = d.endlessh || {}, c = d.crowdsec || {}, u = d.ufw || {};
-      const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      history.labels.push(now);
-      history.endlessh.push(e.last24h || 0);
-      history.crowdsec.push(c.active_bans || 0);
-      history.ufw.push(u.total || 0);
-      if (history.labels.length > MAX_POINTS) {
-        history.labels.shift(); history.endlessh.shift(); history.crowdsec.shift(); history.ufw.shift();
-      }
-      if (chart) {
-        chart.data.labels = history.labels;
-        chart.data.datasets[0].data = history.endlessh;
-        chart.data.datasets[1].data  = history.ufw;
-        chart.update('none');
-      }
-    }
-
-    function initChart() {
-      if (chart) { chart.destroy(); chart = null; }
-      const ctx = $('chart').getContext('2d');
-      const grad = c => { const g = ctx.createLinearGradient(0, 0, 0, 220); g.addColorStop(0, c + '45'); g.addColorStop(1, c + '00'); return g; };
-      const ds = (label, color, data, yAxisID) => ({
-        label, data, borderColor: color, backgroundColor: grad(color),
-        tension: 0.45, fill: false, pointRadius: 2, pointHoverRadius: 5,
-        pointBackgroundColor: color, pointBorderColor: '#fff', pointBorderWidth: 2.5, borderWidth: 3,
-        spanGaps: true,
-        yAxisID,
-      });
-      chart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: history.labels, datasets: [
-           ds('Endlessh', '#e05a7a', history.endlessh, 'y'),
-           ds('UFW blocks', '#c9a84c', history.ufw, 'y'),
-          ]
-        },
-        options: {
-          responsive: true, interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#fff', titleColor: '#1e1e1e', bodyColor: '#6b6b6b',
-              borderColor: 'rgba(0,0,0,0.07)', borderWidth: 1,
-              padding: 13, cornerRadius: 16,
-              titleFont: { family: 'DM Sans', weight: '700', size: 12 },
-              bodyFont: { family: 'DM Sans', size: 12 },
-            },
-          },
-          scales: {
-            x: { grid: { display: false }, ticks: { color: '#b0a89e', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8 } },
-            y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#b0a89e', font: { family: 'DM Mono', size: 10 } }, beginAtZero: true },
-          },
-        },
-      });
-    }
 
     async function refresh() {
       const btn = $('btn-refresh'), icon = $('refresh-icon');
@@ -963,7 +885,7 @@
         const res = await fetch('/api/metrics', { cache: 'no-store', headers: { 'Authorization': AUTH } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        updateCards(data); pushHistory(data); setStatus(true);
+        updateCards(data); setStatus(true);
         $('last-update').textContent = new Date().toLocaleTimeString('fr-FR');
       } catch (err) {
         console.error('[VPS Monitor]', err); setStatus(false);
@@ -1019,6 +941,10 @@
     const AUTH = sessionStorage.getItem('vps_auth');
     if (!AUTH) { window.location.href = '/login.html'; }
     
+    let refreshTimer = null;
+    let countdown = 30;
+    let cdTimer = null;
+    
     // ── IP publique ───────────────────────────────────────────────────────────────
     // IP récupérée via l'API au premier refresh
 
@@ -1027,23 +953,8 @@
       window.location.href = '/login.html';
     }
 
-    initChart();
+    initDonuts();
     refresh();
-    async function loadHistory() {
-      try {
-           const res = await fetch('/api/history', { cache: 'no-store', headers: { 'Authorization': AUTH } });
-           if (!res.ok) return;
-           const pts = await res.json();
-           pts.forEach(p => {
-             history.labels.push(new Date(p.ts * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
-             history.endlessh.push(p.endlessh);
-             history.crowdsec.push(p.crowdsec);
-             history.ufw.push(p.ufw);
-           });
-         } catch(e) { console.warn('[history]', e); }
-       }
-
-       loadHistory().then(() => { initChart(); initDonuts(); refresh(); });
   </script>
 </body>
 

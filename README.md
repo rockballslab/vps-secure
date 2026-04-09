@@ -9,7 +9,7 @@
 Un VPS livré nu tourne avec root ouvert sur le port 22, sans firewall, sans détection d'intrusion.
 Les bots le trouvent en moins de 2 minutes.
 
-Ce script change ça en moins de 15.
+Ce script change ça en moins de 15 minutes.
 
 ---
 
@@ -365,8 +365,16 @@ Accessible depuis un navigateur, protégé par une page de connexion, déployé 
  chmod +x install-dashboard.sh && ./install-dashboard.sh
 ```
 
+---
 
-Le script te demande ton domaine et ton mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.
+<p align="center">
+  <img src="./dashboard/dashboard-preview.jpg" alt="Mon Dashboard VPS" width="100%">
+</p>
+
+---
+
+
+Le script te demande un domaine et un mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.
  
 > Prérequis : un enregistrement DNS A pointant sur l'IP de ton VPS · ports 80/443 déjà ouverts par `install.sh`
 

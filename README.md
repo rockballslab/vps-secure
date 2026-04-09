@@ -355,12 +355,6 @@ ssh monvps
 
 ---
 
-## Compatibilité
-
-Testé et vérifié le 7 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX ·
-
----
-
 ## Dashboard de monitoring (optionnel)
  
  Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
@@ -377,6 +371,12 @@ Le script te demande ton domaine et ton mot de passe, configure tout et lance au
 > Prérequis : un enregistrement DNS A pointant sur l'IP de ton VPS · ports 80/443 déjà ouverts par `install.sh`
 
 > 💡 Pour générer un mot de passe sécurisé : `openssl rand -base64 32`
+
+---
+
+## Compatibilité
+
+Testé et vérifié le 7 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX ·
 
 ---
 

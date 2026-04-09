@@ -11,6 +11,7 @@ services:
     network_mode: host
     volumes:
       - /var/log:/var/log:ro
+      - /var/log/vps-monitor-history.json:/var/log/vps-monitor-history.json
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       API_HOST:           "127.0.0.1"

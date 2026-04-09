@@ -365,13 +365,11 @@ Accessible depuis un navigateur, protégé par une page de connexion, déployé 
  chmod +x install-dashboard.sh && ./install-dashboard.sh
 ```
 
----
+
 
 <p align="center">
   <img src="./dashboard/dashboard-preview.jpeg" alt="VPS Secure Dashboard" width="100%">
 </p>
-
----
 
 
 Le script te demande un domaine et un mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.

@@ -110,6 +110,10 @@ CROWDSEC_CONTAINER=$CROWDSEC_NAME
 EOF
 chmod 600 "$DEST/.env"
 
+# ── Fichier historique dashboard ─────────────────────────────────────────────
+sudo touch /var/log/vps-monitor-history.json
+sudo chmod 644 /var/log/vps-monitor-history.json
+
 # ── Lancement ─────────────────────────────────────────────────────────────────
 echo ""
 echo "→ Build et démarrage des containers..."

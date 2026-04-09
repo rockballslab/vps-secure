@@ -1387,6 +1387,8 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/var/lib/containerd
 !/run/docker
 !/var/run/docker
+!/home/*/.docker
+!/root/.docker
 AIDEEXCLEOF
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)

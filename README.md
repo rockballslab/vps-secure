@@ -319,7 +319,7 @@ sudo ufw status verbose
 # Vérifier les ports exposés par Docker
 sudo docker ps --format "table {{.Names}}\t{{.Ports}}"
 
-# Tester le rapport Telegram manuellement
+# Tester le rapport Telegram manuellement (si Telegram a été activé)
 sudo /usr/local/bin/vps-secure-check.sh
 
 # Honeypot Endlessh — stats des bots piégés (dernières 24h)

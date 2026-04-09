@@ -690,24 +690,39 @@
           <div class="card-label">Système</div>
           <div class="icon-chip ic-teal">⚙️</div>
         </div>
-        <div class="sys-grid">
-          <div class="sys-item">
-            <div class="sys-lbl">Uptime</div>
-            <div class="sys-val" id="sys-uptime">—</div>
+        <div style="display:flex;justify-content:space-around;align-items:center;padding:8px 0 4px;gap:8px">
+          <!-- CPU -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div style="position:relative;width:110px;height:110px">
+              <canvas id="donut-cpu" width="110" height="110"></canvas>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <span style="font-size:22px;font-weight:800;letter-spacing:-1px" id="sys-cpu">—</span>
+                <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">CPU</span>
+              </div>
+            </div>
+            <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-cpu-cores">—</span>
           </div>
-          <div class="sys-item">
-            <div class="sys-lbl">Charge 1m</div>
-            <div class="sys-val" id="sys-load">—</div>
+          <!-- Mémoire -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div style="position:relative;width:110px;height:110px">
+              <canvas id="donut-mem" width="110" height="110"></canvas>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <span style="font-size:22px;font-weight:800;letter-spacing:-1px" id="sys-mem">—</span>
+                <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Mémoire</span>
+              </div>
+            </div>
+            <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-mem-total">—</span>
           </div>
-          <div class="sys-item">
-            <div class="sys-lbl">Mémoire</div>
-            <div class="sys-val" id="sys-mem">—</div>
-            <div class="sys-lbl" style="margin-top:4px" id="sys-mem-total"></div>
-          </div>
-          <div class="sys-item">
-            <div class="sys-lbl">Disque /</div>
-            <div class="sys-val" id="sys-disk">—</div>
-            <div class="sys-lbl" style="margin-top:4px" id="sys-disk-total"></div>
+          <!-- Disque -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div style="position:relative;width:110px;height:110px">
+              <canvas id="donut-disk" width="110" height="110"></canvas>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <span style="font-size:22px;font-weight:800;letter-spacing:-1px" id="sys-disk">—</span>
+                <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Disque /</span>
+              </div>
+            </div>
+            <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-disk-total">—</span>
           </div>
         </div>
       </div>
@@ -845,16 +860,15 @@
       $('val-aide').textContent = aiSt === 'clean' ? '✅ Propre' : aiSt === 'changes' ? '⚠️ Modifs' : '❓ Inconnu';
       setPill('pill-aide', aiSt === 'changes' ? 'warning' : aiSt);
       $('sub-aide').textContent = `Dernier scan : ${ai.last_scan || '—'}`;
-      setCard('card-aide', aiSt === 'changes' ? 'a-red' : 'a-violet');
+      setCard('card-aide', aiSt === 'changes' ? 'a-red' : aiSt === 'clean' ? 'a-green' : '');
 
       // System
-      $('sys-uptime').textContent = s.uptime || '—';
       $('val-ip').textContent = s.ip || '—';
-      $('sys-load').textContent = s.load?.['1m'] || '—';
-      $('sys-mem').textContent = mem.pct != null ? `${mem.pct}%` : '—';
+      $('sys-mem').textContent  = mem.pct != null ? `${mem.pct}%` : '—';
       $('sys-disk').textContent = dsk.pct != null ? `${dsk.pct}%` : '—';
       $('sys-mem-total').textContent  = mem.total_mb  ? `${Math.round(mem.total_mb / 1024 * 10) / 10} GB` : '';
       $('sys-disk-total').textContent = dsk.total_gb  ? `${dsk.total_gb} GB total` : '';
+      updateDonuts(mem, dsk, s.load);
       const mp = mem.pct || 0;
 
       $('header-sub').textContent = `monvps.aiforceone.fr · Uptime ${s.uptime || '—'}`;
@@ -898,8 +912,7 @@
       if (chart) {
         chart.data.labels = history.labels;
         chart.data.datasets[0].data = history.endlessh;
-        chart.data.datasets[1].data = history.crowdsec;
-        chart.data.datasets[2].data = history.ufw;
+        chart.data.datasets[1].data  = history.ufw;
         chart.update('none');
       }
     }
@@ -910,7 +923,7 @@
       const grad = c => { const g = ctx.createLinearGradient(0, 0, 0, 220); g.addColorStop(0, c + '45'); g.addColorStop(1, c + '00'); return g; };
       const ds = (label, color, data, yAxisID) => ({
         label, data, borderColor: color, backgroundColor: grad(color),
-        tension: 0.45, fill: false, pointRadius: 5, pointHoverRadius: 7,
+        tension: 0.45, fill: false, pointRadius: 2, pointHoverRadius: 5,
         pointBackgroundColor: color, pointBorderColor: '#fff', pointBorderWidth: 2.5, borderWidth: 3,
         spanGaps: true,
         yAxisID,
@@ -918,9 +931,8 @@
       chart = new Chart(ctx, {
         type: 'line',
         data: { labels: history.labels, datasets: [
-           ds('Endlessh', '#e05a7a', history.endlessh, 'y1'),
-           ds('CrowdSec bans', '#2d7d6f', history.crowdsec, 'y2'),
-           ds('UFW blocks', '#c9a84c', history.ufw, 'y3'),
+           ds('Endlessh', '#e05a7a', history.endlessh, 'y'),
+           ds('UFW blocks', '#c9a84c', history.ufw, 'y'),
           ]
         },
         options: {
@@ -937,9 +949,7 @@
           },
           scales: {
             x: { grid: { display: false }, ticks: { color: '#b0a89e', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8 } },
-            y1: { type: 'linear', position: 'left',  display: false, beginAtZero: true },
-            y2: { type: 'linear', position: 'right', display: false, beginAtZero: true },
-            y3: { type: 'linear', position: 'right', display: false, beginAtZero: true },
+            y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#b0a89e', font: { family: 'DM Mono', size: 10 } }, beginAtZero: true },
           },
         },
       });
@@ -961,6 +971,48 @@
         btn.classList.remove('loading'); icon.className = ''; icon.textContent = '↻';
         startCountdown(); refreshTimer = setTimeout(refresh, 30_000);
       }
+    }
+
+    // ── Donuts système ────────────────────────────────────────────────────────
+    let donutMem = null, donutDisk = null, donutCpu = null;
+
+    function initDonuts() {
+      const makeDonut = (id, color) => {
+        const ctx = $(id).getContext('2d');
+        return new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            datasets: [{
+              data: [0, 100],
+              backgroundColor: [color, 'rgba(0,0,0,0.06)'],
+              borderWidth: 0,
+              hoverOffset: 0,
+            }]
+          },
+          options: {
+            cutout: '72%',
+            responsive: false,
+            animation: { duration: 600, easing: 'easeInOutQuart' },
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          }
+        });
+      };
+      donutMem  = makeDonut('donut-mem',  '#2d7d6f');
+      donutDisk = makeDonut('donut-disk', '#c9a84c');
+      donutCpu  = makeDonut('donut-cpu',  '#2d7d6f');
+    }
+
+    function updateDonuts(mem, dsk, load) {
+      const mp = mem.pct || 0;
+      const dp = dsk.pct || 0;
+      const cores = load?.cores || 1;
+      const cp = Math.min(Math.round(parseFloat(load?.['1m'] || 0) / cores * 100), 100);
+      const color = pct => pct > 85 ? '#e05a7a' : pct > 70 ? '#c9a84c' : '#22c55e';
+      if (donutMem)  { donutMem.data.datasets[0].data  = [mp, 100-mp];  donutMem.data.datasets[0].backgroundColor[0]  = color(mp);  donutMem.update(); }
+      if (donutDisk) { donutDisk.data.datasets[0].data = [dp, 100-dp];  donutDisk.data.datasets[0].backgroundColor[0] = color(dp); donutDisk.update(); }
+      if (donutCpu)  { donutCpu.data.datasets[0].data  = [cp, 100-cp];  donutCpu.data.datasets[0].backgroundColor[0]  = color(cp);  donutCpu.update(); }
+      $('sys-cpu').textContent       = cp + '%';
+      $('sys-cpu-cores').textContent = cores + ' core' + (cores > 1 ? 's' : '');
     }
 
     // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -991,7 +1043,7 @@
          } catch(e) { console.warn('[history]', e); }
        }
 
-       loadHistory().then(() => { initChart(); refresh(); });
+       loadHistory().then(() => { initChart(); initDonuts(); refresh(); });
   </script>
 </body>
 

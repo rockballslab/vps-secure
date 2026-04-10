@@ -17,7 +17,7 @@
 * **Le risque :** Les bots et scanners automatiques trouvent votre IP et tentent des attaques par force brute en **moins de 2 minutes** après l'activation du serveur.
 * **La solution :** Ce script change radicalement la posture de sécurité de votre serveur en **moins de 15 minutes** de manière totalement automatisée.
 
-Je m'appelle Fabrice, j'ai crée plusieurs SaaS, et c'est précisément la configuration que j'utilise pour sécuriser mes serveurs de production.
+Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est précisément la configuration que j'utilise pour sécuriser mes serveurs de production.
 
 **Choisis VPS-SECURE pour que ton serveur devienne une forteresse prête à accueillir tes services.**
 

@@ -6,12 +6,13 @@
 > 
 > 15 minutes, une seule commande. Ton serveur passe du stade *cible facile* à *cible qui n'en vaut pas la peine*."
 
->⚡ 78 bots bloqués en 24h sur un VPS standard — le tien est-il protégé ?
 
 Un VPS livré nu tourne avec root ouvert sur le port 22, sans firewall, sans détection d'intrusion.
 Les bots le trouvent en moins de 2 minutes.
 
 Ce script change ça en moins de 15 minutes.
+
+⚡ 78 bots bloqués en 24h sur un VPS standard — le tien est-il protégé ?
 
 ---
 

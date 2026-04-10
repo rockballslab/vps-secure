@@ -1,6 +1,6 @@
 ⚡ 78 bots bloqués en 24h sur un VPS standard - le tien est-il protégé ?
 
-# 🔐 vps-secure
+# 🔐 VPS-secure
 
 **Le seul repo GitHub français qui sécurise vraiment ton serveur.**
 

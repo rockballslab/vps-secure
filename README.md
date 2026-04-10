@@ -227,8 +227,13 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 
 ## Ce que ce script ne fait PAS
 
-- ❌ Pas de configuration d'application (n8n, Wordpress, etc.) — ce repo sécurise l'OS, pas le reste
-- ❌ Pas de HTTPS par défaut — sauf si tu choisis l'option "Dashboard" qui installe et configure automatiquement Caddy.
+- ❌ Pas de déploiement d'applications (n8n, WordPress, etc.)
+Le script prépare une infrastructure ultra-sécurisée. Une fois le script passé, votre serveur est une forteresse prête à accueillir vos services. À vous d'installer vos apps, elles bénéficieront automatiquement de la protection du système (Firewall, Fail2Ban, etc.).
+
+- ❌ Pas de gestion HTTPS pour vos futurs sites
+Le script ne devine pas vos noms de domaine. Pour mettre vos propres sites en HTTPS (cadenas vert), vous devrez simplement installer un Reverse Proxy (comme Caddy, Nginx Proxy Manager ou Traefik).
+
+> Note : Si vous choisissez l'option Dashboard, le HTTPS est géré automatiquement pour vous.
 
 ---
 

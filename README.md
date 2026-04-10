@@ -191,13 +191,18 @@ Si une anomalie est détectée dans le rapport quotidien, le message inclut le d
 
 ---
 
-## ⚠️ Docker et le pare-feu UFW
+## ⚠️ Docker & Firewall : Sécurité Garantie
 
-Par défaut, Docker bypass UFW et expose directement les ports sur internet, même si UFW les bloque. **Ce script corrige ce comportement** en désactivant la gestion iptables de Docker.
+Par défaut, Docker ignore les règles de votre pare-feu (UFW) et expose vos ports directement sur Internet. Ce script corrige cette faille critique.
 
-Sans configuration supplémentaire, désactiver iptables dans Docker empêche aussi les containers d'accéder à internet (pas de règle NAT). **Ce script ajoute automatiquement la règle MASQUERADE nécessaire dans `/etc/ufw/before.rules`** — les containers ont accès à internet, les ports restent sous contrôle d'UFW.
+- Le correctif : Le script désactive la gestion automatique d'iptables par Docker.
 
-**Ce que ça change concrètement :** si tu lances un container avec `-p 8080:8080`, le port **ne sera pas** accessible depuis internet tant que tu ne l'as pas autorisé dans UFW :
+- Accès Internet : Une règle de NAT (MASQUERADE) est automatiquement ajoutée à before.rules pour que vos containers conservent un accès à Internet.
+
+- Contrôle Total : Rien ne sort, rien ne rentre sans votre accord.
+
+
+**Ce que ça change concrètement :** Si vous lancez un container sur le port 8080, il restera **invisible** depuis l'extérieur. Pour l'ouvrir, vous devrez le faire manuellement :
 
 ```bash
 sudo ufw allow 8080/tcp comment 'Mon application'

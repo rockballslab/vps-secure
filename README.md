@@ -14,6 +14,8 @@ Les bots le trouvent en moins de 2 minutes.
 
 Ce script change ça en moins de 15 minutes.
 
+**Votre serveur devient une forteresse prête à accueillir vos services.**
+
 ---
 
 <p align="center">

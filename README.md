@@ -4,7 +4,7 @@
 
 **Le seul repo GitHub français qui sécurise vraiment ton serveur.**
 
-> "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un VPS, lance ce script avant d'installer quoi que ce soit.
+> "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un serveur de type VPS, lance ce script AVANT D'INSTALLER QUOI QUE CE SOIT.
 > 
 > 15 minutes, une seule commande. Ton serveur passe du stade *cible facile* à *cible qui n'en vaut pas la peine*."
 

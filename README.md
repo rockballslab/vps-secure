@@ -224,7 +224,7 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 
 **DISA STIG** — DISA = Defense Information Systems Agency, l'agence IT du Département de la Défense américain. Les STIGs sont leurs guides de configuration, plus stricts que CIS, obligatoires pour tous les systèmes du gouvernement US. 70% DISA STIG est très bon pour un script public — les 30% restants concernent des contrôles militaires sans sens pour un VPS perso (accès physique, smartcard auth) ou nécessitant une infrastructure d'entreprise (LDAP, SIEM centralisé).
 
-# Sécurité de l'utilisateur vpsadmin
+## Sécurité de l'utilisateur vpsadmin
 
 Le script crée un utilisateur dédié (vpsadmin) pour gérer votre serveur. Voici ce qu'il faut savoir sur ses pouvoirs :
 

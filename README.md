@@ -254,7 +254,7 @@ Le script prépare une infrastructure ultra-sécurisée. Une fois le script pass
 - ⚠️ Pas de gestion HTTPS pour vos futurs sites.
 Le script ne devine pas vos noms de domaine. Pour mettre vos propres sites en HTTPS (cadenas vert), vous devrez simplement installer un Reverse Proxy (comme Caddy, Nginx Proxy Manager ou Traefik).
 
-> Note : Si vous choisissez l'option Dashboard, le HTTPS est géré automatiquement pour vous.
+> Note : Si vous choisissez l'option Dashboard, le HTTPS est géré automatiquement pour vous avec un Reverse Proxy Caddy.
 
 ---
 

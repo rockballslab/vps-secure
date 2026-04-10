@@ -340,7 +340,6 @@ sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 
 ---
 ## OPTIONNEL mais pratique
----
 
 ## Connexion rapide (optionnel)
 
@@ -358,7 +357,6 @@ Ensuite tu te connectes avec juste :
 ssh monvps
 ```
 
----
 
 ## Dashboard de monitoring (optionnel)
  

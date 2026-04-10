@@ -421,4 +421,4 @@ MIT — libre d'utilisation, de modification et de redistribution.
 
 ---
 
-*Fait avec ❤️ par FAB [@rockballslab](https://github.com/rockballslab)*
+*Fait avec ❤️ par Fabrice [@rockballslab](https://github.com/rockballslab)*

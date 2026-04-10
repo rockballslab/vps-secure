@@ -18,7 +18,7 @@
 * **La solution :** Ce script change radicalement la posture de sécurité de votre serveur en **moins de 15 minutes** de manière totalement automatisée.
 
 
-Et **Votre serveur devient une forteresse prête à accueillir vos services.**
+Et **ton serveur devient une forteresse prête à accueillir vos services.**
 
 ---
 

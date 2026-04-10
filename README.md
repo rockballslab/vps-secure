@@ -224,9 +224,18 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 
 **DISA STIG** — DISA = Defense Information Systems Agency, l'agence IT du Département de la Défense américain. Les STIGs sont leurs guides de configuration, plus stricts que CIS, obligatoires pour tous les systèmes du gouvernement US. 70% DISA STIG est très bon pour un script public — les 30% restants concernent des contrôles militaires sans sens pour un VPS perso (accès physique, smartcard auth) ou nécessitant une infrastructure d'entreprise (LDAP, SIEM centralisé).
 
-> ⚠️ **Note sur sudo :** `vpsadmin` a un accès sudo sans mot de passe (`NOPASSWD`). C'est intentionnel pour simplifier l'usage. Le script ajoute `use_pty` pour bloquer le sudo hijacking depuis un terminal détaché, mais si ta clé SSH privée est compromise, l'attaquant a root immédiatement. **Protège ta clé privée** — ne la stocke jamais dans le cloud, ne la copie pas sur un serveur.
+## 🛡️ Sécurité de l'utilisateur vpsadmin
 
-> ⚠️ **Note sur Docker :** `vpsadmin` est dans le groupe `docker`, ce qui donne un accès root effectif via les containers (`docker run` peut monter le système de fichiers complet). Traite ta clé SSH comme une clé root.
+Le script crée un utilisateur dédié (vpsadmin) pour gérer votre serveur. Voici ce qu'il faut savoir sur ses pouvoirs :
+
+- ⚡ Sudo simplifié : vpsadmin peut exécuter des commandes d'administration sans taper son mot de passe à chaque fois. Pour éviter les piratages de terminal, une sécurité supplémentaire (use_pty) a été ajoutée.
+
+- 🐳 Docker = Pouvoir Root : Comme vpsadmin peut lancer Docker, il peut techniquement accéder à tout le serveur. C'est normal et nécessaire pour gérer vos containers facilement.
+
+>⚠️ La règle d'or : Protégez votre clé SSH !
+>Puisque vpsadmin a de grands pouvoirs, celui qui possède votre clé privée SSH possède votre serveur.
+> - Ne stockez jamais votre clé privée sur un Cloud (Drive, Dropbox).
+> - Ne la partagez jamais.
 
 ---
 

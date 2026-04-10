@@ -12,9 +12,7 @@
 Un VPS livré nu tourne avec root ouvert sur le port 22, sans firewall, sans détection d'intrusion.
 Les bots le trouvent en moins de 2 minutes.
 
-Ce script change ça en moins de 15 minutes.
-
-**Votre serveur devient une forteresse prête à accueillir vos services.**
+Ce script change ça en moins de 15 minutes. Et **Votre serveur devient une forteresse prête à accueillir vos services.**
 
 ---
 

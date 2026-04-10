@@ -12,7 +12,7 @@ Les bots le trouvent en moins de 2 minutes.
 
 Ce script change ça en moins de 15 minutes.
 
-⚡ 78 bots bloqués en 24h sur un VPS standard — le tien est-il protégé ?
+⚡ 78 bots bloqués en 24h sur un VPS standard - le tien est-il protégé ?
 
 ---
 

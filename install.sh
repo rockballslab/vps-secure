@@ -1387,6 +1387,9 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/var/run/docker
 !/home/*/.docker
 !/root/.docker
+!/var/lib/command-not-found
+!/var/log/vps-monitor-history\.json$
+!/^/$
 AIDEEXCLEOF
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)

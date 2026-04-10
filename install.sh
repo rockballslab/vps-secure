@@ -1202,7 +1202,7 @@ if command -v aide &>/dev/null; then
         if [[ "$AIDE_EXIT" -eq 0 ]]; then
             DETAILS+="✅ AIDE : aucune modification système détectée
 "
-        elif [[ "$AIDE_EXIT" -eq 1 ]]; then
+        elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]] && [[ $(( AIDE_EXIT & 56 )) -eq 0 ]]; then
             ISSUES=$((ISSUES + 1))
             DETAILS+="🔴 AIDE : modifications système détectées
   → Détail : sudo aide --check --config /etc/aide/aide.conf
@@ -1210,8 +1210,8 @@ if command -v aide &>/dev/null; then
 
 "
         else
-            DETAILS+="⚠️ AIDE : erreur lors du scan (code $AIDE_EXIT)
-  → Relance : sudo aide --check --config /etc/aide/aide.conf
+            DETAILS+="⚠️ AIDE : erreur technique (code $AIDE_EXIT)
+  → Relance : sudo aide --check 2>&1 | tail -5
 "
         fi
     else

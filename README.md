@@ -1,3 +1,5 @@
+⚡ 78 bots bloqués en 24h sur un VPS standard - le tien est-il protégé ?
+
 # 🔐 vps-secure
 
 **Le seul repo GitHub français qui sécurise vraiment ton serveur.**
@@ -11,8 +13,6 @@ Un VPS livré nu tourne avec root ouvert sur le port 22, sans firewall, sans dé
 Les bots le trouvent en moins de 2 minutes.
 
 Ce script change ça en moins de 15 minutes.
-
-⚡ 78 bots bloqués en 24h sur un VPS standard - le tien est-il protégé ?
 
 ---
 

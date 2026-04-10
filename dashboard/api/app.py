@@ -306,14 +306,17 @@ def get_ssh_last() -> dict:
                     m = re.search(r"from\s+(\S+)\s+port", line)
                     if m:
                         last_ip = m.group(1)
-                    # Timestamp ISO
-                    m2 = re.match(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+                    # Format syslog Ubuntu 24.04 : "Jan  1 12:00:00" (pas ISO)
+                    m2 = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
                     if m2:
-                        try:
-                            dt = datetime.fromisoformat(m2.group(1))
-                            last_time = dt.strftime("%d/%m/%Y %H:%M")
-                        except Exception:
-                            pass
+                       try:
+                           dt = datetime.strptime(
+                              f"{datetime.now().year} {m2.group(1).strip()}",
+                              "%Y %b %d %H:%M:%S"
+                           )
+                           last_time = dt.strftime("%d/%m/%Y %H:%M")
+                       except Exception:
+                           pass
                     break
             break
         except Exception:

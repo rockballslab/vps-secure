@@ -1415,7 +1415,7 @@ rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : non bloqua
 cat > /etc/cron.d/aide-daily << 'AIDECRONEOF'
 # vps-secure — AIDE integrity check quotidien à 03h00
 # Résultat lu par vps-secure-check.sh pour le rapport Telegram 07h00
-# Exit code : 0=OK, 1=différences, 2+=erreur
+# Exit code AIDE (bitmask) : 0=OK · 1=ajouts · 2=suppressions · 4=modifications · 7=les trois · 8+=erreur technique
 0 3 * * * root aide --check --config /etc/aide/aide.conf > /var/log/aide-daily.log 2>&1; echo $? > /var/log/aide-daily.exit
 AIDECRONEOF
 chmod 644 /etc/cron.d/aide-daily
@@ -1507,10 +1507,10 @@ if [[ -f /var/log/aide-daily.exit ]]; then
     AIDE_EXIT=$(cat /var/log/aide-daily.exit)
     if [[ "$AIDE_EXIT" -eq 0 ]]; then
         AIDE_STATUS="${VERT}Aucune modification${RESET}"
-    elif [[ "$AIDE_EXIT" -eq 1 ]]; then
+    elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]] && [[ $(( AIDE_EXIT & 56 )) -eq 0 ]]; then
         AIDE_STATUS="${ROUGE}Modifications détectées — sudo aide --check --config /etc/aide/aide.conf${RESET}"
     else
-        AIDE_STATUS="${JAUNE}Erreur AIDE (exit $AIDE_EXIT) — sudo aide --check --config /etc/aide/aide.conf${RESET}"
+        AIDE_STATUS="${JAUNE}Erreur technique AIDE (exit $AIDE_EXIT) — sudo aide --check 2>&1 | tail -5${RESET}"
     fi
 
 else

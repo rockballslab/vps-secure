@@ -258,7 +258,7 @@ log_success "SSH reconfiguré : port 2222, clés uniquement, root désactivé."
 _ssh_rollback() {
     echo ""
     log_warn "Rollback SSH — restauration de la configuration d'origine."
-    rm -f /etc/ssh/sshd_config.d/vps-secure.conf
+    rm -f /etc/ssh/sshd_config.d/00-vps-secure.conf
     rm -f /etc/systemd/system/ssh.socket.d/override.conf
     systemctl daemon-reload
     systemctl restart ssh.socket ssh
@@ -1338,12 +1338,10 @@ docker run -d \
     --cap-drop ALL \
     --cap-add NET_BIND_SERVICE \
     --read-only \
-    -v /etc/endlessh/banner.txt:/banner.txt:ro \
     shizunge/endlessh-go \
     -logtostderr \
     -v=1 \
     -port=22 \
-    -line_length=64 \
     > /dev/null || true  # optionnel : échec docker run géré par le check docker ps ci-dessous
 
 # Vérifier que le container tourne
@@ -1392,8 +1390,9 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 AIDEEXCLEOF
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)
-log_info "Création de la baseline AIDE — 1 à 2 minutes..."
-aideinit --yes --force >/dev/null 2>&1 || aideinit >/dev/null 2>&1 </dev/null || true  # optionnel : --yes --force absent sur certaines versions ; </dev/null évite le hang sur re-run si db existe
+log_info "Création de la baseline AIDE — peut prendre 2 à 5 minutes selon la taille du disque..."
+log_info "  (le script continue automatiquement)"
+aideinit --yes --force 2>/dev/null || aideinit 2>/dev/null </dev/null || true
 
 if [[ -f /var/lib/aide/aide.db.new ]]; then
     cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
@@ -1579,7 +1578,7 @@ CPU_CORES=$(nproc 2>/dev/null || echo "?")
 LOAD=$(uptime 2>/dev/null | awk -F'load average:' '{print $2}' | awk '{print $1}' | tr -d ', ')
 MEM_USED=$(free -m 2>/dev/null | awk '/^Mem:/ {print $3}')
 MEM_TOTAL=$(free -m 2>/dev/null | awk '/^Mem:/ {print $2}')
-MEM_PCT=$(( MEM_USED * 100 / MEM_TOTAL ))
+MEM_PCT=$(( MEM_TOTAL > 0 ? MEM_USED * 100 / MEM_TOTAL : 0 ))
 DISK_USED=$(df -h / 2>/dev/null | awk 'NR==2 {print $3}')
 DISK_TOTAL=$(df -h / 2>/dev/null | awk 'NR==2 {print $2}')
 DISK_PCT=$(df / 2>/dev/null | awk 'NR==2 {print $5}')

@@ -228,7 +228,7 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 ## Ce que ce script ne fait PAS
 
 - ❌ Pas de configuration d'application (n8n, Wordpress, etc.) — ce repo sécurise l'OS, pas le reste
-- ❌ Pas de certificat HTTPS — à configurer avec Caddy ou Nginx selon ton usage
+- ❌ Pas de HTTPS par défaut — sauf si tu choisis l'option "Dashboard" qui installe et configure automatiquement Caddy.
 
 ---
 
@@ -338,6 +338,8 @@ sudo aide --check
 sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 ```
 
+---
+## OPTIONNEL mais pratique
 ---
 
 ## Connexion rapide (optionnel)

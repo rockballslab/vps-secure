@@ -2,6 +2,7 @@
 
 # 🔐 VPS-secure
 
+**🔐 Sécurise ton VPS en 15 min**
 **Le seul repo GitHub français qui sécurise vraiment ton serveur.**
 
 > "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un serveur de type VPS, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**

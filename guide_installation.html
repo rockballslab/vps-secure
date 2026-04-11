@@ -925,6 +925,62 @@
       font-size: 12px;
     }
 
+    .modal-val-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .modal-val-row:last-child { border-bottom: none; }
+    .modal-val-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      min-width: 130px;
+      flex-shrink: 0;
+    }
+    .modal-val-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #0f172a;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .modal-val-value.secret { letter-spacing: 3px; color: #94a3b8; font-size: 10px; }
+    .modal-val-copy {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      color: #475569;
+      font-weight: 600;
+      flex-shrink: 0;
+      transition: all .15s;
+    }
+    .modal-val-copy:hover { background: #e0f2fe; border-color: #7dd3fc; color: #0369a1; }
+    .modal-val-copy.copied { background: #dcfce7; border-color: #86efac; color: #15803d; }
+    .modal-dashboard-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--blue-l);
+      border: 1.5px solid var(--blue-b);
+      border-radius: 10px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .modal-dashboard-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+
     .btn-close {
       padding: 10px 24px;
       background: var(--bg3);
@@ -1168,23 +1224,30 @@
           </span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
-        <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;padding:0 2px;">15 étapes automatiques : SSH,
-          CrowdSec, UFW, Docker, kernel, DNS, auditd, Endlessh, AIDE.</div>
         <div class="cmd-code">curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/install.sh
           chmod +x install.sh && ./install.sh</div>
       </div>
-      <div
-        style="font-size:12px;color:#64748b;margin:6px 0 16px;padding:10px 12px;border-left:2px solid #e2e8f0;margin-left:10px;">
-        ✅ Script terminé → déconnecte-toi du root<br>
-        Reconnecte-toi en vpsadmin : <code
-          style="font-size:11px;">ssh vpsadmin@<span id="modal-ip2">IP_DU_VPS</span> -p 2222 -i ~/.ssh/id_ed25519_vps</code>
+      <div id="modal-values-block" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:10px;">📋 Valeurs demandées par le script</div>
+        <div id="modal-val-vps_pwd" class="modal-val-row"></div>
+        <div id="modal-val-ssh_pub" class="modal-val-row"></div>
+        <div id="modal-val-tg_token" class="modal-val-row"></div>
+        <div id="modal-val-tg_chatid" class="modal-val-row"></div>
       </div>
-      <div class="modal-note">
-        🔐 <strong>Important — test SSH obligatoire :</strong><br>
-        Le script te demandera de tester la connexion depuis un 2ème terminal <strong>avant</strong> de continuer. Si la
-        connexion échoue, il restaure automatiquement la config SSH d'origine.
+      <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:16px;">
+        <div class="cmd-label">
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span style="background:#059669;color:#fff;font-size:13px;font-weight:800;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">2</span>
+            Connexion après installation — en vpsadmin
+          </span>
+          <span class="cmd-hint">clic pour copier</span>
+        </div>
+        <div class="cmd-code" id="modal-reconnect-cmd">ssh vpsadmin@<span id="modal-ip2">IP_DU_VPS</span> -p 2222 -i ~/.ssh/id_ed25519_vps</div>
       </div>
-      <button class="btn-close" onclick="closeModal()">Fermer</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+        <div id="modal-dashboard-link" style="display:none;flex:1;"></div>
+        <button class="btn-close" onclick="closeModal();resetAll()" style="flex-shrink:0;">Fermer</button>
+      </div>
     </div>
   </div>
 
@@ -1317,9 +1380,49 @@
       if (ip) { ["modal-ip", "modal-ip2"].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = ip; }); }
     }
 
+    const MODAL_VALS = [
+      { id: "vps_pwd",   label: "Mot de passe root",  secret: true },
+      { id: "ssh_pub",   label: "Clé SSH publique",    secret: false },
+      { id: "tg_token",  label: "Token Telegram",      secret: true },
+      { id: "tg_chatid", label: "Chat ID Telegram",    secret: false },
+    ];
+
+    function copyModalVal(id) {
+      const val = (vals[id] || "").trim();
+      if (!val) return;
+      navigator.clipboard.writeText(val).then(() => {
+        const btn = document.getElementById("mvcopy-" + id);
+        if (!btn) return;
+        btn.textContent = "✅ Copié"; btn.className = "modal-val-copy copied";
+        setTimeout(() => { btn.textContent = "📋 Copier"; btn.className = "modal-val-copy"; }, 1800);
+      });
+    }
+
     function openModal() {
       const mand = PREREQS.filter(p => p.req);
       if (mand.filter(p => isOk(p.id)).length < mand.length) return;
+
+      // Populate copyable values
+      MODAL_VALS.forEach(mv => {
+        const row = document.getElementById("modal-val-" + mv.id);
+        if (!row) return;
+        const val = (vals[mv.id] || "").trim();
+        if (!val) { row.style.display = "none"; return; }
+        row.style.display = "flex";
+        const display = mv.secret ? "••••••••••••" : (val.length > 38 ? val.slice(0, 36) + "…" : val);
+        row.innerHTML = `<span class="modal-val-label">${mv.label}</span><span class="modal-val-value${mv.secret ? " secret" : ""}" title="${mv.secret ? "" : esc(val)}">${esc(display)}</span><button class="modal-val-copy" id="mvcopy-${mv.id}" onclick="copyModalVal('${mv.id}')">📋 Copier</button>`;
+      });
+
+      // Conditional dashboard link
+      const dashUrl = (vals["dash_url"] || "").trim();
+      const dashBlock = document.getElementById("modal-dashboard-link");
+      if (dashUrl) {
+        dashBlock.style.display = "flex";
+        dashBlock.innerHTML = `<a class="modal-dashboard-btn" href="${esc(dashUrl)}" target="_blank" rel="noopener">🖥️ Ouvrir mon dashboard <span style="font-size:11px;font-weight:400;margin-left:auto;opacity:.7">${esc(dashUrl)}</span></a>`;
+      } else {
+        dashBlock.style.display = "none";
+      }
+
       document.getElementById("modal").className = "overlay open";
     }
     function closeModal() { document.getElementById("modal").className = "overlay"; }

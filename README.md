@@ -4,6 +4,8 @@
 
 **🔐 Sécurise ton VPS en 15 min - honeypot, pare-feu, IPS, integrity monitoring. Une commande. Zéro compétence requise.**
 
+>"Score Lynis 78/100 en 15 minutes - 44% plus sécurisé qu'un VPS Ubuntu standard — en 15 minutes.""
+
 
 > "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un serveur de type VPS, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**
 >

@@ -788,7 +788,10 @@ net.core.bpf_jit_harden = 2
 # Interdire eBPF aux non-root — vecteur d'exploitation connu (CIS 1.5.5)
 kernel.unprivileged_bpf_disabled = 1
 
-# Port non-privilégié minimum abaissé à 22 — requis pour Endlessh (honeypot port 22)
+# ⚠️  SÉCURITÉ — ip_unprivileged_port_start=22 permet à tout processus non-root de binder le port 22
+# quand Endlessh est arrêté. Risque mitigé par : --restart unless-stopped Docker (redémarrage en quelques
+# secondes après un crash) et le fait qu'un attaquant doit avoir compromis un compte système au préalable.
+# Ce sysctl est requis pour shizunge/endlessh-go avec --network=host sans cap_net_bind_service root.
 net.ipv4.ip_unprivileged_port_start = 22
 
 SYSEOF
@@ -1186,7 +1189,9 @@ fi
 
 # ── Endlessh (honeypot port 22) ──
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
-    HONEY_COUNT=$(docker logs endlessh --since 24h 2>&1 | grep -ci "accept" || echo "0")
+    # Lecture du cache — évite docker logs synchrone à chaque rapport (Issue #3)
+    HONEY_COUNT=$(python3 -c "import json; print(json.load(open('/var/cache/vps-secure/security-stats.json')).get('last24h',0))" 2>/dev/null \
+        || docker logs endlessh --since 24h 2>&1 | grep -ci "accept" || echo "0")
     DETAILS+="🍯 Endlessh : ${HONEY_COUNT} bot(s) piégé(s) en 24h
 "
 else
@@ -1338,6 +1343,8 @@ docker run -d \
     --cap-drop ALL \
     --cap-add NET_BIND_SERVICE \
     --read-only \
+    --log-opt max-size=10m \
+    --log-opt max-file=3 \
     shizunge/endlessh-go \
     -logtostderr \
     -v=1 \
@@ -1354,6 +1361,93 @@ else
     log_warn "Endlessh n'a pas démarré — vérifie : sudo docker logs endlessh"
     log_warn "  Le reste de l'installation n'est pas affecté."
 fi
+
+# ── Cache sécurité unifié (Endlessh + CrowdSec) ──────────────────────────────
+# Évite les appels synchrones coûteux dans le MOTD (docker logs + cscli) à chaque login SSH.
+# Un timer systemd rafraîchit /var/cache/vps-secure/security-stats.json toutes les 5 min.
+# Issues #3 (docker logs synchrones CRITIQUE) + #7/#10 (cscli synchrone ÉLEVÉ).
+mkdir -p /var/cache/vps-secure
+cat > /usr/local/bin/vps-secure-stats-cache.sh << 'STATSCACHEEOF'
+#!/usr/bin/env bash
+set -euo pipefail
+CACHE="/var/cache/vps-secure/security-stats.json"
+CONTAINER="endlessh"
+mkdir -p /var/cache/vps-secure
+
+TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+RUNNING="false"
+LAST24H=0
+TOTAL=0
+CS_BANNED=0
+
+# ── Endlessh stats ──
+if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${CONTAINER}$"; then
+    RUNNING="true"
+    LAST24H=$(docker logs --since 24h "$CONTAINER" 2>&1 | grep -ci "ACCEPT" 2>/dev/null || echo 0)
+    # Total incrémental : on ajoute seulement les nouvelles entrées depuis la dernière MAJ
+    if [[ -f "$CACHE" ]]; then
+        PREV_TOTAL=$(python3 -c "import json; d=json.load(open('$CACHE')); print(d.get('total',0))" 2>/dev/null || echo 0)
+        PREV_TS=$(python3 -c "import json; d=json.load(open('$CACHE')); print(d.get('last_updated',''))" 2>/dev/null || echo "")
+        if [[ -n "$PREV_TS" ]]; then
+            NEW=$(docker logs --since "$PREV_TS" "$CONTAINER" 2>&1 | grep -ci "ACCEPT" 2>/dev/null || echo 0)
+            TOTAL=$(( PREV_TOTAL + NEW ))
+        else
+            TOTAL=$(docker logs "$CONTAINER" 2>&1 | grep -ci "ACCEPT" 2>/dev/null || echo 0)
+        fi
+    else
+        TOTAL=$(docker logs "$CONTAINER" 2>&1 | grep -ci "ACCEPT" 2>/dev/null || echo 0)
+    fi
+fi
+
+# ── CrowdSec stats ──
+if command -v cscli &>/dev/null; then
+    CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
+        | python3 -c "import sys,json
+try:
+    d=json.load(sys.stdin)
+    print(len(d) if d else 0)
+except:
+    print(0)" 2>/dev/null || echo 0)
+fi
+
+# Écriture atomique via mktemp + mv (évite lecture partielle)
+TMP=$(mktemp "${CACHE}.XXXXXX")
+printf '{"last_updated":"%s","last24h":%d,"total":%d,"running":%s,"cs_banned":%d}\n' \
+    "$TS" "$LAST24H" "$TOTAL" "$RUNNING" "$CS_BANNED" > "$TMP"
+mv "$TMP" "$CACHE"
+chmod 644 "$CACHE"
+STATSCACHEEOF
+chmod 700 /usr/local/bin/vps-secure-stats-cache.sh
+
+cat > /etc/systemd/system/vps-secure-stats-cache.service << 'SVCCACHEEOF'
+[Unit]
+Description=vps-secure — cache sécurité (Endlessh + CrowdSec)
+After=docker.service crowdsec.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/vps-secure-stats-cache.sh
+User=root
+SVCCACHEEOF
+
+cat > /etc/systemd/system/vps-secure-stats-cache.timer << 'TIMERCACHEEOF'
+[Unit]
+Description=vps-secure — rafraîchissement cache sécurité toutes les 5 min
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Unit=vps-secure-stats-cache.service
+
+[Install]
+WantedBy=timers.target
+TIMERCACHEEOF
+
+systemctl daemon-reload
+systemctl enable --now vps-secure-stats-cache.timer
+# Premier remplissage immédiat (sinon le cache est vide jusqu'au prochain cycle)
+systemctl start vps-secure-stats-cache.service
+log_success "Cache sécurité actif — /var/cache/vps-secure/security-stats.json (rafraîchi toutes les 5 min)."
 
 # ============================================================
 # Étape 15 : Integrity monitoring (AIDE)
@@ -1395,7 +1489,21 @@ AIDEEXCLEOF
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)
 log_info "Création de la baseline AIDE — peut prendre 2 à 5 minutes selon la taille du disque..."
 log_info "  (le script continue automatiquement)"
-aideinit --yes --force 2>/dev/null || aideinit 2>/dev/null </dev/null || true
+
+AIDE_INIT_LOG=$(mktemp)
+AIDE_INIT_OK=false
+if aideinit --yes --force >"$AIDE_INIT_LOG" 2>&1; then
+    AIDE_INIT_OK=true
+elif aideinit >"$AIDE_INIT_LOG" 2>&1 </dev/null; then
+    AIDE_INIT_OK=true
+fi
+# Afficher les dernières lignes en cas d'échec pour diagnostic
+if [[ "$AIDE_INIT_OK" != "true" ]]; then
+    log_warn "aideinit a signalé des erreurs — détail :"
+    tail -5 "$AIDE_INIT_LOG" | while IFS= read -r l; do log_warn "  $l"; done
+    log_warn "  Lance manuellement : sudo aideinit && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db"
+fi
+rm -f "$AIDE_INIT_LOG"
 
 if [[ -f /var/lib/aide/aide.db.new ]]; then
     cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
@@ -1410,13 +1518,67 @@ fi
 # Mise à jour baseline rkhunter — _aide user/group créés par AIDE absent de la baseline initiale (étape 11)
 rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : non bloquant
 
+# Script AIDE intelligent — élimine les faux positifs unattended-upgrades (Issue #4)
+# Logique granulaire v1.1 : dpkg -S par fichier modifié — seuls les fichiers APT sont whitelistés.
+# Un backdoor posé hors fenêtre APT reste détecté même si une MAJ tourne la même nuit.
+cat > /usr/local/bin/vps-secure-aide-check.sh << 'AIDESMART'
+#!/usr/bin/env bash
+set -euo pipefail
+# Fenêtre dpkg : 26h pour couvrir unattended-upgrades qui peut tourner après 03h00
+AIDE_EXIT=0
+aide --check --config /etc/aide/aide.conf > /var/log/aide-daily.log 2>&1 || AIDE_EXIT=$?
+echo "$AIDE_EXIT" > /var/log/aide-daily.exit
+# Exit 0 = propre
+[[ $AIDE_EXIT -eq 0 ]] && exit 0
+# Bits 3-5 (valeur 56) = erreurs techniques AIDE → pas de cross-check APT, on garde l'exit
+[[ $(( AIDE_EXIT & 56 )) -ne 0 ]] && exit 0
+# Vérifier l'activité apt récente (fenêtre 26h)
+CUTOFF=$(date -d '26 hours ago' '+%Y-%m-%d %H:%M:%S')
+DPKG_N=$(awk -v c="$CUTOFF" '$0>c && /status installed/{n++} END{print n+0}' /var/log/dpkg.log 2>/dev/null || echo 0)
+# Pas d'activité apt → les changements sont réels → garder l'exit code d'origine
+[[ $DPKG_N -eq 0 ]] && exit 0
+# Extraire les fichiers modifiés depuis le log AIDE
+CHANGED=$(grep -E '^File: ' /var/log/aide-daily.log 2>/dev/null | awk '{print $2}' | sort -u || true)
+if [[ -z "$CHANGED" ]]; then
+    # AIDE signale des changements mais sans fichiers identifiables → update silencieux
+    aide --update --config /etc/aide/aide.conf >> /var/log/aide-daily.log 2>&1 || true
+    [[ -f /var/lib/aide/aide.db.new ]] && cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db || true
+    echo 0 > /var/log/aide-daily.exit
+    exit 0
+fi
+# Paquets installés dans la fenêtre (liste normalisée)
+RECENT=$(awk -v c="$CUTOFF" '$0>c && /status installed/{p=$4; sub(/:.*$/,"",p); print p}' \
+    /var/log/dpkg.log 2>/dev/null | sort -u || true)
+UNMATCHED=0
+while IFS= read -r fp; do
+    [[ -z "$fp" ]] && continue
+    # Ignorer les chemins volatils
+    case $fp in /tmp/*|/run/*|/proc/*) continue ;; esac
+    # Trouver le paquet propriétaire du fichier modifié
+    owner=$(dpkg -S "$fp" 2>/dev/null | cut -d: -f1 | head -1 || true)
+    # Fichier inconnu de dpkg → suspect
+    [[ -z "$owner" ]] && { UNMATCHED=$((UNMATCHED+1)); continue; }
+    # Fichier appartient à un paquet non mis à jour récemment → suspect
+    echo "$RECENT" | grep -qxF "$owner" || UNMATCHED=$((UNMATCHED+1))
+done <<< "$CHANGED"
+# Tous les changements expliqués par apt → update silencieux de la baseline
+if [[ $UNMATCHED -eq 0 ]]; then
+    aide --update --config /etc/aide/aide.conf >> /var/log/aide-daily.log 2>&1 || true
+    [[ -f /var/lib/aide/aide.db.new ]] && cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db || true
+    echo 0 > /var/log/aide-daily.exit
+fi
+exit 0
+AIDESMART
+chmod 700 /usr/local/bin/vps-secure-aide-check.sh
+log_success "vps-secure-aide-check.sh installé (faux positifs apt éliminés, logique granulaire v1.1)."
+
 # Cron quotidien AIDE à 03h00 (4h avant le rapport Telegram de 07h00)
 # Le résultat est lu par vps-secure-check.sh pour le rapport Telegram
 cat > /etc/cron.d/aide-daily << 'AIDECRONEOF'
 # vps-secure — AIDE integrity check quotidien à 03h00
 # Résultat lu par vps-secure-check.sh pour le rapport Telegram 07h00
 # Exit code AIDE (bitmask) : 0=OK · 1=ajouts · 2=suppressions · 4=modifications · 7=les trois · 8+=erreur technique
-0 3 * * * root aide --check --config /etc/aide/aide.conf > /var/log/aide-daily.log 2>&1; echo $? > /var/log/aide-daily.exit
+0 3 * * * root /usr/local/bin/vps-secure-aide-check.sh
 AIDECRONEOF
 chmod 644 /etc/cron.d/aide-daily
 
@@ -1445,25 +1607,43 @@ GRAS='\033[1m'
 RESET='\033[0m'
 
 # ── Endlessh ──
-if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
+# Lecture du cache security-stats.json (évite docker logs synchrone — Issue #3)
+CACHE_FILE="/var/cache/vps-secure/security-stats.json"
+if [[ -f "$CACHE_FILE" ]]; then
+    CACHE_RUNNING=$(python3 -c "import json; print(json.load(open('$CACHE_FILE')).get('running','false'))" 2>/dev/null || echo "false")
+    BOTS_24H=$(python3 -c "import json; print(json.load(open('$CACHE_FILE')).get('last24h',0))" 2>/dev/null || echo "0")
+    BOTS_TOTAL=$(python3 -c "import json; print(json.load(open('$CACHE_FILE')).get('total',0))" 2>/dev/null || echo "0")
+    if [[ "$CACHE_RUNNING" == "true" ]]; then
+        ENDLESSH_STATUS="${VERT}actif${RESET}"
+    else
+        ENDLESSH_STATUS="${ROUGE}inactif${RESET}"
+        BOTS_24H="0"; BOTS_TOTAL="0"
+    fi
+elif docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
+    # Fallback synchrone si le cache n'existe pas encore (premier démarrage)
     BOTS_24H=$(docker logs endlessh --since 24h 2>&1 | { grep -ci "accept" || true; })
     BOTS_TOTAL=$(docker logs endlessh 2>&1 | { grep -ci "accept" || true; })
     ENDLESSH_STATUS="${VERT}actif${RESET}"
 else
-    BOTS_24H="0"
-    BOTS_TOTAL="0"
+    BOTS_24H="0"; BOTS_TOTAL="0"
     ENDLESSH_STATUS="${ROUGE}inactif${RESET}"
 fi
 
 # ── CrowdSec ──
+# cs_banned lu depuis le cache (évite cscli synchrone à chaque appel — Issue #7/#10)
 if command -v cscli &>/dev/null; then
-    CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
-        | python3 -c "import sys,json
+    if [[ -f "$CACHE_FILE" ]]; then
+        CS_BANNED=$(python3 -c "import json; print(json.load(open('$CACHE_FILE')).get('cs_banned',0))" 2>/dev/null || echo "0")
+    else
+        # Fallback synchrone si cache absent
+        CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
+            | python3 -c "import sys,json
 try:
     d=json.load(sys.stdin)
     print(len(d) if d else 0)
 except:
     print(0)" 2>/dev/null || echo "0")
+    fi
     CS_ALERTS_24H=$(cscli alerts list --since 24h -o json 2>/dev/null \
         | python3 -c "import sys,json
 try:
@@ -1566,10 +1746,18 @@ chmod +x /usr/local/bin/vps-secure-stats
 log_success "Tableau de bord installé — commande disponible : sudo vps-secure-stats"
 
 # Installer vps-secure-verify pour usage post-reboot (évite le curl manuel)
-curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh \
-    -o /usr/local/bin/vps-secure-verify 2>/dev/null || true  # optionnel : réseau peut échouer — non bloquant
-chmod +x /usr/local/bin/vps-secure-verify 2>/dev/null || true
-log_success "vps-secure-verify installé — commande disponible : sudo vps-secure-verify"
+# log_warn explicite si échec réseau — évite "command not found" silencieux (Issue #6/#11)
+VERIFY_TMP=$(mktemp)
+if curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh \
+        -o "$VERIFY_TMP" 2>/dev/null; then
+    install -m 755 "$VERIFY_TMP" /usr/local/bin/vps-secure-verify
+    log_success "vps-secure-verify installé — commande disponible : sudo vps-secure-verify"
+else
+    log_warn "vps-secure-verify : téléchargement échoué (réseau) — non installé."
+    log_warn "  Installe manuellement après reboot :"
+    log_warn "  curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh -o /usr/local/bin/vps-secure-verify && chmod +x /usr/local/bin/vps-secure-verify"
+fi
+rm -f "$VERIFY_TMP"
 
 # ── MOTD personnalisé (affiché à chaque connexion SSH) ──
 # Désactiver le MOTD Ubuntu par défaut (publicitaire et verbeux)
@@ -1586,11 +1774,10 @@ DISK_USED=$(df -h / 2>/dev/null | awk 'NR==2 {print $3}')
 DISK_TOTAL=$(df -h / 2>/dev/null | awk 'NR==2 {print $2}')
 DISK_PCT=$(df / 2>/dev/null | awk 'NR==2 {print $5}')
 UPTIME=$(uptime -p 2>/dev/null | sed 's/up //')
-CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
-    | python3 -c "import sys,json
-try: print(len(json.load(sys.stdin) or []))
-except: print(0)" 2>/dev/null || echo "0")
-BOTS=$(docker logs endlessh --since 24h 2>&1 | { grep -ci "accept" || true; })
+# Lecture du cache security-stats.json — évite cscli et docker logs synchrones (Issues #3, #7/#10)
+_CACHE="/var/cache/vps-secure/security-stats.json"
+CS_BANNED=$(python3 -c "import json; print(json.load(open('$_CACHE')).get('cs_banned',0))" 2>/dev/null || echo "?")
+BOTS=$(python3 -c "import json; print(json.load(open('$_CACHE')).get('last24h',0))" 2>/dev/null || echo "?")
 UFW_BLOCKS=$(grep -c "\[UFW BLOCK\]" /var/log/ufw.log 2>/dev/null || echo "0")
 
 G='\033[0;32m'

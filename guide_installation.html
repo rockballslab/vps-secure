@@ -1209,11 +1209,17 @@
       <div class="modal-icon">🚀</div>
       <h2>C'est parti !</h2>
       <p>Tu as tout ce qu'il faut. Lance le script depuis ton terminal.</p>
-      <div class="modal-note" style="margin-bottom:16px;">
+      <div class="modal-note" style="margin-bottom:12px;">
         💻 <strong>Ouvrir un terminal :</strong><br>
         Mac → Terminal.app ou iTerm2&nbsp;&nbsp;·&nbsp;&nbsp;Windows → Windows Terminal ou
-        PuTTY&nbsp;&nbsp;·&nbsp;&nbsp;Linux → Ctrl+Alt+T<br><br>
-        Connecte-toi au VPS en root : <code>ssh root@<span id="modal-ip">IP_DU_VPS</span></code>
+        PuTTY&nbsp;&nbsp;·&nbsp;&nbsp;Linux → Ctrl+Alt+T
+      </div>
+      <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:16px;">
+        <div class="cmd-label">
+          <span>Connexion root — 1 seule fois</span>
+          <span class="cmd-hint">clic pour copier</span>
+        </div>
+        <div class="cmd-code">ssh root@<span id="modal-ip">IP_DU_VPS</span></div>
       </div>
       <div class="cmd-block" onclick="copyBlock(this)">
         <div class="cmd-label">
@@ -1224,8 +1230,7 @@
           </span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
-        <div class="cmd-code">curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/install.sh
-          chmod +x install.sh && ./install.sh</div>
+        <div class="cmd-code">curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/install.sh && chmod +x install.sh && ./install.sh</div>
       </div>
       <div id="modal-values-block" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:10px;">📋 Valeurs demandées par le script</div>

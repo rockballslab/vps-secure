@@ -1412,7 +1412,7 @@ fi
 
 # Écriture atomique via mktemp + mv (évite lecture partielle)
 TMP=$(mktemp "${CACHE}.XXXXXX")
-printf '{"last_updated":"%s","last24h":%d,"total":%d,"running":%s,"cs_banned":%d}\n' \
+printf '{"last_updated":"%s","last24h":%d,"total":%d,"running":"%s","cs_banned":%d}\n' \
     "$TS" "$LAST24H" "$TOTAL" "$RUNNING" "$CS_BANNED" > "$TMP"
 mv "$TMP" "$CACHE"
 chmod 644 "$CACHE"

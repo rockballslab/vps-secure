@@ -430,14 +430,14 @@ echo -e "${BLANC}  Ou utilise : sudo /usr/local/bin/vps-secure-n8n-apikey.sh <ta
 echo ""
 
 # Créer le script helper pour la clé API
-cat > /usr/local/bin/vps-secure-n8n-apikey.sh << APIKEYEOF
+# Note : heredoc avec guillemets simples 'APIKEYEOF' — évite l'expansion des variables au moment de la création
+cat > /usr/local/bin/vps-secure-n8n-apikey.sh << 'APIKEYEOF'
 #!/usr/bin/env bash
 # Usage : sudo vps-secure-n8n-apikey.sh <N8N_API_KEY>
 set -euo pipefail
 [[ -z "${1:-}" ]] && echo "Usage : sudo $0 <N8N_API_KEY>" && exit 1
-API_KEY="$1"
+API_KEY="${1}"
 MCP_TOKEN_VAL=$(grep MCP_TOKEN /etc/vps-secure/n8n.conf | cut -d'"' -f2)
-MCP_PORT_VAL=${MCP_PORT}
 docker rm -f n8n-mcp 2>/dev/null || true
 docker run -d \
     --name n8n-mcp \
@@ -447,12 +447,12 @@ docker run -d \
     --cap-drop ALL \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
-    -p 127.0.0.1:\${MCP_PORT_VAL}:3000 \
+    -p 127.0.0.1:3000:3000 \
     -e MCP_MODE=http \
     -e PORT=3000 \
-    -e AUTH_TOKEN="\${MCP_TOKEN_VAL}" \
+    -e AUTH_TOKEN="${MCP_TOKEN_VAL}" \
     -e N8N_API_URL="http://n8n:5678" \
-    -e N8N_API_KEY="\${API_KEY}" \
+    -e N8N_API_KEY="${API_KEY}" \
     -e LOG_LEVEL=error \
     -e DISABLE_CONSOLE_OUTPUT=true \
     ghcr.io/czlonkowski/n8n-mcp:latest

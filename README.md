@@ -4,8 +4,6 @@
 
 **🔐 Sécurise ton VPS en 15 min - honeypot, pare-feu, IPS, integrity monitoring. Une commande. Zéro compétence requise.**
 
-Score Lynis 78/100 (outil d'audit de sécurité Linux open-source. Il scanne la configuration du serveur et donne un score sur 100. Référence industrie, utilisé par les sysadmins professionnels.) - 44% plus sécurisé qu'un VPS Ubuntu standard —
-
 
 > "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un serveur de type VPS, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**
 >
@@ -226,6 +224,8 @@ sudo ufw allow 8080/tcp comment 'Mon application'
 
 Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% du DISA STIG Ubuntu 24.04** — largement au-dessus de n'importe quel script public comparable.
 
+Score Lynis 78/100 (outil d'audit de sécurité Linux open-source. Il scanne la configuration du serveur et donne un score sur 100. Référence industrie, utilisé par les sysadmins professionnels.) - 44% plus sécurisé qu'un VPS Ubuntu standard
+
 | Standard | Couverture |
 |---|---|
 | CIS Benchmark L1 | ~80% |
@@ -420,7 +420,7 @@ Le script te demande un domaine et un mot de passe, configure tout et lance auto
 
 ## Compatibilité
 
-Testé et vérifié le 11 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 13 min · 12/12 PASS ·
+Testé et vérifié le 11 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 13 min ·
 
 ---
 

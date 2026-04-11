@@ -224,17 +224,20 @@ sudo ufw allow 8080/tcp comment 'Mon application'
 
 Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% du DISA STIG Ubuntu 24.04** — largement au-dessus de n'importe quel script public comparable.
 
-Score Lynis 78/100 (outil d'audit de sécurité Linux open-source. Il scanne la configuration du serveur et donne un score sur 100. Référence industrie, utilisé par les sysadmins professionnels.) - 44% plus sécurisé qu'un VPS Ubuntu standard
 
 | Standard | Couverture |
 |---|---|
 | CIS Benchmark L1 | ~80% |
 | DISA STIG Ubuntu 24.04 | ~70% |
 | OWASP Infrastructure | Supply chain (GPG + empreinte vérifiée), secrets, logging |
+| Lynis Audit | 78% |
 
 **CIS Benchmark** — CIS = Center for Internet Security, organisation américaine à but non lucratif qui publie des guides de configuration sécurisée pour tous les OS majeurs. Le Level 1 cible une sécurité raisonnable sans impact sur les fonctionnalités — c'est le standard utilisé par les entreprises pour leurs serveurs en production. 80% CIS L1 signifie 4 contrôles sur 5 couverts. Les 20% restants sont des contrôles non applicables sur VPS (partitions dédiées `/var`, `/home`) ou volontairement exclus pour garder le script accessible.
 
 **DISA STIG** — DISA = Defense Information Systems Agency, l'agence IT du Département de la Défense américain. Les STIGs sont leurs guides de configuration, plus stricts que CIS, obligatoires pour tous les systèmes du gouvernement US. 70% DISA STIG est très bon pour un script public — les 30% restants concernent des contrôles militaires sans sens pour un VPS perso (accès physique, smartcard auth) ou nécessitant une infrastructure d'entreprise (LDAP, SIEM centralisé).
+
+**Lynis** - outil d'audit de sécurité Linux open-source = Il scanne la configuration du serveur et donne un score sur 100. Référence industrie, utilisé par les sysadmins professionnels.
+
 
 ## Sécurité de l'utilisateur vpsadmin
 

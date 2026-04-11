@@ -49,7 +49,7 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 | 12 | Désactivation des services inutiles | avahi, cups, bluetooth, ModemManager désactivés — chaque service actif = surface d'attaque (CIS 2.x). Ctrl-Alt-Delete masqué (DISA STIG) |
 | 13 | Alertes **Telegram** | Rapport de sécurité quotidien + alerte immédiate à chaque connexion SSH — optionnel |
 | 14 | **Endlessh** (honeypot port 22) | SSH est sur le port 2222 — le port 22 est libre. Endlessh le capture et maintient les bots connectés des heures en leur envoyant un banner SSH infini. Ils ne peuvent pas attaquer ailleurs pendant ce temps |
-| 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 — toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram de 07h00 |
+| 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 — toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram de 07h00. Les mises à jour automatiques (`unattended-upgrades`) sont détectées et la baseline est mise à jour silencieusement — zéro fausse alerte |
 
 ---
 
@@ -351,8 +351,8 @@ sudo docker ps --format "table {{.Names}}\t{{.Ports}}"
 # Tester le rapport Telegram manuellement (si Telegram a été activé)
 sudo /usr/local/bin/vps-secure-check.sh
 
-# Honeypot Endlessh — stats des bots piégés (dernières 24h)
-sudo docker logs endlessh --since 24h | grep -ci accept
+# Honeypot Endlessh — stats des bots piégés (cache mis à jour toutes les 5 min)
+cat /var/cache/vps-secure/security-stats.json
 
 # Honeypot Endlessh — logs en direct
 sudo docker logs -f endlessh
@@ -360,8 +360,12 @@ sudo docker logs -f endlessh
 # AIDE — lancer un scan d'intégrité manuellement
 sudo aide --check
 
-# AIDE — mettre à jour la baseline après une mise à jour OS
+# AIDE — mettre à jour la baseline après une mise à jour OS majeure (upgrade de version)
+# Note : les patches de sécurité quotidiens (unattended-upgrades) sont gérés automatiquement
 sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+
+# Cache sécurité (Endlessh + CrowdSec) — mis à jour toutes les 5 min
+cat /var/cache/vps-secure/security-stats.json
 ```
 
 ---
@@ -411,7 +415,7 @@ Le script te demande un domaine et un mot de passe, configure tout et lance auto
 
 ## Compatibilité
 
-Testé et vérifié le 7 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX ·
+Testé et vérifié le 11 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 13 min · 12/12 PASS ·
 
 ---
 

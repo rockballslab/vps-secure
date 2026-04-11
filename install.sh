@@ -213,11 +213,12 @@ LogLevel VERBOSE
 Banner /etc/issue.net
 
 MaxAuthTries 3
-MaxSessions 3
+MaxSessions 2
 MaxStartups 10:30:60
 LoginGraceTime 30
 ClientAliveInterval 300
 ClientAliveCountMax 2
+TCPKeepAlive no
 
 X11Forwarding no
 AllowAgentForwarding no
@@ -796,6 +797,16 @@ net.ipv4.ip_unprivileged_port_start = 22
 
 SYSEOF
 
+# Désactiver les protocoles réseau inutiles via modprobe (Lynis NETW-3200)
+cat > /etc/modprobe.d/vps-secure-disable-protocols.conf << 'MODPROBEEOF'
+# vps-secure — Désactivation des protocoles réseau inutiles (Lynis NETW-3200)
+install dccp /bin/true
+install sctp /bin/true
+install rds  /bin/true
+install tipc /bin/true
+MODPROBEEOF
+chmod 644 /etc/modprobe.d/vps-secure-disable-protocols.conf
+
 SYSCTL_OUTPUT=$(sysctl --system 2>&1)
 SYSCTL_ERRORS=$(echo "$SYSCTL_OUTPUT" | grep -c "^sysctl: " 2>/dev/null || echo "0")
 SYSCTL_ERRORS=$(echo "$SYSCTL_ERRORS" | tr -d '[:space:]' | grep -E '^[0-9]+$' || echo "0")
@@ -1042,6 +1053,24 @@ done
 log_info "  Services vérifiés : avahi-daemon, cups, bluetooth, ModemManager, whoopsie, apport"
 log_info "  Pour voir les services actifs : systemctl list-units --type=service --state=active"
 
+# ── umask 027 (Lynis AUTH-9328) ──
+# Restreint la création de fichiers — groupe ne peut pas lire, autres ne peuvent rien
+if grep -q "^UMASK" /etc/login.defs 2>/dev/null; then
+    sed -i 's/^UMASK.*/UMASK\t\t027/' /etc/login.defs
+else
+    echo "UMASK		027" >> /etc/login.defs
+fi
+log_success "umask 027 configuré dans /etc/login.defs."
+
+# ── Durcissement Postfix (Lynis MAIL-8818, MAIL-8820) ──
+# Postfix est installé par défaut sur Ubuntu — masquer le banner OS et désactiver VRFY
+if command -v postconf &>/dev/null; then
+    postconf -e 'smtpd_banner = $myhostname ESMTP'  # cache la version et l'OS
+    postconf -e 'disable_vrfy_command = yes'         # empêche l'énumération d'utilisateurs
+    systemctl restart postfix 2>/dev/null || true  # optionnel : postfix peut ne pas être actif
+    log_success "Postfix durci — banner OS masqué, VRFY désactivé."
+fi
+
 # ============================================================
 # Étape 13 : Alertes Telegram (optionnel)
 # ============================================================
@@ -1277,6 +1306,23 @@ TELEGRAM_CHAT_ID=$(grep '^TELEGRAM_CHAT_ID=' "$CONFIG" | cut -d'"' -f2)
 
 DATE=$(date '+%d/%m/%Y %H:%M:%S')
 HOST=$(hostname)
+INCOMING_IP="${PAM_RHOST:-inconnue}"
+KNOWN_IPS_FILE="/etc/vps-secure/known-ips.conf"
+
+# Reconnaissance IP
+if [[ "$INCOMING_IP" == "inconnue" ]]; then
+    IP_LABEL="🌐 IP source   : inconnue"
+elif [[ -f "$KNOWN_IPS_FILE" ]] && grep -qxF "$INCOMING_IP" "$KNOWN_IPS_FILE" 2>/dev/null; then
+    # IP déjà connue → TON IP
+    IP_LABEL="✅ IP source   : TON IP (${INCOMING_IP})"
+else
+    # Nouvelle IP — on l'enregistre
+    mkdir -p /etc/vps-secure
+    echo "$INCOMING_IP" >> "$KNOWN_IPS_FILE"
+    chmod 600 "$KNOWN_IPS_FILE"
+    IP_LABEL="⚠️ IP source   : ${INCOMING_IP} (première connexion)
+❓ C'est toi ? Si non : sudo cscli decisions add --ip ${INCOMING_IP}"
+fi
 
 CURLCFG=$(mktemp)
 chmod 600 "$CURLCFG"
@@ -1285,7 +1331,7 @@ printf 'url = "https://api.telegram.org/bot%s/sendMessage"\ndata = "chat_id=%s"\
 curl -s --config "$CURLCFG" \
     --data-urlencode "text=🔐 Connexion SSH sur ${HOST}
 👤 Utilisateur : ${PAM_USER:-inconnu}
-🌐 IP source   : ${PAM_RHOST:-inconnue}
+${IP_LABEL}
 📅 ${DATE}" > /dev/null 2>&1
 rm -f "$CURLCFG"
 SSHALERTEOF
@@ -1412,7 +1458,7 @@ fi
 
 # Écriture atomique via mktemp + mv (évite lecture partielle)
 TMP=$(mktemp "${CACHE}.XXXXXX")
-printf '{"last_updated":"%s","last24h":%d,"total":%d,"running":"%s","cs_banned":%d}\n' \
+printf '{"last_updated":"%s","last24h":%d,"total":%d,"running":%s,"cs_banned":%d}\n' \
     "$TS" "$LAST24H" "$TOTAL" "$RUNNING" "$CS_BANNED" > "$TMP"
 mv "$TMP" "$CACHE"
 chmod 644 "$CACHE"
@@ -1762,8 +1808,30 @@ fi
 rm -f "$VERIFY_TMP"
 
 # ── MOTD personnalisé (affiché à chaque connexion SSH) ──
-# Désactiver le MOTD Ubuntu par défaut (publicitaire et verbeux)
-chmod -x /etc/update-motd.d/* 2>/dev/null || true  # optionnel : certains fichiers peuvent être absents
+# Vider les scripts MOTD Ubuntu par défaut (publicitaires et verbeux)
+# truncate est plus fiable que chmod sur Ubuntu 24.04 — PAM exécute via pam_motd
+# indépendamment des permissions fichier
+for _motd_script in \
+    /etc/update-motd.d/00-header \
+    /etc/update-motd.d/10-help-text \
+    /etc/update-motd.d/50-motd-news \
+    /etc/update-motd.d/50-landscape-sysinfo \
+    /etc/update-motd.d/85-fwupd \
+    /etc/update-motd.d/90-updates-available \
+    /etc/update-motd.d/91-contract-ua-esm-status \
+    /etc/update-motd.d/91-release-upgrade \
+    /etc/update-motd.d/92-unattended-upgrades \
+    /etc/update-motd.d/95-hwe-eol \
+    /etc/update-motd.d/97-overlayroot \
+    /etc/update-motd.d/98-fsck-at-reboot \
+    /etc/update-motd.d/98-reboot-required; do
+    truncate -s 0 "$_motd_script" 2>/dev/null || true  # optionnel : fichier peut être absent selon l'image
+done
+# Désactiver les timers qui régénèrent motd.dynamic
+systemctl disable --now motd-news.timer 2>/dev/null || true  # optionnel : absent sur certaines images
+systemctl mask motd-news.timer 2>/dev/null || true
+systemctl disable --now update-notifier-motd.timer 2>/dev/null || true  # optionnel : même raison
+systemctl mask update-notifier-motd.timer 2>/dev/null || true
 cat > /etc/update-motd.d/00-vps-secure << 'MOTDEOF'
 #!/usr/bin/env bash
 
@@ -1802,6 +1870,8 @@ echo -e "  ${Y}🔥 UFW       ${W}${UFW_BLOCKS} blocages"
 echo -e "${R}"
 MOTDEOF
 chmod +x /etc/update-motd.d/00-vps-secure
+# Régénérer motd.dynamic avec uniquement notre script
+bash -c 'run-parts --lsbsysinit /etc/update-motd.d > /run/motd.dynamic 2>/dev/null' || true  # optionnel : erreurs attendues sur les scripts vidés
 log_success "MOTD personnalisé installé — affiché à chaque connexion SSH."
 
 # Résumé final

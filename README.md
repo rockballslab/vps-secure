@@ -9,17 +9,19 @@
 >
 > 15 minutes, une seule commande. Ton serveur passe du stade *cible facile* à *cible qui n'en vaut pas la peine*."
 
-🛡️ Pourquoi utiliser ce script ?
+## 🛡️ Pourquoi utiliser ce script ?
 
-Le constat est simple : les protections par défaut fournies par les hébergeurs (OVH, Hostinger, Hetzner, DigitalOcean, etc.) sont insuffisantes pour une mise en production sécurisée.
+> **Le constat est simple :** les protections par défaut fournies par les hébergeurs (OVH, Hostinger, Hetzner, DigitalOcean, etc.) sont **insuffisantes** pour une mise en production sécurisée.
 
-
-Le problème : Un VPS livré "nu" tourne avec l'utilisateur root ouvert sur le port 22, sans firewall configuré et sans aucun système de détection d'intrusion.
-Le risque : Les bots et scanners automatiques trouvent votre IP et tentent des attaques par force brute en moins de 2 minutes après l'activation du serveur.
-La solution : En 15 minutes, ce script installe une stack de sécurité complète — pare-feu UFW, IPS CrowdSec, honeypot Endlessh, integrity monitoring AIDE, audit système, DNS chiffré, hardening kernel — et configure des alertes Telegram en temps réel.
+| | |
+|---|---|
+| **Le problème** | Un VPS livré "nu" tourne avec l'utilisateur `root` ouvert sur le port 22, sans firewall configuré et sans aucun système de détection d'intrusion. |
+| **Le risque** | Les bots et scanners automatiques trouvent votre IP et tentent des attaques par force brute en **moins de 2 minutes** après l'activation du serveur. |
+| **La solution** | En 15 minutes, ce script installe une stack complète — pare-feu UFW, IPS CrowdSec, honeypot Endlessh, integrity monitoring AIDE, audit système, DNS chiffré, hardening kernel — et configure des alertes Telegram en temps réel. |
 
 Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est précisément la configuration que j'utilise pour sécuriser mes serveurs de production.
-Choisis VPS-SECURE pour que ton serveur devienne une forteresse prête à accueillir tes services.
+
+**Choisis VPS-SECURE pour que ton serveur devienne une forteresse prête à accueillir tes services.**
 
 ---
 

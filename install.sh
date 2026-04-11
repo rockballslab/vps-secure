@@ -1445,9 +1445,11 @@ TIMERCACHEEOF
 
 systemctl daemon-reload
 systemctl enable --now vps-secure-stats-cache.timer
-# Premier remplissage immédiat (sinon le cache est vide jusqu'au prochain cycle)
-systemctl start vps-secure-stats-cache.service
-log_success "Cache sécurité actif — /var/cache/vps-secure/security-stats.json (rafraîchi toutes les 5 min)."
+# Premier remplissage immédiat — non bloquant : Docker/CrowdSec peuvent ne pas être
+# totalement prêts à ce stade. Le timer prend le relais dans 2 min au pire.
+systemctl start vps-secure-stats-cache.service 2>/dev/null \
+    || log_warn "Cache sécurité : premier remplissage différé — actif dans 2 min via timer (normal à l'install)."  # optionnel : Docker pas encore prêt au moment du premier start
+log_success "Cache sécurité configuré — /var/cache/vps-secure/security-stats.json (rafraîchi toutes les 5 min)."
 
 # ============================================================
 # Étape 15 : Integrity monitoring (AIDE)

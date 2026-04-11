@@ -17,7 +17,7 @@
 |---|---|
 | **Le problème** | Un VPS livré "nu" tourne avec l'utilisateur `root` ouvert sur le port 22, sans firewall configuré et sans aucun système de détection d'intrusion. |
 | **Le risque** | Les bots et scanners automatiques trouvent ton IP et tentent des attaques par force brute en **moins de 2 minutes** après l'activation du serveur. |
-| **La solution** | En 15 minutes, ce script installe une stack complète — pare-feu UFW, IPS CrowdSec, honeypot Endlessh, integrity monitoring AIDE, audit système, DNS chiffré, hardening kernel — et configure des alertes Telegram en temps réel. |
+| **La solution** | En **15 minutes**, ce script installe une stack complète — pare-feu UFW, IPS CrowdSec, honeypot Endlessh, integrity monitoring AIDE, audit système, DNS chiffré, hardening kernel — et configure des alertes Telegram en temps réel. |
 
 Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est précisément la configuration que j'utilise pour sécuriser mes serveurs de production.
 

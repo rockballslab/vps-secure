@@ -13,7 +13,7 @@
 
 > **Le constat est simple :** les protections par défaut fournies par les hébergeurs (OVH, Hostinger, Hetzner, DigitalOcean, etc.) sont **insuffisantes** pour une mise en production sécurisée.
 
-
+| | |
 |---|---|
 | **Le problème** | Un VPS livré "nu" tourne avec l'utilisateur `root` ouvert sur le port 22, sans firewall configuré et sans aucun système de détection d'intrusion. |
 | **Le risque** | Les bots et scanners automatiques trouvent votre IP et tentent des attaques par force brute en **moins de 2 minutes** après l'activation du serveur. |

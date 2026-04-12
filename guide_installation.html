@@ -1230,7 +1230,9 @@
           </span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
-        <div class="cmd-code">bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh)</div>
+        <div class="cmd-code">bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
+  && chmod +x install-secure.sh \
+  && sudo ./install-secure.sh)</div>
       </div>
       <div id="modal-values-block" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:10px;">📋 Valeurs demandées par le script</div>
@@ -1452,7 +1454,9 @@
       const dashUrl = (vals["dash_url"] || "").trim() || "Non renseigné";
       const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
       const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      const lines = ["vps-secure — Configuration VPS", "================================", `Date         : ${date}`, "", `IP du VPS    : ${ip}`, `Clé SSH pub  : ${pub}`, "", "================================", "Accès Dashboard :", `URL          : ${dashUrl}`, `Mot de passe : ${dashPwd}`, "", "================================", "⚠️  Mot de passe root VPS non exporté (sécurité).", "", "================================", "Connexion root (1 seule fois) :", `  ssh root@${ip}`, "", "Lancer l'installation :", "  curl -O bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh), "", "Connexion après installation :", `  ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps`, "", "================================", "github.com/rockballslab/vps-secure"];
+      const lines = ["vps-secure — Configuration VPS", "================================", `Date         : ${date}`, "", `IP du VPS    : ${ip}`, `Clé SSH pub  : ${pub}`, "", "================================", "Accès Dashboard :", `URL          : ${dashUrl}`, `Mot de passe : ${dashPwd}`, "", "================================", "⚠️  Mot de passe root VPS non exporté (sécurité).", "", "================================", "Connexion root (1 seule fois) :", `  ssh root@${ip}`, "", "Lancer l'installation :", "  curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
+  && chmod +x install-secure.sh \
+  && sudo ./install-secure.sh, "", "Connexion après installation :", `  ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps`, "", "================================", "github.com/rockballslab/vps-secure"];
       const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
       const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `vps-secure-config-${date.replace(/\//g, "-")}.txt`; a.click(); URL.revokeObjectURL(a.href);
     }
@@ -1464,7 +1468,9 @@
       const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
       const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
       const win = window.open("", "_blank");
-      win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>vps-secure — Config ${date}</title><style>body{font-family:'Courier New',monospace;font-size:13px;color:#0f172a;padding:40px;max-width:680px;margin:0 auto}h1{font-size:20px;font-weight:800;margin-bottom:4px}.sub{color:#64748b;font-size:12px;margin-bottom:24px}table{width:100%;border-collapse:collapse;margin-bottom:24px}td{padding:8px 12px;border:1px solid #e2e8f0;vertical-align:top}td:first-child{font-weight:700;width:140px;background:#f8fafc;white-space:nowrap}.cmd{background:#0f172a;color:#6ee7b7;border-radius:8px;padding:14px 16px;margin-bottom:12px;font-size:12px;line-height:1.8}.label{font-weight:700;font-size:11px;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}.warn{background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:24px}footer{margin-top:32px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style></head><body><h1>🔐 vps-secure — Configuration VPS</h1><div class="sub">Généré le ${date} · github.com/rockballslab/vps-secure</div><div class="label">Informations VPS</div><table><tr><td>IP du VPS</td><td>${ip}</td></tr><tr><td>Clé SSH publique</td><td style="word-break:break-all;font-size:11px;">${pub}</td></tr><tr><td>Utilisateur créé</td><td>vpsadmin</td></tr><tr><td>Port SSH</td><td>2222</td></tr></table><div class="label">Accès Dashboard (Optionnel)</div><table><tr><td>URL Dashboard</td><td>${dashUrl}</td></tr><tr><td>Mot de passe</td><td>${dashPwd}</td></tr></table><div class="warn">⚠️ Mot de passe root VPS non exporté pour des raisons de sécurité.</div><div class="label">Commandes</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">① INSTALLATION — en root</div>ssh root@${ip}<br>curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/install.sh<br>chmod +x install.sh &amp;&amp; ./install.sh</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">② CONNEXION APRÈS INSTALLATION — en vpsadmin</div>ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps</div><footer>vps-secure · github.com/rockballslab/vps-secure</footer></body></html>`);
+      win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>vps-secure — Config ${date}</title><style>body{font-family:'Courier New',monospace;font-size:13px;color:#0f172a;padding:40px;max-width:680px;margin:0 auto}h1{font-size:20px;font-weight:800;margin-bottom:4px}.sub{color:#64748b;font-size:12px;margin-bottom:24px}table{width:100%;border-collapse:collapse;margin-bottom:24px}td{padding:8px 12px;border:1px solid #e2e8f0;vertical-align:top}td:first-child{font-weight:700;width:140px;background:#f8fafc;white-space:nowrap}.cmd{background:#0f172a;color:#6ee7b7;border-radius:8px;padding:14px 16px;margin-bottom:12px;font-size:12px;line-height:1.8}.label{font-weight:700;font-size:11px;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}.warn{background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:24px}footer{margin-top:32px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style></head><body><h1>🔐 vps-secure — Configuration VPS</h1><div class="sub">Généré le ${date} · github.com/rockballslab/vps-secure</div><div class="label">Informations VPS</div><table><tr><td>IP du VPS</td><td>${ip}</td></tr><tr><td>Clé SSH publique</td><td style="word-break:break-all;font-size:11px;">${pub}</td></tr><tr><td>Utilisateur créé</td><td>vpsadmin</td></tr><tr><td>Port SSH</td><td>2222</td></tr></table><div class="label">Accès Dashboard (Optionnel)</div><table><tr><td>URL Dashboard</td><td>${dashUrl}</td></tr><tr><td>Mot de passe</td><td>${dashPwd}</td></tr></table><div class="warn">⚠️ Mot de passe root VPS non exporté pour des raisons de sécurité.</div><div class="label">Commandes</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">① INSTALLATION — en root</div>ssh root@${ip}<br>curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
+  && chmod +x install-secure.sh \
+  && sudo ./install-secure.sh</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">② CONNEXION APRÈS INSTALLATION — en vpsadmin</div>ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps</div><footer>vps-secure · github.com/rockballslab/vps-secure</footer></body></html>`);
       win.document.close(); win.focus(); setTimeout(() => { win.print(); }, 400);
     }
 
@@ -1510,7 +1516,9 @@
           <span>install-dashboard.sh — en vpsadmin</span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
-        <div class="cmd-code">bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh)</div>
+        <div class="cmd-code">bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
+  && chmod +x install-secure.sh \
+  && sudo ./install-secure.sh)</div>
       </div>
       <div id="dash-pwd-row" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:16px;"></div>
       <div style="display:flex;gap:10px;">

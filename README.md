@@ -9,6 +9,13 @@
 
 > 🔒 Score Lynis 81/100 — +50% vs un VPS Ubuntu standard. Vérifiable en 2 min après installation.
 
+---
+
+> 💳 **Script payant** — [Obtenir une licence](https://vps-secure.netlify.app/)
+> 👨‍💻 Tu es développeur et tu veux tester ? Écris-moi : [security@aiforceone.fr](mailto:security@aiforceone.fr)
+
+---
+
 ## 🛡️ Pourquoi utiliser ce script ?
 
 > **Le constat est simple :** les protections par défaut fournies par les hébergeurs (OVH, Hostinger, Hetzner, DigitalOcean, etc.) sont **insuffisantes** pour une mise en production sécurisée.

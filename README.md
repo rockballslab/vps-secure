@@ -244,7 +244,7 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 | CIS Benchmark L1 | ~80% |
 | DISA STIG Ubuntu 24.04 | ~70% |
 | OWASP Infrastructure | Supply chain (GPG + empreinte vérifiée), secrets, logging |
-| Lynis Audit | 78/100 |  la moyenne des serveurs Ubuntu non configurés est 54 |
+| Lynis Audit | 81/100 | +50% vs un VPS Ubuntu standard (54/100) — vérifiable en 2 min après installation |
 
 **CIS Benchmark** — CIS = Center for Internet Security, organisation américaine à but non lucratif qui publie des guides de configuration sécurisée pour tous les OS majeurs. Le Level 1 cible une sécurité raisonnable sans impact sur les fonctionnalités — c'est le standard utilisé par les entreprises pour leurs serveurs en production. 80% CIS L1 signifie 4 contrôles sur 5 couverts. Les 20% restants sont des contrôles non applicables sur VPS (partitions dédiées `/var`, `/home`) ou volontairement exclus pour garder le script accessible.
 

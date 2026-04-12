@@ -1230,7 +1230,7 @@
           </span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
-        <div class="cmd-code">curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/install.sh && chmod +x install.sh && ./install.sh</div>
+        <div class="cmd-code">bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh)</div>
       </div>
       <div id="modal-values-block" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:10px;">📋 Valeurs demandées par le script</div>
@@ -1452,7 +1452,7 @@
       const dashUrl = (vals["dash_url"] || "").trim() || "Non renseigné";
       const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
       const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      const lines = ["vps-secure — Configuration VPS", "================================", `Date         : ${date}`, "", `IP du VPS    : ${ip}`, `Clé SSH pub  : ${pub}`, "", "================================", "Accès Dashboard :", `URL          : ${dashUrl}`, `Mot de passe : ${dashPwd}`, "", "================================", "⚠️  Mot de passe root VPS non exporté (sécurité).", "", "================================", "Connexion root (1 seule fois) :", `  ssh root@${ip}`, "", "Lancer l'installation :", "  curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/install.sh", "  chmod +x install.sh && ./install.sh", "", "Connexion après installation :", `  ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps`, "", "================================", "github.com/rockballslab/vps-secure"];
+      const lines = ["vps-secure — Configuration VPS", "================================", `Date         : ${date}`, "", `IP du VPS    : ${ip}`, `Clé SSH pub  : ${pub}`, "", "================================", "Accès Dashboard :", `URL          : ${dashUrl}`, `Mot de passe : ${dashPwd}`, "", "================================", "⚠️  Mot de passe root VPS non exporté (sécurité).", "", "================================", "Connexion root (1 seule fois) :", `  ssh root@${ip}`, "", "Lancer l'installation :", "  curl -O bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh), "", "Connexion après installation :", `  ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps`, "", "================================", "github.com/rockballslab/vps-secure"];
       const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
       const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `vps-secure-config-${date.replace(/\//g, "-")}.txt`; a.click(); URL.revokeObjectURL(a.href);
     }
@@ -1510,7 +1510,7 @@
           <span>install-dashboard.sh — en vpsadmin</span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
-        <div class="cmd-code">curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard.sh && chmod +x install-dashboard.sh && ./install-dashboard.sh</div>
+        <div class="cmd-code">bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh)</div>
       </div>
       <div id="dash-pwd-row" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:16px;"></div>
       <div style="display:flex;gap:10px;">

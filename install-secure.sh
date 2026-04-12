@@ -54,7 +54,7 @@ if ! echo "$GPG_OUT" | grep -q "Good signature"; then
 fi
 
 # Extraction robuste : fingerprint 40 chars hex continus (ligne "using RSA key")
-SIGNER_FP=$(echo "$GPG_OUT" | grep -oiP '[0-9A-F]{40}' | head -1 | tr '[:lower:]' '[:upper:]')
+SIGNER_FP=$(echo "$GPG_OUT" | grep -oiE '[0-9A-F]{40}' | head -1 | tr '[:lower:]' '[:upper:]')
 
 if [[ "${SIGNER_FP:-}" != "${EXPECTED_FP}" ]]; then
   log_fail "Fingerprint inattendu : ${SIGNER_FP:-introuvable} — clé non reconnue. Abandon."

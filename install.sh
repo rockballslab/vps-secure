@@ -134,15 +134,16 @@ fi
 # Appel webhook n8n
 CHECK_URL="https://api.genieshot.com/webhooks/check-license"
 
+_LIC_TMP=$(mktemp)
 HTTP_CODE=$(curl -s --max-time 10 \
-    -o /tmp/_vps_lic.json \
+    -o "$_LIC_TMP" \
     -w "%{http_code}" \
     -X POST "$CHECK_URL" \
     -H "Content-Type: application/json" \
     -d "{\"key\": \"$ACTIVATION_KEY\"}" 2>/dev/null || echo "000")
 
-RESPONSE=$(cat /tmp/_vps_lic.json 2>/dev/null || echo "")
-rm -f /tmp/_vps_lic.json
+RESPONSE=$(cat "$_LIC_TMP" 2>/dev/null || echo "")
+rm -f "$_LIC_TMP"
 
 # Réseau inaccessible / timeout
 if [[ "$HTTP_CODE" == "000" ]]; then
@@ -175,6 +176,12 @@ else
     printf 'Defaults:%s use_pty\n%s ALL=(ALL) NOPASSWD:ALL\n' "$USERNAME" "$USERNAME" \
         > /etc/sudoers.d/"$USERNAME"
     chmod 440 /etc/sudoers.d/"$USERNAME"
+    # Valider la syntaxe sudoers — un fichier corrompu rend sudo non-fonctionnel
+    if ! visudo -cf /etc/sudoers.d/"$USERNAME" &>/dev/null; then
+        log_error "sudoers corrompu — suppression et abandon."
+        rm -f /etc/sudoers.d/"$USERNAME"
+        exit 1
+    fi
     log_success "Utilisateur $USERNAME créé avec accès sudo sans mot de passe (use_pty actif)."
 fi
 
@@ -227,6 +234,8 @@ log_success "Clé SSH validée ($KEY_TYPE)."
 # Installer la clé
 ADMIN_HOME="/home/$USERNAME"
 mkdir -p "$ADMIN_HOME/.ssh"
+# Prendre uniquement la première ligne — bloque les clés multi-lignes avec options injectées
+SSH_PUB_KEY=$(printf '%s' "$SSH_PUB_KEY" | head -1 | tr -d '\r')
 echo "$SSH_PUB_KEY" > "$ADMIN_HOME/.ssh/authorized_keys"
 chmod 700 "$ADMIN_HOME/.ssh"
 chmod 600 "$ADMIN_HOME/.ssh/authorized_keys"
@@ -701,6 +710,11 @@ DOCKER_SUBNET=$(docker network inspect bridge \
     --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null || true)  # optionnel : docker inspect peut échouer si le daemon vient de démarrer — fallback ligne suivante
 if [[ -z "$DOCKER_SUBNET" ]]; then
     log_warn "Subnet Docker bridge vide après inspect — fallback 172.17.0.0/16."
+    DOCKER_SUBNET="172.17.0.0/16"
+fi
+# Valider le format CIDR — bloque toute injection de règle iptables via docker inspect
+if [[ ! "$DOCKER_SUBNET" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
+    log_warn "Subnet Docker malformé ('$DOCKER_SUBNET') — fallback 172.17.0.0/16."
     DOCKER_SUBNET="172.17.0.0/16"
 fi
 
@@ -1387,7 +1401,7 @@ elif [[ -f "$KNOWN_IPS_FILE" ]] && grep -qxF "$INCOMING_IP" "$KNOWN_IPS_FILE" 2>
 else
     # Nouvelle IP — on l'enregistre
     mkdir -p /etc/vps-secure
-    echo "$INCOMING_IP" >> "$KNOWN_IPS_FILE"
+    grep -qxF "$INCOMING_IP" "$KNOWN_IPS_FILE" 2>/dev/null || echo "$INCOMING_IP" >> "$KNOWN_IPS_FILE"
     chmod 600 "$KNOWN_IPS_FILE"
     IP_LABEL="⚠️ IP source   : ${INCOMING_IP} (première connexion)
 ❓ C'est toi ? Si non : sudo cscli decisions add --ip ${INCOMING_IP}"
@@ -1410,7 +1424,9 @@ SSHALERTEOF
             # Injecter la règle PAM dans /etc/pam.d/sshd (optionnel — ne bloque pas le login si erreur)
             PAM_SSHD="/etc/pam.d/sshd"
             if ! grep -q "vps-secure-ssh-alert" "$PAM_SSHD" 2>/dev/null; then
-                echo "session optional pam_exec.so /usr/local/bin/vps-secure-ssh-alert.sh" >> "$PAM_SSHD"
+                # seteuid : exécute le script en root (nécessaire pour lire telegram.conf chmod 600)
+                # Sans seteuid, pam_exec tourne avec l'UID de l'utilisateur connecté → accès refusé silencieux
+                echo "session optional pam_exec.so seteuid /usr/local/bin/vps-secure-ssh-alert.sh" >> "$PAM_SSHD"
                 log_success "Alerte SSH temps réel configurée — notification à chaque connexion."
             else
                 log_warn "Règle PAM SSH déjà présente — non dupliquée."
@@ -1449,7 +1465,7 @@ fi
 # Commande pour obtenir le digest actuel :
 #   docker pull shizunge/endlessh-go && \
 #   docker inspect --format='{{index .RepoDigests 0}}' shizunge/endlessh-go
-# Puis remplacer le tag par : shizunge/endlessh-go@sha256:XXXX
+# Puis remplacer le tag par : shizunge/endlessh-go@sha256:c9c5cd7084fda893f2b9f2c15d0b5867ba91ed06727375a3ca0f2678474fc09a
 docker run -d \
     --name endlessh \
     --restart unless-stopped \
@@ -1460,7 +1476,7 @@ docker run -d \
     --read-only \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
-    shizunge/endlessh-go \
+    shizunge/endlessh-go@sha256:c9c5cd7084fda893f2b9f2c15d0b5867ba91ed06727375a3ca0f2678474fc09a \
     -logtostderr \
     -v=1 \
     -port=22 \
@@ -1875,16 +1891,23 @@ log_success "Tableau de bord installé — commande disponible : sudo vps-secure
 # Installer vps-secure-verify pour usage post-reboot (évite le curl manuel)
 # log_warn explicite si échec réseau — évite "command not found" silencieux (Issue #6/#11)
 VERIFY_TMP=$(mktemp)
-if curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh \
-        -o "$VERIFY_TMP" 2>/dev/null; then
-    install -m 755 "$VERIFY_TMP" /usr/local/bin/vps-secure-verify
-    log_success "vps-secure-verify installé — commande disponible : sudo vps-secure-verify"
+VERIFY_SIG=$(mktemp)
+VERIFY_URL="https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh"
+if curl -fsSL "$VERIFY_URL"       -o "$VERIFY_TMP" 2>/dev/null && \
+   curl -fsSL "${VERIFY_URL}.asc" -o "$VERIFY_SIG" 2>/dev/null; then
+    if gpg --verify "$VERIFY_SIG" "$VERIFY_TMP" 2>/dev/null; then
+        install -m 755 "$VERIFY_TMP" /usr/local/bin/vps-secure-verify
+        log_success "vps-secure-verify installé — signature GPG vérifiée."
+    else
+        log_warn "vps-secure-verify : signature GPG invalide — non installé (supply chain protection)."
+        log_warn "  Installe manuellement après vérification : https://github.com/rockballslab/vps-secure"
+    fi
 else
     log_warn "vps-secure-verify : téléchargement échoué (réseau) — non installé."
     log_warn "  Installe manuellement après reboot :"
-    log_warn "  curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh -o /usr/local/bin/vps-secure-verify && chmod +x /usr/local/bin/vps-secure-verify"
+    log_warn "  curl -fsSL ${VERIFY_URL} -o /usr/local/bin/vps-secure-verify && chmod +x /usr/local/bin/vps-secure-verify"
 fi
-rm -f "$VERIFY_TMP"
+rm -f "$VERIFY_TMP" "$VERIFY_SIG"
 
 # ── MOTD personnalisé (affiché à chaque connexion SSH) ──
 # Vider les scripts MOTD Ubuntu par défaut (publicitaires et verbeux)

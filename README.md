@@ -4,10 +4,7 @@
 
 **🔐 Sécurise ton VPS en 15 min - honeypot, pare-feu, IPS, integrity monitoring. Une commande. Zéro compétence requise.**
 
-
-> "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un serveur de type VPS, et que tu tiens à tes données, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**
->
->
+> "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un VPS, et que tu tiens à tes données, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**
 > 15 minutes, une seule commande. Ton serveur passe du stade *cible facile* à *cible qui n'en vaut pas la peine*."
 
 ## 🛡️ Pourquoi utiliser ce script ?
@@ -258,28 +255,28 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 
 ## Sécurité de l'utilisateur vpsadmin
 
-Le script crée un utilisateur dédié (vpsadmin) pour gérer votre serveur. Voici ce qu'il faut savoir sur ses pouvoirs :
+Le script crée un utilisateur dédié (vpsadmin) pour gérer ton serveur. Voici ce qu'il faut savoir sur ses pouvoirs :
 
 - ⚡ Sudo simplifié : vpsadmin peut exécuter des commandes d'administration sans taper son mot de passe à chaque fois. Pour éviter les piratages de terminal, une sécurité supplémentaire (use_pty) a été ajoutée.
 
-- 🐳 Docker = Pouvoir Root : Comme vpsadmin peut lancer Docker, il peut techniquement accéder à tout le serveur. C'est normal et nécessaire pour gérer vos containers facilement.
+- 🐳 Docker = Pouvoir Root : Comme vpsadmin peut lancer Docker, il peut techniquement accéder à tout le serveur. C'est normal et nécessaire pour gérer tes containers facilement.
 
->⚠️ La règle d'or : Protégez votre clé SSH !
->Puisque vpsadmin a de grands pouvoirs, celui qui possède votre clé privée SSH possède votre serveur.
-> - Ne stockez jamais votre clé privée sur un Cloud (Drive, Dropbox).
-> - Ne la partagez jamais.
+>⚠️ La règle d'or : Protège ta clé SSH !
+>Puisque vpsadmin a de grands pouvoirs, celui qui possède ta clé privée SSH possède ton serveur.
+> - Ne stocke jamais ta clé privée sur un Cloud (Drive, Dropbox).
+> - Ne la partage jamais.
 
 ---
 
 ## Ce que ce script ne fait PAS
 
 - ❌ Pas de déploiement d'applications (n8n, WordPress, etc).
-Le script prépare une infrastructure ultra-sécurisée. Une fois le script passé, votre serveur est une forteresse prête à accueillir vos services. À vous d'installer vos apps, elles bénéficieront automatiquement de la protection du système (Firewall, Fail2Ban, etc.).
+Le script prépare une infrastructure ultra-sécurisée. Une fois le script passé, ton serveur est une forteresse prête à accueillir tes services. À toi d'installer tes apps, elles bénéficieront automatiquement de la protection du système (Firewall, CrowdSec, etc.).
 
-- ⚠️ Pas de gestion HTTPS pour vos futurs sites.
-Le script ne devine pas vos noms de domaine. Pour mettre vos propres sites en HTTPS (cadenas vert), vous devrez simplement installer un Reverse Proxy (comme Caddy, Nginx Proxy Manager ou Traefik).
+- ⚠️ Pas de gestion HTTPS pour tes futurs sites.
+Le script ne devine pas tes noms de domaine. Pour mettre tes propres sites en HTTPS (cadenas vert), tu devras simplement installer un Reverse Proxy (comme Caddy, Nginx Proxy Manager ou Traefik).
 
-> Note : Si vous choisissez l'option Dashboard, le HTTPS est géré automatiquement pour vous avec un Reverse Proxy Caddy.
+> Note : Si tu choisis l'option Dashboard, le HTTPS est géré automatiquement avec un Reverse Proxy Caddy.
 
 ---
 
@@ -356,9 +353,6 @@ sudo /usr/local/bin/vps-secure-check.sh
 sudo sed -i 's/^0 [0-9]* \* \* \*/0 8 * * */' /etc/cron.d/vps-secure
 sudo cat /etc/cron.d/vps-secure  # vérifier
 
-# Honeypot Endlessh — stats des bots piégés (cache mis à jour toutes les 5 min)
-cat /var/cache/vps-secure/security-stats.json
-
 # Honeypot Endlessh — logs en direct
 sudo docker logs -f endlessh
 
@@ -374,9 +368,10 @@ cat /var/cache/vps-secure/security-stats.json
 ```
 
 ---
-## OPTIONNEL mais pratique
 
-## Connexion rapide (optionnel)
+## Optionnel mais pratique
+
+## Connexion rapide
 
 Ajoute ceci sur **ton ordinateur** dans `~/.ssh/config` :
 ```
@@ -420,7 +415,7 @@ Le script te demande un domaine et un mot de passe, configure tout et lance auto
 
 ## Compatibilité
 
-Testé et vérifié le 11 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 13 min ·
+Testé et vérifié le 11 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 13 min · 12/12 PASS
 
 ---
 

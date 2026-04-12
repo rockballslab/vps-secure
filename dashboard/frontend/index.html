@@ -10,9 +10,11 @@
     href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet">
   <style>
+    /* ── Thème clair (défaut) ── */
     :root {
       --bg: #f0ebe3;
       --card: #ffffff;
+      --card-border: transparent;
       --teal: #2d7d6f;
       --teal-l: #3a9e8e;
       --rose: #e05a7a;
@@ -21,7 +23,6 @@
       --gold-l: #dbb85c;
       --text: #1e1e1e;
       --muted: #9a9085;
-      /* Lumière haut-droite → ombre bas-gauche */
       --shadow-out:
         -8px 8px 0px rgba(0, 0, 0, 0.07),
         -12px 16px 28px rgba(0, 0, 0, 0.20),
@@ -37,6 +38,102 @@
       --r: 30px;
       --r-sm: 18px;
       --r-xs: 12px;
+      --btn-text: #ffffff;
+      --donut-empty: rgba(0,0,0,0.06);
+    }
+
+    /* ── Thème sombre ── */
+    body.dark {
+      --bg: #0d0f0e;
+      --card: #161a18;
+      --card-border: rgba(255, 255, 255, 0.06);
+      --teal: #00ff88;
+      --teal-l: #33ffaa;
+      --rose: #ff4d6d;
+      --rose-l: #ff7090;
+      --gold: #f0b429;
+      --gold-l: #f5c842;
+      --text: #f0f0f0;
+      --muted: #6b7280;
+      --shadow-out:
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        0 8px 24px rgba(0, 0, 0, 0.3),
+        0 0 0 1px var(--card-border);
+      --shadow-in:
+        inset 0 1px 3px rgba(0, 0, 0, 0.4),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.03);
+      --shadow-teal:
+        0 4px 20px rgba(0, 255, 136, 0.25),
+        0 0 0 1px rgba(0, 255, 136, 0.15);
+      --r: 20px;
+      --r-sm: 14px;
+      --r-xs: 10px;
+      --btn-text: #0d0f0e;
+      --donut-empty: rgba(255,255,255,0.05);
+    }
+
+    /* Dark mode — surcharges spécifiques */
+    body.dark .logo-icon {
+      background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.05));
+      border: 1px solid rgba(0,255,136,0.25);
+    }
+    body.dark .btn-refresh,
+    body.dark .btn-icon:not(.btn-icon-muted) { color: #0d0f0e; }
+    body.dark .ic-teal {
+      background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.1));
+      border: 1px solid rgba(0,255,136,0.2);
+    }
+    body.dark .ic-rose {
+      background: linear-gradient(135deg, rgba(255,77,109,0.2), rgba(255,77,109,0.1));
+      border: 1px solid rgba(255,77,109,0.2);
+    }
+    body.dark .ic-gold {
+      background: linear-gradient(135deg, rgba(240,180,41,0.2), rgba(240,180,41,0.1));
+      border: 1px solid rgba(240,180,41,0.2);
+    }
+    body.dark .ic-green {
+      background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.1));
+      border: 1px solid rgba(0,255,136,0.2);
+    }
+    body.dark .ic-violet {
+      background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(167,139,250,0.1));
+      border: 1px solid rgba(167,139,250,0.2);
+    }
+    body.dark .icon-chip { box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    body.dark .pill-ok   { background: rgba(0,255,136,0.12); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
+    body.dark .pill-warn { background: rgba(255,77,109,0.12); color: #ff4d6d; border: 1px solid rgba(255,77,109,0.2); }
+    body.dark .pill-unk  { background: rgba(240,180,41,0.12); color: #f0b429; border: 1px solid rgba(240,180,41,0.2); }
+    body.dark .a-green::before { background: linear-gradient(90deg, #00ff88, #33ffaa); }
+    body.dark .a-red::before   { background: linear-gradient(90deg, #ff4d6d, #ff7090); }
+    body.dark .card::after { display: none; }
+    body.dark .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,255,136,0.1);
+    }
+    body.dark .bar-wrap { background: rgba(255,255,255,0.06); }
+    body.dark .skel {
+      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+
+    /* Toggle bouton */
+    .btn-theme {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: none; cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--card);
+      color: var(--text);
+      box-shadow: var(--shadow-out);
+      transition: all 0.18s ease;
+    }
+    .btn-theme:hover { transform: translateY(-1px); }
+
+    /* Transition douce entre les thèmes */
+    body, .card, .badge, .footer-badge, .countdown, .btn-theme {
+      transition: background 0.3s ease, color 0.2s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     }
 
     *,
@@ -76,13 +173,10 @@
     }
 
     .logo-icon {
-      width: 48px;
-      height: 48px;
+      width: 48px; height: 48px;
       background: linear-gradient(135deg, var(--teal-l), var(--teal));
       border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       font-size: 22px;
       box-shadow: var(--shadow-teal);
       flex-shrink: 0;
@@ -133,17 +227,11 @@
     }
 
     .btn-refresh {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: flex; align-items: center; gap: 6px;
       padding: 10px 22px;
-      background: var(--teal);
-      color: #fff;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 700;
+      background: var(--teal); color: #fff;
+      border: none; border-radius: 50px; cursor: pointer;
+      font-size: 13px; font-weight: 700;
       font-family: 'DM Sans', sans-serif;
       box-shadow: var(--shadow-teal);
       transition: all 0.18s ease;
@@ -165,12 +253,10 @@
       
     .btn-icon {
       width: 38px; height: 38px;
-      border-radius: 50%;
-      border: none; cursor: pointer;
+      border-radius: 50%; border: none; cursor: pointer;
       font-size: 16px;
       display: flex; align-items: center; justify-content: center;
-      background: var(--teal);
-      color: #fff;
+      background: var(--teal); color: #fff;
       box-shadow: var(--shadow-teal);
       transition: all 0.18s ease;
     }
@@ -234,11 +320,16 @@
     }
 
     .card:hover {
-      transform: translateY(-4px) translateX(2px);
+      transform: translateY(-3px);
       box-shadow:
-        -14px 20px 40px rgba(0, 0, 0, 0.26),
-        -24px 30px 60px rgba(0, 0, 0, 0.12),
-        8px -8px 18px rgba(255, 255, 255, 0.97);
+        0 4px 16px rgba(0, 0, 0, 0.5),
+        0 12px 32px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(0, 255, 136, 0.1);
+    }
+
+    /* Suppression du reflet lumière haut-droite (inutile en dark mode) */
+    .card::after {
+      display: none;
     }
 
     /* Accent top bar */
@@ -266,15 +357,15 @@
     }
 
     .a-green::before {
-      background: linear-gradient(90deg, #22c55e, #4ade80);
+      background: linear-gradient(90deg, #00ff88, #33ffaa);
     }
 
     .a-red::before {
-      background: linear-gradient(90deg, #ef4444, #f87171);
+      background: linear-gradient(90deg, #ff4d6d, #ff7090);
     }
 
     .a-violet::before {
-      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      background: linear-gradient(90deg, #a78bfa, #c4b5fd);
     }
 
     .card-header {
@@ -313,25 +404,11 @@
       flex-shrink: 0;
     }
 
-    .ic-teal {
-      background: linear-gradient(135deg, var(--teal-l), var(--teal));
-    }
-
-    .ic-rose {
-      background: linear-gradient(135deg, var(--rose-l), var(--rose));
-    }
-
-    .ic-gold {
-      background: linear-gradient(135deg, var(--gold-l), var(--gold));
-    }
-
-    .ic-green {
-      background: linear-gradient(135deg, #4ade80, #22c55e);
-    }
-
-    .ic-violet {
-      background: linear-gradient(135deg, #a78bfa, #7c3aed);
-    }
+    .ic-teal   { background: linear-gradient(135deg, var(--teal-l), var(--teal)); }
+    .ic-rose   { background: linear-gradient(135deg, var(--rose-l), var(--rose)); }
+    .ic-gold   { background: linear-gradient(135deg, var(--gold-l), var(--gold)); }
+    .ic-green  { background: linear-gradient(135deg, #4ade80, #22c55e); }
+    .ic-violet { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
 
     .card-value {
       font-size: 40px;
@@ -354,8 +431,8 @@
 
     /* Barres multi-segments */
     .bar-wrap {
-      height: 7px;
-      background: rgba(0, 0, 0, 0.06);
+      height: 5px;
+      background: rgba(255, 255, 255, 0.06);
       border-radius: 10px;
       margin-top: 18px;
       box-shadow: var(--shadow-in);
@@ -424,20 +501,9 @@
       letter-spacing: 0.4px;
     }
 
-    .pill-ok {
-      background: rgba(34, 197, 94, 0.15);
-      color: #15803d;
-    }
-
-    .pill-warn {
-      background: rgba(248, 113, 113, 0.15);
-      color: #b91c1c;
-    }
-
-    .pill-unk {
-      background: rgba(201, 168, 76, 0.15);
-      color: #92400e;
-    }
+    .pill-ok   { background: rgba(34,197,94,0.15); color: #15803d; }
+    .pill-warn { background: rgba(248,113,113,0.15); color: #b91c1c; }
+    .pill-unk  { background: rgba(201,168,76,0.15); color: #92400e; }
 
     .status-label {
       font-size: 16px;
@@ -541,7 +607,7 @@
       display: inline-block;
       width: 90px;
       height: 38px;
-      background: linear-gradient(90deg, rgba(0, 0, 0, 0.04) 25%, rgba(0, 0, 0, 0.09) 50%, rgba(0, 0, 0, 0.04) 75%);
+      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
       background-size: 200% 100%;
       animation: shimmer 1.4s infinite;
       border-radius: 8px;
@@ -596,6 +662,9 @@
         </button>
         <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion">
           ⏻
+        </button>
+        <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Changer le thème">
+          🌙
         </button>
       </div>
     </div>
@@ -899,14 +968,14 @@
     let donutMem = null, donutDisk = null, donutCpu = null;
 
     function initDonuts() {
-      const makeDonut = (id, color) => {
+      const makeDonut = (id) => {
         const ctx = $(id).getContext('2d');
         return new Chart(ctx, {
           type: 'doughnut',
           data: {
             datasets: [{
               data: [0, 100],
-              backgroundColor: [color, 'rgba(0,0,0,0.06)'],
+              backgroundColor: ['#22c55e', 'rgba(0,0,0,0.06)'],
               borderWidth: 0,
               hoverOffset: 0,
             }]
@@ -919,9 +988,9 @@
           }
         });
       };
-      donutMem  = makeDonut('donut-mem',  '#2d7d6f');
-      donutDisk = makeDonut('donut-disk', '#c9a84c');
-      donutCpu  = makeDonut('donut-cpu',  '#2d7d6f');
+      donutMem  = makeDonut('donut-mem');
+      donutDisk = makeDonut('donut-disk');
+      donutCpu  = makeDonut('donut-cpu');
     }
 
     function updateDonuts(mem, dsk, load) {
@@ -929,10 +998,12 @@
       const dp = dsk.pct || 0;
       const cores = load?.cores || 1;
       const cp = Math.min(Math.round(parseFloat(load?.['1m'] || 0) / cores * 100), 100);
-      const color = pct => pct > 85 ? '#e05a7a' : pct > 70 ? '#c9a84c' : '#22c55e';
-      if (donutMem)  { donutMem.data.datasets[0].data  = [mp, 100-mp];  donutMem.data.datasets[0].backgroundColor[0]  = color(mp);  donutMem.update(); }
-      if (donutDisk) { donutDisk.data.datasets[0].data = [dp, 100-dp];  donutDisk.data.datasets[0].backgroundColor[0] = color(dp); donutDisk.update(); }
-      if (donutCpu)  { donutCpu.data.datasets[0].data  = [cp, 100-cp];  donutCpu.data.datasets[0].backgroundColor[0]  = color(cp);  donutCpu.update(); }
+      const isDark = document.body.classList.contains('dark');
+      const emptyColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+      const color = pct => pct > 85 ? (isDark ? '#ff4d6d' : '#e05a7a') : pct > 70 ? (isDark ? '#f0b429' : '#c9a84c') : (isDark ? '#00ff88' : '#22c55e');
+      if (donutMem)  { donutMem.data.datasets[0].data  = [mp, 100-mp];  donutMem.data.datasets[0].backgroundColor  = [color(mp),  emptyColor]; donutMem.update(); }
+      if (donutDisk) { donutDisk.data.datasets[0].data = [dp, 100-dp];  donutDisk.data.datasets[0].backgroundColor = [color(dp), emptyColor]; donutDisk.update(); }
+      if (donutCpu)  { donutCpu.data.datasets[0].data  = [cp, 100-cp];  donutCpu.data.datasets[0].backgroundColor  = [color(cp),  emptyColor]; donutCpu.update(); }
       $('sys-cpu').textContent       = cp + '%';
       $('sys-cpu-cores').textContent = cores + ' core' + (cores > 1 ? 's' : '');
     }
@@ -940,13 +1011,30 @@
     // ── Auth ─────────────────────────────────────────────────────────────────────
     const AUTH = sessionStorage.getItem('vps_auth');
     if (!AUTH) { window.location.href = '/login.html'; }
-    
+
+    // ── Thème ────────────────────────────────────────────────────────────────
+    const DARK_KEY = 'vps_theme_dark';
+    function applyTheme(dark) {
+      document.body.classList.toggle('dark', dark);
+      const btn = document.getElementById('btn-theme');
+      if (btn) btn.textContent = dark ? '☀️' : '🌙';
+      // Forcer la mise à jour des donuts avec les nouvelles couleurs
+      if (donutMem && donutDisk && donutCpu) {
+        const mem = { pct: parseInt($('sys-mem')?.textContent) || 0 };
+        const dsk = { pct: parseInt($('sys-disk')?.textContent) || 0 };
+        const load = { cores: parseInt($('sys-cpu-cores')?.textContent) || 1, '1m': '0' };
+        updateDonuts(mem, dsk, load);
+      }
+    }
+    function toggleTheme() {
+      const isDark = !document.body.classList.contains('dark');
+      sessionStorage.setItem(DARK_KEY, isDark ? '1' : '0');
+      applyTheme(isDark);
+    }
+
     let refreshTimer = null;
     let countdown = 30;
     let cdTimer = null;
-    
-    // ── IP publique ───────────────────────────────────────────────────────────────
-    // IP récupérée via l'API au premier refresh
 
     function logout() {
       sessionStorage.removeItem('vps_auth');
@@ -954,6 +1042,8 @@
     }
 
     initDonuts();
+    const savedDark = sessionStorage.getItem(DARK_KEY) === '1';
+    applyTheme(savedDark);
     refresh();
   </script>
 </body>

@@ -352,6 +352,10 @@ sudo docker ps --format "table {{.Names}}\t{{.Ports}}"
 # Tester le rapport Telegram manuellement (si Telegram a été activé)
 sudo /usr/local/bin/vps-secure-check.sh
 
+# Changer l'heure du rapport Telegram quotidien (ex: 08h00 au lieu de 07h00)
+sudo sed -i 's/^0 [0-9]* \* \* \*/0 8 * * */' /etc/cron.d/vps-secure
+sudo cat /etc/cron.d/vps-secure  # vérifier
+
 # Honeypot Endlessh — stats des bots piégés (cache mis à jour toutes les 5 min)
 cat /var/cache/vps-secure/security-stats.json
 

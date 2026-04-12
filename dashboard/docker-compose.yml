@@ -12,7 +12,7 @@ services:
     volumes:
       - /var/log:/var/log:ro
       - /var/log/vps-monitor-history.json:/var/log/vps-monitor-history.json
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       API_HOST:           "127.0.0.1"
       API_PORT:           "5055"

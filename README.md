@@ -31,7 +31,7 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 
 ---
 
-## Ce que fait `install-secure.sh`
+## Ce que fait `install.sh`
 
 15 étapes automatiques, zéro compétence technique requise.
 

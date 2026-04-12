@@ -21,10 +21,8 @@
       --muted: #9a9085;
       --shadow-out: -8px 8px 0px rgba(0,0,0,0.07),-12px 16px 28px rgba(0,0,0,0.20),-20px 24px 52px rgba(0,0,0,0.09),6px -6px 16px rgba(255,255,255,0.96);
       --shadow-in: inset 4px 4px 10px rgba(0,0,0,0.11),inset -3px -3px 8px rgba(255,255,255,0.88);
-      --shadow-teal: -8px 10px 24px rgba(45,125,111,0.55),-14px 18px 40px rgba(45,125,111,0.20),4px -4px 10px rgba(255,255,255,0.35);
       --r: 30px; --r-sm: 18px; --r-xs: 12px;
       --btn-text: #ffffff;
-      --donut-empty: rgba(0,0,0,0.06);
     }
     body.dark {
       --bg: #0d0f0e; --card: #161a18; --card-border: rgba(255,255,255,0.06);
@@ -32,9 +30,7 @@
       --gold: #f0b429; --gold-l: #f5c842; --text: #f0f0f0; --muted: #6b7280;
       --shadow-out: 0 2px 8px rgba(0,0,0,0.4),0 8px 24px rgba(0,0,0,0.3),0 0 0 1px var(--card-border);
       --shadow-in: inset 0 1px 3px rgba(0,0,0,0.4),inset 0 -1px 2px rgba(255,255,255,0.03);
-      --shadow-teal: 0 4px 20px rgba(0,255,136,0.25),0 0 0 1px rgba(0,255,136,0.15);
       --r: 20px; --r-sm: 14px; --r-xs: 10px; --btn-text: #0d0f0e;
-      --donut-empty: rgba(255,255,255,0.05);
     }
     body.dark .logo-icon { background: linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.05)); border:1px solid rgba(0,255,136,0.25); }
     body.dark .btn-refresh, body.dark .btn-icon:not(.btn-icon-muted) { color: #0d0f0e; }
@@ -49,7 +45,6 @@
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; min-height: 100vh; }
     .main { max-width: 1400px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 
-    /* Header */
     .header { display: flex; align-items: center; gap: 16px; padding: 18px 26px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow-out); flex-wrap: wrap; }
     .header-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 200px; }
     .logo-icon { width: 46px; height: 46px; background: linear-gradient(135deg,rgba(45,125,111,0.15),rgba(45,125,111,0.05)); border: 1px solid rgba(45,125,111,0.2); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
@@ -62,17 +57,19 @@
     .countdown { font-size: 11px; font-weight: 700; color: var(--muted); min-width: 28px; text-align: center; font-family: 'DM Mono', monospace; }
     .btn-icon { width: 36px; height: 36px; border: none; border-radius: var(--r-xs); background: var(--teal); color: var(--btn-text); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-out); transition: transform 0.15s ease; }
     .btn-icon:active { transform: scale(0.95); }
+    .btn-icon:hover { transform: scale(1.08); }
     .btn-icon.loading { opacity: 0.7; }
-    .btn-icon-muted { background: var(--bg); color: var(--muted); box-shadow: var(--shadow-out); transition: transform 0.15s ease; }
+    .btn-icon-muted { background: var(--bg); color: var(--muted); box-shadow: var(--shadow-out); }
     .btn-theme { width: 36px; height: 36px; border: none; border-radius: var(--r-xs); background: var(--bg); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-out); transition: transform 0.15s ease; }
+    .btn-theme:hover { transform: scale(1.08); }
 
-    /* Score global */
-    .score-bar { padding: 20px 26px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow-out); display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .score-bar { padding: 20px 26px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow-out); display: flex; align-items: flex-start; gap: 0; transition: transform 0.2s ease; }
+    .score-bar:hover { transform: translateY(-1px); }
     .score-ring { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
     .score-ring canvas { display: block; }
     .score-ring-val { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .score-num { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
-    .score-info { flex: 1; }
+    .score-info { min-width: 0; }
     .score-label { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
     .score-issues { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .issue-pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
@@ -82,21 +79,21 @@
     .issue-info     { background: rgba(45,125,111,0.12); color: #065f46; }
     .score-ok       { font-size: 13px; color: var(--muted); font-weight: 500; }
 
-    /* Grids */
     .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
     .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .grid-last { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 20px; }
     @media (max-width: 1100px) { .grid4 { grid-template-columns: repeat(2,1fr); } }
-    @media (max-width: 700px)  { .grid4,.grid3,.grid2 { grid-template-columns: 1fr; } }
+    @media (max-width: 700px)  { .grid4,.grid3,.grid-last { grid-template-columns: 1fr; } }
 
-    /* Cards */
-    .card { background: var(--card); border-radius: var(--r); padding: 22px 24px; box-shadow: var(--shadow-out); transition: box-shadow 0.3s; position: relative; overflow: hidden; }
+    .card { background: var(--card); border-radius: var(--r); padding: 22px 24px; box-shadow: var(--shadow-out); transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative; overflow: hidden; }
     .card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius: var(--r) var(--r) 0 0; background: transparent; transition: background 0.3s; }
-    .a-teal::before  { background: linear-gradient(90deg,var(--teal),var(--teal-l)); }
-    .a-rose::before  { background: linear-gradient(90deg,var(--rose),var(--rose-l)); }
-    .a-gold::before  { background: linear-gradient(90deg,var(--gold),var(--gold-l)); }
-    .a-green::before { background: linear-gradient(90deg,#22c55e,#4ade80); }
-    .a-red::before   { background: linear-gradient(90deg,#ef4444,#f87171); }
+    .card:hover { transform: translateY(-2px); box-shadow: -10px 12px 32px rgba(0,0,0,0.15),-16px 20px 48px rgba(0,0,0,0.10),8px -8px 20px rgba(255,255,255,0.95); }
+    body.dark .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.5),0 12px 32px rgba(0,0,0,0.4),0 0 0 1px var(--card-border); }
+    .a-teal::before   { background: linear-gradient(90deg,var(--teal),var(--teal-l)); }
+    .a-rose::before   { background: linear-gradient(90deg,var(--rose),var(--rose-l)); }
+    .a-gold::before   { background: linear-gradient(90deg,var(--gold),var(--gold-l)); }
+    .a-green::before  { background: linear-gradient(90deg,#22c55e,#4ade80); }
+    .a-red::before    { background: linear-gradient(90deg,#ef4444,#f87171); }
     .a-violet::before { background: linear-gradient(90deg,#7c3aed,#a78bfa); }
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 10px; }
     .card-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
@@ -111,35 +108,7 @@
     .card-value { font-size: 40px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
     .card-sub { font-size: 12px; color: var(--muted); font-weight: 500; }
     .card-sub b { color: var(--text); font-weight: 700; }
-    
-    /* Hover cards */
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: -10px 12px 32px rgba(0,0,0,0.15), -16px 20px 48px rgba(0,0,0,0.10), 8px -8px 20px rgba(255,255,255,0.95);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    body.dark .card:hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px var(--card-border);
-    }
-    .card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 
-    /* Hover boutons */
-    .btn-icon:hover { transform: scale(1.08); }
-    .btn-theme:hover { transform: scale(1.08); }
-    .btn-icon, .btn-theme { transition: transform 0.15s ease; }
-
-    /* Hover score bar */
-    .score-bar:hover {
-      transform: translateY(-1px);
-      transition: transform 0.2s ease;
-    }
-    .score-bar { transition: transform 0.2s ease; }
-
-    /* Hover timeline items */
-    .tl-item:hover { background: var(--bg); border-radius: var(--r-xs); padding-left: 8px; transition: all 0.15s ease; }
-    .tl-item { transition: all 0.15s ease; }
-
-    /* Status */
     .status-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
     .pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; }
     .pill-ok   { background: rgba(34,197,94,0.15); color: #15803d; }
@@ -147,26 +116,15 @@
     .pill-unk  { background: rgba(201,168,76,0.15); color: #92400e; }
     .status-label { font-size: 16px; font-weight: 700; }
 
-    /* System grid */
-    .sys-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-    .sys-item { background: var(--bg); border-radius: var(--r-xs); padding: 10px 13px; box-shadow: var(--shadow-in); }
-    .sys-lbl { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .sys-val { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
-
-    /* Ports */
     .ports-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
     .port-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; font-family: 'DM Mono', monospace; }
     .port-ok    { background: rgba(34,197,94,0.12); color: #15803d; }
     .port-alert { background: rgba(239,68,68,0.12); color: #b91c1c; }
 
-    /* Timeline */
-    .timeline-card { background: var(--card); border-radius: var(--r); padding: 24px 26px; box-shadow: var(--shadow-out); }
-    .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-    .timeline-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
-    .timeline-list { display: flex; flex-direction: column; gap: 0; }
-    .tl-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); position: relative; }
+    .tl-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); transition: all 0.15s ease; }
     body.dark .tl-item { border-bottom: 1px solid rgba(255,255,255,0.05); }
     .tl-item:last-child { border-bottom: none; }
+    .tl-item:hover { background: var(--bg); border-radius: var(--r-xs); padding-left: 8px; }
     .tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
     .tl-dot-teal   { background: var(--teal); box-shadow: 0 0 6px rgba(45,125,111,0.5); }
     .tl-dot-rose   { background: var(--rose); box-shadow: 0 0 6px rgba(224,90,122,0.5); }
@@ -179,20 +137,20 @@
     .tl-title { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tl-detail { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tl-time { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); flex-shrink: 0; text-align: right; }
-    .tl-date { font-size: 10px; color: var(--muted); opacity: 0.6; }
-    .tl-empty { text-align: center; padding: 28px; color: var(--muted); font-size: 13px; }
+    .tl-empty { padding: 12px 0; color: var(--muted); font-size: 12px; }
+    #timeline-inline .tl-item { padding: 5px 0; }
+    #timeline-inline .tl-title { font-size: 12px; }
+    #timeline-inline .tl-detail { font-size: 10px; }
+    #timeline-inline .tl-time { font-size: 10px; min-width: 56px; }
 
-    /* Footer */
     .footer-bar { display: flex; justify-content: center; margin-top: 4px; }
     .footer-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 22px; background: var(--card); border-radius: 50px; box-shadow: var(--shadow-out); font-size: 11.5px; color: var(--muted); font-weight: 500; }
 
-    /* Skeleton */
     .skel { display: inline-block; width: 90px; height: 38px; background: linear-gradient(90deg,rgba(128,128,128,0.06) 25%,rgba(128,128,128,0.12) 50%,rgba(128,128,128,0.06) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     @keyframes spin { to{transform:rotate(360deg)} }
     .spinning { display: inline-block; animation: spin 0.8s linear infinite; }
 
-    /* Bouncer card */
     .bouncer-status { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
     .bouncer-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
     .bouncer-active   { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.6); animation: pulse-green 2s infinite; }
@@ -217,6 +175,7 @@
       <div class="badge" id="badge-ip" style="font-size:14px;padding:9px 20px;font-weight:700;">🛡️ IP Serveur : <span id="val-ip">—</span></div>
     </div>
     <div class="header-right">
+      <span class="countdown" id="countdown">30s</span>
       <div class="badge"><div class="dot" id="status-dot"></div><span id="status-txt">Connexion…</span></div>
       <button class="btn-icon" id="btn-refresh" onclick="refresh()" title="Actualiser"><span id="refresh-icon">↻</span></button>
       <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion">⏻</button>
@@ -224,29 +183,30 @@
     </div>
   </div>
 
-  <!-- Score global -->
+  <!-- Score + Timeline -->
   <div class="score-bar" id="score-bar">
-    <div class="score-ring">
-      <canvas id="donut-score" width="80" height="80"></canvas>
-      <div class="score-ring-val">
-        <span class="score-num" id="score-num">—</span>
+    <div style="display:flex;align-items:flex-start;gap:24px;flex-shrink:0;min-width:0;">
+      <div class="score-ring">
+        <canvas id="donut-score" width="80" height="80"></canvas>
+        <div class="score-ring-val"><span class="score-num" id="score-num">—</span></div>
+      </div>
+      <div class="score-info">
+        <div class="score-label" id="score-label">Chargement…</div>
+        <div class="score-issues" id="score-issues"></div>
       </div>
     </div>
-    <div class="score-info">
-      <div class="score-label" id="score-label">Chargement…</div>
-      <div class="score-issues" id="score-issues"></div>
+    <div style="width:1px;background:rgba(0,0,0,0.08);align-self:stretch;margin:0 24px;flex-shrink:0;"></div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px;">📜 Événements récents</div>
+      <div id="timeline-inline" style="width:100%;"></div>
     </div>
   </div>
 
-  <!-- Row 1 : 4 métriques principales -->
+  <!-- Row 1 -->
   <div class="grid4">
-
     <div class="card a-rose" id="card-endlessh">
       <div class="card-header">
-        <div>
-          <div class="card-label">Endlessh</div>
-          <div class="card-desc">Piège les bots SSH port 22</div>
-        </div>
+        <div><div class="card-label">Endlessh</div><div class="card-desc">Piège les bots SSH port 22</div></div>
         <div class="icon-chip ic-rose">🪤</div>
       </div>
       <div class="card-value" id="val-endlessh-total"><span class="skel"></span></div>
@@ -254,26 +214,18 @@
       <div class="card-sub" style="margin-top:4px" id="sub-endlessh">24h : —</div>
       <div class="card-sub" style="margin-top:4px" id="sub-endlessh-duration">Durée moy. : —</div>
     </div>
-
     <div class="card">
       <div class="card-header">
-        <div>
-          <div class="card-label">CrowdSec IPS</div>
-          <div class="card-desc">Bans actifs & alertes</div>
-        </div>
+        <div><div class="card-label">CrowdSec IPS</div><div class="card-desc">Bans actifs & alertes</div></div>
         <div class="icon-chip ic-teal">🛡️</div>
       </div>
       <div class="card-value" id="val-crowdsec"><span class="skel"></span></div>
       <div class="card-sub">IP bannies <b>actives</b></div>
       <div class="card-sub" style="margin-top:4px" id="sub-crowdsec">Alertes 24h : —</div>
     </div>
-
     <div class="card" id="card-bouncer">
       <div class="card-header">
-        <div>
-          <div class="card-label">CrowdSec Bouncer</div>
-          <div class="card-desc">Applique les bans iptables</div>
-        </div>
+        <div><div class="card-label">CrowdSec Bouncer</div><div class="card-desc">Applique les bans iptables</div></div>
         <div class="icon-chip ic-green">⚡</div>
       </div>
       <div class="bouncer-status">
@@ -282,7 +234,6 @@
       </div>
       <div class="card-sub" style="margin-top:10px" id="sub-bouncer">Sans le bouncer, les IPs ne sont pas bannies</div>
     </div>
-
     <div class="card">
       <div class="card-header">
         <div class="card-label">UFW Firewall</div>
@@ -291,30 +242,21 @@
       <div class="card-value" id="val-ufw"><span class="skel"></span></div>
       <div class="card-sub">blocages <b>totaux</b></div>
     </div>
-
   </div>
 
   <!-- Row 2 -->
   <div class="grid4">
-
     <div class="card">
       <div class="card-header">
-        <div>
-          <div class="card-label">Auditd</div>
-          <div class="card-desc">Commandes sudo aujourd'hui</div>
-        </div>
+        <div><div class="card-label">Auditd</div><div class="card-desc">Commandes sudo aujourd'hui</div></div>
         <div class="icon-chip ic-teal">📋</div>
       </div>
       <div class="card-value" id="val-audit"><span class="skel"></span></div>
       <div class="card-sub">escalades <b>aujourd'hui</b></div>
     </div>
-
     <div class="card" id="card-rkhunter">
       <div class="card-header">
-        <div>
-          <div class="card-label">rkhunter</div>
-          <div class="card-desc">Rootkits & backdoors</div>
-        </div>
+        <div><div class="card-label">rkhunter</div><div class="card-desc">Rootkits & backdoors</div></div>
         <div class="icon-chip ic-green">🔍</div>
       </div>
       <div class="status-row">
@@ -323,13 +265,9 @@
       </div>
       <div class="card-sub" style="margin-top:12px" id="sub-rkhunter">Dernier scan : —</div>
     </div>
-
     <div class="card" id="card-aide">
       <div class="card-header">
-        <div>
-          <div class="card-label">AIDE File Integrity</div>
-          <div class="card-desc">Hash SHA512 des binaires</div>
-        </div>
+        <div><div class="card-label">AIDE File Integrity</div><div class="card-desc">Hash SHA512 des binaires</div></div>
         <div class="icon-chip ic-violet">🗂️</div>
       </div>
       <div class="status-row">
@@ -338,7 +276,6 @@
       </div>
       <div class="card-sub" style="margin-top:12px" id="sub-aide">Dernier scan : —</div>
     </div>
-
     <div class="card a-teal" id="card-system">
       <div class="card-header">
         <div class="card-label">Système</div>
@@ -377,21 +314,10 @@
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- Row 3 : SSH, Updates, Connexions, Ports -->
-  <div class="grid4">
-
-    <div class="card">
-      <div class="card-header">
-        <div class="card-label">Dernière connexion SSH</div>
-        <div class="icon-chip ic-teal">🔑</div>
-      </div>
-      <div class="card-value" style="font-size:20px;letter-spacing:-0.5px" id="val-ssh-ip">—</div>
-      <div class="card-sub" style="margin-top:6px" id="val-ssh-time">—</div>
-    </div>
-
+  <!-- Row 3 -->
+  <div class="grid-last">
     <div class="card" id="card-updates">
       <div class="card-header">
         <div class="card-label">Mises à jour</div>
@@ -400,7 +326,6 @@
       <div class="card-value" id="val-updates"><span class="skel"></span></div>
       <div class="card-sub" id="sub-updates">paquets <b>disponibles</b></div>
     </div>
-
     <div class="card" id="card-connections">
       <div class="card-header">
         <div class="card-label">Connexions TCP</div>
@@ -409,30 +334,12 @@
       <div class="card-value" id="val-connections"><span class="skel"></span></div>
       <div class="card-sub">connexions <b>établies</b></div>
     </div>
-
     <div class="card" id="card-ports">
       <div class="card-header">
-        <div>
-          <div class="card-label">Ports ouverts</div>
-          <div class="card-desc">Ports TCP en écoute</div>
-        </div>
+        <div><div class="card-label">Ports ouverts</div><div class="card-desc">Ports TCP en écoute</div></div>
         <div class="icon-chip ic-green">🔌</div>
       </div>
-      <div class="ports-list" id="ports-list">
-        <div class="tl-empty">Chargement…</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Timeline -->
-  <div class="timeline-card">
-    <div class="timeline-header">
-      <div class="timeline-title">📜 Timeline des événements — 24h</div>
-      <button class="btn-icon btn-icon-muted" onclick="refreshTimeline()" title="Rafraîchir" style="width:30px;height:30px;font-size:13px">↻</button>
-    </div>
-    <div class="timeline-list" id="timeline-list">
-      <div class="tl-empty">Chargement des événements…</div>
+      <div class="ports-list" id="ports-list"><div class="tl-empty">Chargement…</div></div>
     </div>
   </div>
 
@@ -444,7 +351,6 @@
   </div>
 
 </main>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 <script>
 'use strict';
@@ -455,289 +361,201 @@ function setStatus(ok) {
   $('status-dot').className = ok ? 'dot' : 'dot error';
   $('status-txt').textContent = ok ? 'Connecté' : 'Erreur API';
 }
-function setCard(id, cls) { const el=$(id); if(el) el.className = `card ${cls}`; }
+function setCard(id, cls) { const el=$(id); if(el) el.className=`card ${cls}`; }
 function setPill(id, st) {
-  const el = $(id);
-  if (!el) return;
-  if (st === 'clean')                    { el.className='pill pill-ok';   el.textContent='OK'; }
-  else if (st==='warning'||st==='changes') { el.className='pill pill-warn'; el.textContent='ALERTE'; }
-  else                                   { el.className='pill pill-unk';  el.textContent='—'; }
+  const el=$(id); if(!el) return;
+  if(st==='clean')                       {el.className='pill pill-ok';   el.textContent='OK';}
+  else if(st==='warning'||st==='changes'){el.className='pill pill-warn'; el.textContent='ALERTE';}
+  else                                   {el.className='pill pill-unk';  el.textContent='—';}
 }
-
 function startCountdown() {
-  clearInterval(cdTimer); countdown = 30;
-  cdTimer = setInterval(() => { countdown=Math.max(0,countdown-1); $('countdown').textContent=`${countdown}s`; }, 1000);
+  clearInterval(cdTimer); countdown=30;
+  cdTimer=setInterval(()=>{countdown=Math.max(0,countdown-1);$('countdown').textContent=`${countdown}s`;},1000);
 }
 
-// ── Score global ─────────────────────────────────────────────────────────────
 function updateScore(sc) {
-  if (!sc) return;
-  const num = sc.score ?? 0;
-  $('score-num').textContent = num;
-
-  const colors = { excellent:'#22c55e', good:'#2d7d6f', warning:'#c9a84c', critical:'#ef4444' };
-  const col = colors[sc.level] || '#22c55e';
-
-  if (donutScore) {
-    donutScore.data.datasets[0].data = [num, 100 - num];
-    donutScore.data.datasets[0].backgroundColor = [col, isDark() ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'];
+  if(!sc) return;
+  const num=sc.score??0;
+  $('score-num').textContent=num;
+  const colors={excellent:'#22c55e',good:'#2d7d6f',warning:'#c9a84c',critical:'#ef4444'};
+  const col=colors[sc.level]||'#22c55e';
+  if(donutScore){
+    donutScore.data.datasets[0].data=[num,100-num];
+    donutScore.data.datasets[0].backgroundColor=[col,isDark()?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)'];
     donutScore.update();
   }
-  $('score-num').style.color = col;
-  $('score-label').textContent = sc.label || '—';
-
-  const issuesEl = $('score-issues');
-  issuesEl.innerHTML = '';
-  if (!sc.issues || sc.issues.length === 0) {
-    issuesEl.innerHTML = '<span class="score-ok">✅ Aucun problème détecté</span>';
+  $('score-num').style.color=col;
+  $('score-label').textContent=sc.label||'—';
+  const el=$('score-issues'); el.innerHTML='';
+  if(!sc.issues||sc.issues.length===0){
+    el.innerHTML='<span class="score-ok">✅ Aucun problème détecté</span>';
   } else {
-    sc.issues.forEach(issue => {
-      const pill = document.createElement('span');
-      pill.className = `issue-pill issue-${issue.sev}`;
-      pill.textContent = issue.msg;
-      issuesEl.appendChild(pill);
+    sc.issues.forEach(i=>{
+      const p=document.createElement('span');
+      p.className=`issue-pill issue-${i.sev}`; p.textContent=i.msg; el.appendChild(p);
     });
   }
 }
 
-// ── Bouncer ──────────────────────────────────────────────────────────────────
 function updateBouncer(b) {
-  if (!b) return;
-  const st = b.status || 'unknown';
-  const dot = $('bouncer-dot');
-  const val = $('val-bouncer');
-  const sub = $('sub-bouncer');
-  dot.className = 'bouncer-dot';
-  if (st === 'active') {
-    dot.classList.add('bouncer-active');
-    val.textContent = '✅ Actif';
-    sub.textContent = 'Les bans sont appliqués en temps réel';
-    setCard('card-bouncer', 'a-green');
-  } else if (st === 'inactive' || st === 'failed' || st === 'dead') {
-    dot.classList.add('bouncer-inactive');
-    val.textContent = '❌ Inactif';
-    sub.textContent = '⚠️ CrowdSec détecte mais ne bannit PAS';
-    setCard('card-bouncer', 'a-red');
+  if(!b) return;
+  const st=b.status||'unknown';
+  const dot=$('bouncer-dot'), val=$('val-bouncer'), sub=$('sub-bouncer');
+  dot.className='bouncer-dot';
+  if(st==='active'){
+    dot.classList.add('bouncer-active'); val.textContent='✅ Actif';
+    sub.textContent='Les bans sont appliqués en temps réel'; setCard('card-bouncer','a-green');
+  } else if(st==='inactive'||st==='failed'||st==='dead'){
+    dot.classList.add('bouncer-inactive'); val.textContent='❌ Inactif';
+    sub.textContent='⚠️ CrowdSec détecte mais ne bannit PAS'; setCard('card-bouncer','a-red');
   } else {
-    dot.classList.add('bouncer-unknown');
-    val.textContent = '❓ Inconnu';
-    sub.textContent = 'Statut non déterminé';
+    dot.classList.add('bouncer-unknown'); val.textContent='❓ Inconnu';
+    sub.textContent='Statut non déterminé';
   }
 }
 
-// ── Ports ouverts ────────────────────────────────────────────────────────────
 function updatePorts(op) {
-  if (!op) return;
-  const list = $('ports-list');
-  const ports = op.ports || [];
-  if (ports.length === 0) {
-    list.innerHTML = '<div class="tl-empty">Aucun port détecté</div>';
-    return;
-  }
-  list.innerHTML = ports.map(p => `
-    <span class="port-chip ${p.expected ? 'port-ok' : 'port-alert'}">
-      ${p.expected ? '●' : '⚠'} ${p.port}
-    </span>
-  `).join('');
-  setCard('card-ports', op.alert ? 'a-red' : 'a-green');
+  if(!op) return;
+  const list=$('ports-list'), ports=op.ports||[];
+  if(ports.length===0){list.innerHTML='<div class="tl-empty">Aucun port détecté</div>'; return;}
+  list.innerHTML=ports.map(p=>`<span class="port-chip ${p.expected?'port-ok':'port-alert'}">${p.expected?'●':'⚠'} ${p.port}</span>`).join('');
+  setCard('card-ports',op.alert?'a-red':'a-green');
 }
 
-// ── Timeline ─────────────────────────────────────────────────────────────────
 async function refreshTimeline() {
   try {
-    const res = await fetch('/api/timeline', { cache: 'no-store', headers: { 'Authorization': AUTH } });
-    if (!res.ok) return;
-    const events = await res.json();
-    renderTimeline(events);
-  } catch(e) {}
+    const res=await fetch('/api/timeline',{cache:'no-store',headers:{'Authorization':AUTH}});
+    if(!res.ok) return;
+    renderTimeline(await res.json());
+  } catch(e){}
 }
 
 function renderTimeline(events) {
-  const list = $('timeline-list');
-  if (!events || events.length === 0) {
-    list.innerHTML = '<div class="tl-empty">Aucun événement dans les dernières 24h</div>';
-    return;
+  const list=$('timeline-inline'); if(!list) return;
+  if(!events||events.length===0){
+    list.innerHTML='<div class="tl-empty">Aucun événement récent</div>'; return;
   }
-  const colorMap = { teal:'teal', rose:'rose', gold:'gold', purple:'purple', red:'red' };
-  list.innerHTML = events.map(e => {
-    const dotCls = `tl-dot-${colorMap[e.color] || 'gray'}`;
-    return `
-      <div class="tl-item">
-        <div class="tl-dot ${dotCls}"></div>
-        <div class="tl-icon">${e.icon || '•'}</div>
-        <div class="tl-content">
-          <div class="tl-title">${e.title || '—'}</div>
-          <div class="tl-detail">
-            ${e.detail || ''}
-            ${e.count > 1 ? `<span style="margin-left:6px;padding:1px 7px;border-radius:10px;background:rgba(45,125,111,0.15);color:var(--teal);font-size:10px;font-weight:700">${e.count}×</span>` : ''}
-          </div>
-        </div>
-        <div class="tl-time">
-          <div>${e.time || '—'}</div>
-          <div class="tl-date">${e.date || ''}</div>
-        </div>
+  const cm={teal:'teal',rose:'rose',gold:'gold',purple:'purple',red:'red'};
+  list.innerHTML=events.slice(0,5).map(e=>`
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-${cm[e.color]||'gray'}"></div>
+      <div class="tl-icon">${e.icon||'•'}</div>
+      <div class="tl-content">
+        <div class="tl-title">${e.title||'—'}</div>
+        <div class="tl-detail">${e.detail||''}${(e.count||0)>1?`<span style="margin-left:6px;padding:1px 7px;border-radius:10px;background:rgba(45,125,111,0.15);color:var(--teal);font-size:10px;font-weight:700">${e.count}×</span>`:''}</div>
       </div>
-    `;
-  }).join('');
+      <div class="tl-time">${e.time||'—'}</div>
+    </div>`).join('');
 }
 
-// ── Main update ──────────────────────────────────────────────────────────────
 function updateCards(d) {
-  const e = d.endlessh||{}, c = d.crowdsec||{}, u = d.ufw||{}, a = d.auditd||{};
-  const rk = d.rkhunter||{}, ai = d.aide||{}, s = d.system||{};
-  const mem = s.memory||{}, dsk = s.disk||{};
+  const e=d.endlessh||{}, c=d.crowdsec||{}, u=d.ufw||{}, a=d.auditd||{};
+  const rk=d.rkhunter||{}, ai=d.aide||{}, s=d.system||{};
+  const mem=s.memory||{}, dsk=s.disk||{};
 
-  // Score
   updateScore(d.score);
 
-  // Endlessh
-  $('val-endlessh-total').textContent = fmt(e.total);
-  $('sub-endlessh').innerHTML = `24h : <b>${fmt(e.last24h)}</b>`;
-  const durFmt = e.avg_duration_fmt || '—';
-  $('sub-endlessh-duration').innerHTML = `Durée moy. : <b>${durFmt}</b>`;
-  setCard('card-endlessh', e.last24h > 0 ? 'a-rose' : '');
+  $('val-endlessh-total').textContent=fmt(e.total);
+  $('sub-endlessh').innerHTML=`24h : <b>${fmt(e.last24h)}</b>`;
+  $('sub-endlessh-duration').innerHTML=`Durée moy. : <b>${e.avg_duration_fmt||'—'}</b>`;
+  setCard('card-endlessh',e.last24h>0?'a-rose':'');
 
-  // CrowdSec
-  $('val-crowdsec').textContent = fmt(c.active_bans);
-  $('sub-crowdsec').innerHTML = `Alertes 24h : <b>${fmt(c.alerts_24h)}</b>`;
+  $('val-crowdsec').textContent=fmt(c.active_bans);
+  $('sub-crowdsec').innerHTML=`Alertes 24h : <b>${fmt(c.alerts_24h)}</b>`;
 
-  // Bouncer
   updateBouncer(d.bouncer);
 
-  // UFW
-  $('val-ufw').textContent = fmt(u.total);
+  $('val-ufw').textContent=fmt(u.total);
+  $('val-audit').textContent=fmt(a.sudo_today);
 
-  // Auditd
-  $('val-audit').textContent = fmt(a.sudo_today);
+  const rkSt=rk.status||'unknown';
+  $('val-rkhunter').textContent=rkSt==='clean'?'✅ Propre':rkSt==='warning'?'⚠️ Alerte':'❓ Inconnu';
+  setPill('pill-rkhunter',rkSt);
+  $('sub-rkhunter').textContent=`Dernier scan : ${rk.last_scan||'—'}`;
+  setCard('card-rkhunter',rkSt==='warning'?'a-red':'a-green');
 
-  // rkhunter
-  const rkSt = rk.status || 'unknown';
-  $('val-rkhunter').textContent = rkSt==='clean' ? '✅ Propre' : rkSt==='warning' ? '⚠️ Alerte' : '❓ Inconnu';
-  setPill('pill-rkhunter', rkSt);
-  $('sub-rkhunter').textContent = `Dernier scan : ${rk.last_scan||'—'}`;
-  setCard('card-rkhunter', rkSt==='warning' ? 'a-red' : 'a-green');
+  const aiSt=ai.status||'unknown';
+  $('val-aide').textContent=aiSt==='clean'?'✅ Propre':aiSt==='changes'?'⚠️ Modifs':'❓ Inconnu';
+  setPill('pill-aide',aiSt==='changes'?'warning':aiSt);
+  $('sub-aide').textContent=`Dernier scan : ${ai.last_scan||'—'}`;
+  setCard('card-aide',aiSt==='changes'?'a-red':aiSt==='clean'?'a-green':'');
 
-  // AIDE
-  const aiSt = ai.status || 'unknown';
-  $('val-aide').textContent = aiSt==='clean' ? '✅ Propre' : aiSt==='changes' ? '⚠️ Modifs' : '❓ Inconnu';
-  setPill('pill-aide', aiSt==='changes' ? 'warning' : aiSt);
-  $('sub-aide').textContent = `Dernier scan : ${ai.last_scan||'—'}`;
-  setCard('card-aide', aiSt==='changes' ? 'a-red' : aiSt==='clean' ? 'a-green' : '');
+  $('val-ip').textContent=s.ip||'—';
+  $('sys-mem').textContent=mem.pct!=null?`${mem.pct}%`:'—';
+  $('sys-disk').textContent=dsk.pct!=null?`${dsk.pct}%`:'—';
+  $('sys-mem-total').textContent=mem.total_mb?`${Math.round(mem.total_mb/1024*10)/10} GB`:'';
+  $('sys-disk-total').textContent=dsk.total_gb?`${dsk.total_gb} GB`:'';
+  updateDonuts(mem,dsk,s.load);
+  setCard('card-system',(parseFloat(s.load?.['1m']||99)<1&&(mem.pct||99)<80&&(dsk.pct||99)<80)?'a-green':'a-teal');
+  $('header-sub').textContent=`Uptime ${s.uptime||'—'}`;
 
-  // System
-  $('val-ip').textContent = s.ip || '—';
-  $('sys-mem').textContent  = mem.pct != null ? `${mem.pct}%` : '—';
-  $('sys-disk').textContent = dsk.pct != null ? `${dsk.pct}%` : '—';
-  $('sys-mem-total').textContent  = mem.total_mb ? `${Math.round(mem.total_mb/1024*10)/10} GB` : '';
-  $('sys-disk-total').textContent = dsk.total_gb ? `${dsk.total_gb} GB` : '';
-  updateDonuts(mem, dsk, s.load);
-  const sysOk = parseFloat(s.load?.['1m']||99) < 1 && (mem.pct||99) < 80 && (dsk.pct||99) < 80;
-  setCard('card-system', sysOk ? 'a-green' : 'a-teal');
-  $('header-sub').textContent = `Uptime ${s.uptime||'—'}`;
+  const updCount=d.updates?.count??null;
+  $('val-updates').textContent=fmt(updCount);
+  if(updCount===0){$('sub-updates').textContent='✅ Serveur à jour'; setCard('card-updates','a-green');}
+  else{$('sub-updates').innerHTML='paquets <b>disponibles</b>'; setCard('card-updates',updCount>0?'a-gold':'');}
 
-  // SSH
-  const ssh = d.ssh_last||{};
-  $('val-ssh-ip').textContent   = ssh.ip   || '—';
-  $('val-ssh-time').textContent = ssh.time || '—';
+  $('val-connections').textContent=fmt(d.connections?.established??'—');
+  setCard('card-connections',(d.connections?.established||0)>500?'a-red':'a-green');
 
-  // Updates
-  const updCount = d.updates?.count ?? null;
-  $('val-updates').textContent = fmt(updCount);
-  if (updCount === 0) {
-    $('sub-updates').textContent = '✅ Serveur à jour';
-    setCard('card-updates', 'a-green');
-  } else {
-    $('sub-updates').innerHTML = 'paquets <b>disponibles</b>';
-    setCard('card-updates', updCount > 0 ? 'a-gold' : '');
-  }
-
-  // Connexions TCP
-  $('val-connections').textContent = fmt(d.connections?.established ?? '—');
-  setCard('card-connections', (d.connections?.established||0) > 500 ? 'a-red' : 'a-green');
-
-  // Ports ouverts
   updatePorts(d.open_ports);
 }
 
-// ── Refresh ───────────────────────────────────────────────────────────────────
 async function refresh() {
   const btn=$('btn-refresh'), icon=$('refresh-icon');
   btn.classList.add('loading'); icon.className='spinning';
   clearTimeout(refreshTimer);
   try {
-    const res = await fetch('/api/metrics', { cache:'no-store', headers:{'Authorization':AUTH} });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const res=await fetch('/api/metrics',{cache:'no-store',headers:{'Authorization':AUTH}});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
     updateCards(data); setStatus(true);
-    $('last-update').textContent = new Date().toLocaleTimeString('fr-FR');
-    // Rafraîchir la timeline en parallèle
+    $('last-update').textContent=new Date().toLocaleTimeString('fr-FR');
     refreshTimeline();
-  } catch(err) {
-    console.error('[VPS Monitor]', err); setStatus(false);
-  } finally {
+  } catch(err){console.error('[VPS Monitor]',err); setStatus(false);}
+  finally {
     btn.classList.remove('loading'); icon.className=''; icon.textContent='↻';
-    startCountdown(); refreshTimer = setTimeout(refresh, 30_000);
+    startCountdown(); refreshTimer=setTimeout(refresh,30_000);
   }
 }
 
-// ── Donuts ────────────────────────────────────────────────────────────────────
-let donutMem=null, donutDisk=null, donutCpu=null, donutScore=null;
-const isDark = () => document.body.classList.contains('dark');
+let donutMem=null,donutDisk=null,donutCpu=null,donutScore=null;
+const isDark=()=>document.body.classList.contains('dark');
 
 function initDonuts() {
-  const makeDonut = (id, size) => {
-    const ctx = $(id).getContext('2d');
-    return new Chart(ctx, {
-      type: 'doughnut',
-      data: { datasets: [{ data:[0,100], backgroundColor:['#22c55e','rgba(0,0,0,0.06)'], borderWidth:0, hoverOffset:0 }] },
-      options: { cutout:'72%', responsive:false, animation:{duration:600,easing:'easeInOutQuart'}, plugins:{legend:{display:false},tooltip:{enabled:false}} }
-    });
+  const mk=id=>{
+    const ctx=$(id).getContext('2d');
+    return new Chart(ctx,{type:'doughnut',data:{datasets:[{data:[0,100],backgroundColor:['#22c55e','rgba(0,0,0,0.06)'],borderWidth:0,hoverOffset:0}]},options:{cutout:'72%',responsive:false,animation:{duration:600,easing:'easeInOutQuart'},plugins:{legend:{display:false},tooltip:{enabled:false}}}});
   };
-  donutMem   = makeDonut('donut-mem');
-  donutDisk  = makeDonut('donut-disk');
-  donutCpu   = makeDonut('donut-cpu');
-  donutScore = makeDonut('donut-score');
+  donutMem=mk('donut-mem'); donutDisk=mk('donut-disk'); donutCpu=mk('donut-cpu'); donutScore=mk('donut-score');
 }
 
-function updateDonuts(mem, dsk, load) {
-  const mp = mem.pct||0, dp = dsk.pct||0;
-  const cores = load?.cores||1;
-  const cp = Math.min(Math.round(parseFloat(load?.['1m']||0)/cores*100),100);
-  const dark = isDark();
-  const empty = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
-  const col = pct => pct>85 ? (dark?'#ff4d6d':'#e05a7a') : pct>70 ? (dark?'#f0b429':'#c9a84c') : (dark?'#00ff88':'#22c55e');
-  if (donutMem)  { donutMem.data.datasets[0].data=[mp,100-mp];   donutMem.data.datasets[0].backgroundColor=[col(mp),empty];  donutMem.update(); }
-  if (donutDisk) { donutDisk.data.datasets[0].data=[dp,100-dp];  donutDisk.data.datasets[0].backgroundColor=[col(dp),empty]; donutDisk.update(); }
-  if (donutCpu)  { donutCpu.data.datasets[0].data=[cp,100-cp];   donutCpu.data.datasets[0].backgroundColor=[col(cp),empty];  donutCpu.update(); }
-  $('sys-cpu').textContent       = cp+'%';
-  $('sys-cpu-cores').textContent = cores+' core'+(cores>1?'s':'');
+function updateDonuts(mem,dsk,load) {
+  const mp=mem.pct||0, dp=dsk.pct||0, cores=load?.cores||1;
+  const cp=Math.min(Math.round(parseFloat(load?.['1m']||0)/cores*100),100);
+  const dark=isDark(), empty=dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)';
+  const col=p=>p>85?(dark?'#ff4d6d':'#e05a7a'):p>70?(dark?'#f0b429':'#c9a84c'):(dark?'#00ff88':'#22c55e');
+  if(donutMem) {donutMem.data.datasets[0].data=[mp,100-mp];   donutMem.data.datasets[0].backgroundColor=[col(mp),empty];  donutMem.update();}
+  if(donutDisk){donutDisk.data.datasets[0].data=[dp,100-dp];  donutDisk.data.datasets[0].backgroundColor=[col(dp),empty]; donutDisk.update();}
+  if(donutCpu) {donutCpu.data.datasets[0].data=[cp,100-cp];   donutCpu.data.datasets[0].backgroundColor=[col(cp),empty];  donutCpu.update();}
+  $('sys-cpu').textContent=cp+'%';
+  $('sys-cpu-cores').textContent=cores+' core'+(cores>1?'s':'');
 }
 
-// ── Auth & Theme ──────────────────────────────────────────────────────────────
-const AUTH = sessionStorage.getItem('vps_auth');
-if (!AUTH) { window.location.href = '/login.html'; }
+const AUTH=sessionStorage.getItem('vps_auth');
+if(!AUTH){window.location.href='/login.html';}
 
-const DARK_KEY = 'vps_theme_dark';
+const DARK_KEY='vps_theme_dark';
 function applyTheme(dark) {
-  document.body.classList.toggle('dark', dark);
-  const btn = $('btn-theme');
-  if (btn) btn.textContent = dark ? '☀️' : '🌙';
-  if (donutMem && donutDisk && donutCpu) {
-    const mem = { pct: parseInt($('sys-mem')?.textContent)||0 };
-    const dsk = { pct: parseInt($('sys-disk')?.textContent)||0 };
-    const load = { cores: parseInt($('sys-cpu-cores')?.textContent)||1, '1m':'0' };
-    updateDonuts(mem, dsk, load);
+  document.body.classList.toggle('dark',dark);
+  const btn=$('btn-theme'); if(btn) btn.textContent=dark?'☀️':'🌙';
+  if(donutMem&&donutDisk&&donutCpu){
+    updateDonuts({pct:parseInt($('sys-mem')?.textContent)||0},{pct:parseInt($('sys-disk')?.textContent)||0},{cores:parseInt($('sys-cpu-cores')?.textContent)||1,'1m':'0'});
   }
 }
-function toggleTheme() {
-  const dark = !document.body.classList.contains('dark');
-  sessionStorage.setItem(DARK_KEY, dark?'1':'0');
-  applyTheme(dark);
-}
-function logout() { sessionStorage.removeItem('vps_auth'); window.location.href='/login.html'; }
+function toggleTheme(){const dark=!document.body.classList.contains('dark'); sessionStorage.setItem(DARK_KEY,dark?'1':'0'); applyTheme(dark);}
+function logout(){sessionStorage.removeItem('vps_auth'); window.location.href='/login.html';}
 
 let refreshTimer=null, countdown=30, cdTimer=null;
-
 initDonuts();
 applyTheme(sessionStorage.getItem(DARK_KEY)==='1');
 refresh();

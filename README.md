@@ -71,7 +71,7 @@ Avant de commencer, tu as besoin de :
 
 
 > 🔑 Ce script nécessite une licence - [disponible ici](https://vps-secure.netlify.app/)
-
+>
 > 👨‍💻 Développeur ? Contacte-moi pour un accès : [free4dev@aiforceone.fr](mailto:free4dev@aiforceone.fr)
 
 ---

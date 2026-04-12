@@ -99,12 +99,36 @@ def _lapi(path: str) -> list | None:
 
 # ── Collectors ────────────────────────────────────────────────────────────────
 def get_endlessh() -> dict:
-    out24  = run(["docker", "logs", "--since", "24h", ENDLESSH_CONTAINER], timeout=20)
+    out24   = run(["docker", "logs", "--since", "24h", ENDLESSH_CONTAINER], timeout=20)
     out_all = run(["docker", "logs", "--tail", "200000", ENDLESSH_CONTAINER], timeout=30)
-    pat = re.compile(r"ACCEPT|\"accepted\"", re.IGNORECASE)
+    pat     = re.compile(r"ACCEPT|\"accepted\"", re.IGNORECASE)
+
+    # Durée moyenne de piège — parser les lignes CLOSE avec time=
+    # Format shizunge/endlessh-go : "CLOSE host=x.x.x.x port=N time=3723.4 bytes=N"
+    durations = []
+    for m in re.finditer(r"CLOSE\b.*?\btime=([0-9]+(?:\.[0-9]+)?)", out_all):
+        try:
+            durations.append(float(m.group(1)))
+        except Exception:
+            pass
+    avg_duration_s = round(sum(durations) / len(durations)) if durations else 0
+
+    # Formater en h/min/s lisible
+    def fmt_duration(s: int) -> str:
+        if s <= 0:
+            return "—"
+        if s >= 3600:
+            return f"{s // 3600}h{(s % 3600) // 60}m"
+        if s >= 60:
+            return f"{s // 60}m{s % 60}s"
+        return f"{s}s"
+
     return {
-        "last24h": len(pat.findall(out24)),
-        "total":   len(pat.findall(out_all)),
+        "last24h":          len(pat.findall(out24)),
+        "total":            len(pat.findall(out_all)),
+        "avg_duration_s":   avg_duration_s,
+        "avg_duration_fmt": fmt_duration(avg_duration_s),
+        "trap_count":       len(durations),
     }
 
 
@@ -113,9 +137,6 @@ def get_crowdsec() -> dict:
     alerts_24h  = 0
 
     if CROWDSEC_KEY:
-        count = _lapi("/v1/decisions?limit=1")
-        # CrowdSec retourne X-Total-Count dans le header — non accessible via urllib simplement
-        # Alternative : limit élevée
         decisions = _lapi("/v1/decisions?limit=50000")
         active_bans = len(decisions) if decisions else 0
 
@@ -127,7 +148,6 @@ def get_crowdsec() -> dict:
                 if _parse_ts(a.get("created_at", "")) > cutoff
             )
     else:
-        # Fallback: docker exec cscli
         out = run(
             ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "decisions", "list", "-o", "json"],
             timeout=15,
@@ -150,6 +170,21 @@ def get_crowdsec() -> dict:
             pass
 
     return {"active_bans": active_bans, "alerts_24h": alerts_24h}
+
+
+def get_bouncer_status() -> dict:
+    # Vérifier que le bouncer firewall communique avec l'API
+    # Un bouncer actif crée des décisions — on vérifie juste si l'API répond
+    try:
+        req = urllib.request.Request(
+            f"{CROWDSEC_URL}/v1/decisions",
+            headers={"X-Api-Key": CROWDSEC_KEY} if CROWDSEC_KEY else {},
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            # Si l'API répond = CrowdSec actif = bouncer présumé actif
+            return {"status": "active"}
+    except Exception:
+        return {"status": "unknown"}
 
 
 def get_ufw() -> dict:
@@ -190,7 +225,7 @@ def get_rkhunter() -> dict:
 
         if "Warning:" in content:
             status = "warning"
-        elif len(content) > 100:  # optionnel : log non vide = scan effectué
+        elif len(content) > 100:
             status = "clean"
 
         dates = re.findall(r"Start date is\s+(.+?)\n", content)
@@ -249,7 +284,7 @@ def get_system() -> dict:
     except Exception:
         load = {"1m": "—", "5m": "—", "15m": "—"}
 
-    # Memory (not namespaced — reflects host)
+    # Memory
     memory = {"total_mb": 0, "used_mb": 0, "pct": 0.0}
     try:
         mem: dict[str, int] = {}
@@ -278,7 +313,7 @@ def get_system() -> dict:
         }
     except Exception:
         pass
-        
+
     # IP publique du VPS
     vps_ip = "—"
     try:
@@ -294,7 +329,6 @@ def get_ssh_last() -> dict:
     """Dernière connexion SSH réussie — IP + heure."""
     last_ip   = "—"
     last_time = "—"
-    today_iso = datetime.now().strftime("%Y-%m-%d")
 
     for path in ["/var/log/auth.log", "/var/log/secure"]:
         try:
@@ -302,21 +336,19 @@ def get_ssh_last() -> dict:
                 lines = f.readlines()
             for line in reversed(lines):
                 if "Accepted" in line and "sshd" in line:
-                    # Format : "...Accepted publickey for vpsadmin from 1.2.3.4 port..."
                     m = re.search(r"from\s+(\S+)\s+port", line)
                     if m:
                         last_ip = m.group(1)
-                    # Format syslog Ubuntu 24.04 : "Jan  1 12:00:00" (pas ISO)
                     m2 = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
                     if m2:
-                       try:
-                           dt = datetime.strptime(
-                              f"{datetime.now().year} {m2.group(1).strip()}",
-                              "%Y %b %d %H:%M:%S"
-                           )
-                           last_time = dt.strftime("%d/%m/%Y %H:%M")
-                       except Exception:
-                           pass
+                        try:
+                            dt = datetime.strptime(
+                                f"{datetime.now().year} {m2.group(1).strip()}",
+                                "%Y %b %d %H:%M:%S"
+                            )
+                            last_time = dt.strftime("%d/%m/%Y %H:%M")
+                        except Exception:
+                            pass
                     break
             break
         except Exception:
@@ -330,7 +362,6 @@ def get_updates() -> dict:
     count = 0
     try:
         out = run(["apt", "list", "--upgradable"], timeout=15)
-        # Chaque ligne upgradable se termine par "[upgradable from: ...]"
         count = len([l for l in out.splitlines() if "upgradable from" in l])
     except Exception:
         pass
@@ -340,11 +371,10 @@ def get_updates() -> dict:
 def get_connections() -> dict:
     count = 0
     try:
-        # /proc/net/tcp : état 01 = ESTABLISHED, colonnes hex
         for path in ["/proc/net/tcp", "/proc/net/tcp6"]:
             try:
                 with open(path) as f:
-                    lines = f.readlines()[1:]  # skip header
+                    lines = f.readlines()[1:]
                 count += sum(1 for l in lines if l.split()[3] == "01")
             except Exception:
                 pass
@@ -353,11 +383,318 @@ def get_connections() -> dict:
     return {"established": count}
 
 
+def get_open_ports() -> dict:
+    EXPECTED = {22, 25, 53, 80, 443, 2222, 5055, 6060, 8081}
+    ports = []
+    seen = set()
+    for path in ["/proc/net/tcp", "/proc/net/tcp6"]:
+        try:
+            with open(path) as f:
+                lines = f.readlines()[1:]
+            for line in lines:
+                parts = line.split()
+                if len(parts) < 4:
+                    continue
+                # État 0A = LISTEN
+                if parts[3] != "0A":
+                    continue
+                local = parts[1]
+                port = int(local.split(":")[1], 16)
+                if port in seen:
+                    continue
+                seen.add(port)
+                ports.append({
+                    "port":     port,
+                    "process":  "",
+                    "expected": port in EXPECTED,
+                })
+        except Exception:
+            pass
+    unexpected = [p for p in ports if not p["expected"]]
+    return {
+        "ports":      sorted(ports, key=lambda x: x["port"]),
+        "unexpected": unexpected,
+        "alert":      len(unexpected) > 0,
+    }
+
+def get_timeline() -> list:
+    """20 derniers événements sécurité triés par heure (SSH, bans CrowdSec, sudo critique, rkhunter)."""
+    events = []
+    now = time.time()
+    cutoff = now - 86400  # 24h
+
+    # ── SSH connections (auth.log) ──
+    ssh_by_ip: dict = {}  # grouper par IP — une seule ligne avec count
+
+    for path in ["/var/log/auth.log", "/var/log/secure"]:
+        try:
+            with open(path, errors="replace") as f:
+                lines = f.readlines()
+            year = datetime.now().year
+            for line in lines:
+                if "Accepted publickey" in line and "sshd" in line:
+                    m_ip   = re.search(r"from\s+(\S+)\s+port", line)
+                    m_user = re.search(r"for\s+(\S+)\s+from", line)
+                    m_time = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+                    if m_time:
+                        try:
+                            ts = datetime.fromisoformat(m_time.group(1)).timestamp()
+                        except Exception:
+                            continue
+                    else:
+                        m_time2 = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
+                        if not m_time2:
+                            continue
+                        try:
+                            ts = datetime.strptime(f"{year} {m_time2.group(1).strip()}", "%Y %b %d %H:%M:%S").timestamp()
+                        except Exception:
+                            continue
+                    if ts < cutoff:
+                        continue
+                    ip   = m_ip.group(1) if m_ip else "?"
+                    user = m_user.group(1) if m_user else "inconnu"
+                    if ip not in ssh_by_ip:
+                        ssh_by_ip[ip] = {"ts": ts, "count": 0, "user": user}
+                    ssh_by_ip[ip]["count"] += 1
+                    if ts > ssh_by_ip[ip]["ts"]:
+                        ssh_by_ip[ip]["ts"] = ts
+
+                elif "Failed password" in line or "Invalid user" in line:
+                    m_ip   = re.search(r"from\s+(\S+)\s+port", line)
+                    m_time = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+                    if m_time:
+                        try:
+                            ts = datetime.fromisoformat(m_time.group(1)).timestamp()
+                        except Exception:
+                            continue
+                    else:
+                        m_time2 = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
+                        if not m_time2:
+                            continue
+                        try:
+                            ts = datetime.strptime(f"{year} {m_time2.group(1).strip()}", "%Y %b %d %H:%M:%S").timestamp()
+                        except Exception:
+                            continue
+                    if ts < cutoff:
+                        continue
+                    events.append({
+                        "ts":    ts,
+                        "type":  "ssh_fail",
+                        "icon":  "⚠️",
+                        "color": "rose",
+                        "title": "Tentative SSH échouée",
+                        "detail": m_ip.group(1) if m_ip else "IP inconnue",
+                        "count": 1,
+                    })
+            break
+        except Exception:
+            continue
+
+    # Convertir ssh_by_ip en events
+    for ip, data in ssh_by_ip.items():
+        events.append({
+            "ts":    data["ts"],
+            "type":  "ssh",
+            "icon":  "🔑",
+            "color": "teal",
+            "title": f"Connexion SSH — {data['user']}",
+            "detail": ip,
+            "count": data["count"],
+        })
+
+            
+    # ── CrowdSec bans (via docker exec cscli) ──
+    try:
+        out = run(
+            ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "alerts", "list",
+             "--since", "24h", "-o", "json"],
+            timeout=15,
+        )
+        alerts = json.loads(out) if out.strip().startswith("[") else []
+        for a in (alerts or []):
+            ts = _parse_ts(a.get("created_at", ""))
+            if ts < cutoff:
+                continue
+            src = a.get("source", {})
+            ip  = src.get("ip", "IP inconnue")
+            reason = a.get("scenario", a.get("reason", "Règle CrowdSec"))
+            events.append({
+                "ts":    ts,
+                "type":  "ban",
+                "icon":  "🛡️",
+                "color": "purple",
+                "title": f"IP bannie — {ip}",
+                "detail": reason,
+            })
+    except Exception:
+        pass
+
+    # ── Sudo commands critiques ──
+    CRITICAL_CMDS = ["useradd", "userdel", "passwd", "chmod 777", "visudo", "crontab", "iptables", "ufw"]
+    today_iso = datetime.now().strftime("%Y-%m-%d")
+    for path in ["/var/log/auth.log", "/var/log/secure"]:
+        try:
+            with open(path, errors="replace") as f:
+                lines = f.readlines()
+            year = datetime.now().year
+            for line in lines:
+                if "sudo:" not in line or "COMMAND=" not in line:
+                    continue
+                cmd_m = re.search(r"COMMAND=(.+?)(?:\s*$)", line)
+                if not cmd_m:
+                    continue
+                cmd = cmd_m.group(1).strip()
+                is_critical = any(c in cmd for c in CRITICAL_CMDS)
+                if not is_critical:
+                    continue
+                m_time = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
+                if m_time:
+                    try:
+                        ts = datetime.strptime(f"{year} {m_time.group(1).strip()}", "%Y %b %d %H:%M:%S").timestamp()
+                    except Exception:
+                        continue
+                    if ts < cutoff:
+                        continue
+                    m_user = re.search(r"sudo:\s+(\S+)\s+:", line)
+                    events.append({
+                        "ts":    ts,
+                        "type":  "sudo",
+                        "icon":  "⚡",
+                        "color": "gold",
+                        "title": f"Commande sudo critique — {m_user.group(1) if m_user else 'inconnu'}",
+                        "detail": cmd[:80],
+                    })
+            break
+        except Exception:
+            continue
+
+    # ── rkhunter warnings ──
+    try:
+        with open("/var/log/rkhunter.log", errors="replace") as f:
+            content = f.read()
+        for m in re.finditer(r"Warning:\s+(.+?)(?:\n|$)", content):
+            events.append({
+                "ts":    now - 3600,  # approximatif si pas de timestamp
+                "type":  "rkhunter",
+                "icon":  "🔍",
+                "color": "red",
+                "title": "rkhunter — warning détecté",
+                "detail": m.group(1).strip()[:80],
+            })
+    except Exception:
+        pass
+
+    # Trier par timestamp décroissant, garder les 25 plus récents
+    events.sort(key=lambda x: x["ts"], reverse=True)
+    events = events[:25]
+
+    # Formater les timestamps pour l'affichage
+    for e in events:
+        try:
+            e["time"] = datetime.fromtimestamp(e["ts"]).strftime("%H:%M:%S")
+            e["date"] = datetime.fromtimestamp(e["ts"]).strftime("%d/%m")
+        except Exception:
+            e["time"] = "—"
+            e["date"] = "—"
+
+    return events
+
+
+def get_score(metrics: dict) -> dict:
+    """Score de santé global 0-100 basé sur l'état de tous les composants."""
+    score = 100
+    issues = []
+
+    # Bouncer CrowdSec (critique — sans lui rien n'est banni)
+    bouncer = metrics.get("bouncer", {}).get("status", "unknown")
+    if bouncer != "active":
+        score -= 30
+        issues.append({"sev": "critical", "msg": "Bouncer CrowdSec inactif — les IPs ne sont plus bannies"})
+
+    # rkhunter
+    rk = metrics.get("rkhunter", {}).get("status", "unknown")
+    if rk == "warning":
+        score -= 20
+        issues.append({"sev": "high", "msg": "rkhunter — anomalie détectée"})
+    elif rk == "unknown":
+        score -= 5
+        issues.append({"sev": "info", "msg": "rkhunter — pas encore exécuté"})
+
+    # AIDE
+    ai = metrics.get("aide", {}).get("status", "unknown")
+    if ai == "changes":
+        score -= 20
+        issues.append({"sev": "high", "msg": "AIDE — modifications système détectées"})
+    elif ai == "unknown":
+        score -= 5
+        issues.append({"sev": "info", "msg": "AIDE — baseline pas encore scannée"})
+
+    # Ports inattendus
+    ports = metrics.get("open_ports", {})
+    unexpected = ports.get("unexpected", [])
+    if unexpected:
+        score -= 15 * min(len(unexpected), 2)
+        for p in unexpected[:3]:
+            issues.append({"sev": "high", "msg": f"Port inattendu ouvert : {p['port']} ({p.get('process','?')})"})
+
+    # Mises à jour en attente
+    upd = metrics.get("updates", {}).get("count", 0)
+    if upd > 20:
+        score -= 10
+        issues.append({"sev": "medium", "msg": f"{upd} mises à jour en attente"})
+    elif upd > 0:
+        score -= 5
+        issues.append({"sev": "info", "msg": f"{upd} mises à jour disponibles"})
+
+    # Disque
+    disk_pct = metrics.get("system", {}).get("disk", {}).get("pct", 0)
+    if disk_pct > 90:
+        score -= 10
+        issues.append({"sev": "high", "msg": f"Disque presque plein : {disk_pct}%"})
+    elif disk_pct > 80:
+        score -= 5
+        issues.append({"sev": "medium", "msg": f"Disque à {disk_pct}%"})
+
+    # Mémoire
+    mem_pct = metrics.get("system", {}).get("memory", {}).get("pct", 0)
+    if mem_pct > 95:
+        score -= 5
+        issues.append({"sev": "medium", "msg": f"Mémoire critique : {mem_pct}%"})
+
+    score = max(0, min(100, score))
+
+    if score >= 90:
+        level = "excellent"
+        label = "Forteresse"
+        color = "green"
+    elif score >= 70:
+        level = "good"
+        label = "Bon état"
+        color = "teal"
+    elif score >= 50:
+        level = "warning"
+        label = "À surveiller"
+        color = "gold"
+    else:
+        level = "critical"
+        label = "Action requise"
+        color = "red"
+
+    return {
+        "score":  score,
+        "level":  level,
+        "label":  label,
+        "color":  color,
+        "issues": issues,
+    }
+
+
 # ── Cache & Aggregator ────────────────────────────────────────────────────────
 def collect() -> dict:
-    return {
+    base = {
         "endlessh":    get_endlessh(),
         "crowdsec":    get_crowdsec(),
+        "bouncer":     get_bouncer_status(),
         "ufw":         get_ufw(),
         "auditd":      get_auditd(),
         "rkhunter":    get_rkhunter(),
@@ -366,8 +703,12 @@ def collect() -> dict:
         "ssh_last":    get_ssh_last(),
         "updates":     get_updates(),
         "connections": get_connections(),
+        "open_ports":  get_open_ports(),
         "collected_at": int(time.time()),
     }
+    # Score calculé après les autres métriques
+    base["score"] = get_score(base)
+    return base
 
 
 def get_metrics() -> dict:
@@ -375,7 +716,7 @@ def get_metrics() -> dict:
     now = time.time()
     if _cache and (now - _cache_time) < CACHE_TTL:
         return _cache
-    _cache     = collect()
+    _cache      = collect()
     _cache_time = now
     push_history(_cache)
     return _cache
@@ -383,9 +724,10 @@ def get_metrics() -> dict:
 
 # ── HTTP Handler ──────────────────────────────────────────────────────────────
 ROUTES = {
-    "/api/metrics": lambda: get_metrics(),
-    "/api/health":  lambda: {"status": "ok", "ts": int(time.time())},
-    "/api/history": lambda: _history,
+    "/api/metrics":  lambda: get_metrics(),
+    "/api/health":   lambda: {"status": "ok", "ts": int(time.time())},
+    "/api/history":  lambda: _history,
+    "/api/timeline": lambda: get_timeline(),
 }
 
 

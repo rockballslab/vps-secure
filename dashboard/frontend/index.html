@@ -186,7 +186,9 @@
         <div class="header-sub" id="header-sub">Chargement…</div>
       </div>
     </div>
-    <div class="badge" id="badge-ip">🛡️ IP Serveur : <span id="val-ip">—</span></div>
+    <div style="flex:1;display:flex;justify-content:center;">
+      <div class="badge" id="badge-ip">🛡️ IP Serveur : <span id="val-ip">—</span></div>
+    </div>
     <div class="header-right">
       <span class="countdown" id="countdown">30s</span>
       <div class="badge"><div class="dot" id="status-dot"></div><span id="status-txt">Connexion…</span></div>
@@ -605,7 +607,7 @@ function updateCards(d) {
   updateDonuts(mem, dsk, s.load);
   const sysOk = parseFloat(s.load?.['1m']||99) < 1 && (mem.pct||99) < 80 && (dsk.pct||99) < 80;
   setCard('card-system', sysOk ? 'a-green' : 'a-teal');
-  $('header-sub').textContent = `${s.ip||'—'} · Uptime ${s.uptime||'—'}`;
+  $('header-sub').textContent = `Uptime ${s.uptime||'—'}`;
 
   // SSH
   const ssh = d.ssh_last||{};

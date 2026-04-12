@@ -139,7 +139,7 @@ HTTP_CODE=$(curl -s --max-time 10 \
     -w "%{http_code}" \
     -X POST "$CHECK_URL" \
     -H "Content-Type: application/json" \
-    -d "{\"key\": \"$ACTIVATION_KEY\"}")
+    -d "{\"key\": \"$ACTIVATION_KEY\"}" 2>/dev/null || echo "000")
 
 RESPONSE=$(cat /tmp/_vps_lic.json 2>/dev/null || echo "")
 rm -f /tmp/_vps_lic.json

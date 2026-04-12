@@ -82,12 +82,16 @@ CROWDSEC_CONTAINER=$(docker ps --format '{{.Names}}' | grep -i crowdsec | head -
 if [[ -n "$CROWDSEC_CONTAINER" ]]; then
   echo "→ CrowdSec détecté en container : $CROWDSEC_CONTAINER"
   CROWDSEC_NAME="$CROWDSEC_CONTAINER"
+  # Supprimer le bouncer existant si présent pour forcer la régénération de la clé
+  docker exec "$CROWDSEC_CONTAINER" cscli bouncers delete vps-dashboard 2>/dev/null || true
   CS_KEY=$(docker exec "$CROWDSEC_CONTAINER" cscli bouncers add vps-dashboard 2>/dev/null \
-    | grep -oE '[a-zA-Z0-9]{32,}' | tail -1) || true  # optionnel : peut échouer si déjà existant
+    | grep -oE '[a-zA-Z0-9/+]{32,}' | tail -1) || true
 else
   echo "→ CrowdSec détecté en service système"
+  # Supprimer le bouncer existant si présent pour forcer la régénération de la clé
+  sudo cscli bouncers delete vps-dashboard 2>/dev/null || true
   CS_KEY=$(sudo cscli bouncers add vps-dashboard 2>/dev/null \
-    | grep -oE '[a-zA-Z0-9]{32,}' | tail -1) || true
+    | grep -oE '[a-zA-Z0-9/+]{32,}' | tail -1) || true
 fi
 
 if [[ -z "$CS_KEY" ]]; then

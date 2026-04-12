@@ -70,7 +70,8 @@ Avant de commencer, tu as besoin de :
 > 💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd) - recommandé : CPX21 (4 GB RAM · 9,99€/mois) ou CPX32 (8 GB RAM · 14,49€/mois)
 
 
-> 🔑 Ce script nécessite une licence - [disponible ici](https://vps-secure.netlify.app/) | 
+> 🔑 Ce script nécessite une licence - [disponible ici](https://vps-secure.netlify.app/)
+
 > 👨‍💻 Développeur ? Contacte-moi pour un accès : [free4dev@aiforceone.fr](mailto:free4dev@aiforceone.fr)
 
 ---

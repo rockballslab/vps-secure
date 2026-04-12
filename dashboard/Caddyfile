@@ -1,10 +1,10 @@
 {
   admin off
 }
-monvps.aiforceone.fr {
+VPS_DOMAIN {
   handle /api/* {
     basic_auth {
-      admin $2a$14$bAbX/bRyavVAmMOvczfh9.Y6nuSuJIhGAXRTF6PtNnVXtnTdHLYDG
+      admin HASH_PLACEHOLDER
     }
     reverse_proxy 127.0.0.1:5055 {
       header_up Host {host}

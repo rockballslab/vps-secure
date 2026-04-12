@@ -1,27 +1,20 @@
 {
   admin off
 }
-
-VPS_DOMAIN {
-
-  # ── API : authentification + proxy ───────────────────────────────────────
+monvps.aiforceone.fr {
   handle /api/* {
     basic_auth {
-      admin HASH_PLACEHOLDER
+      admin $2a$14$bAbX/bRyavVAmMOvczfh9.Y6nuSuJIhGAXRTF6PtNnVXtnTdHLYDG
     }
     reverse_proxy 127.0.0.1:5055 {
       header_up Host {host}
     }
   }
-
-  # ── Fichiers statiques (frontend) ─────────────────────────────────────────
   handle {
     root * /srv
     file_server
     try_files {path} /index.html
   }
-
-  # ── Logs ──────────────────────────────────────────────────────────────────
   log {
     output file /data/access.log {
       roll_size    50mb
@@ -30,8 +23,6 @@ VPS_DOMAIN {
     format console
     level  WARN
   }
-
-  # ── Headers sécurité ──────────────────────────────────────────────────────
   header {
     Strict-Transport-Security "max-age=31536000; includeSubDomains"
     X-Frame-Options           "DENY"

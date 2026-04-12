@@ -1561,7 +1561,7 @@ AIDE_INIT_LOG=$(mktemp)
 AIDE_INIT_OK=false
 if aideinit --yes --force >"$AIDE_INIT_LOG" 2>&1; then
     AIDE_INIT_OK=true
-elif aideinit >"$AIDE_INIT_LOG" 2>&1; then
+elif aideinit >"$AIDE_INIT_LOG" 2>&1 </dev/null; then
     AIDE_INIT_OK=true
 fi
 # Afficher les dernières lignes en cas d'échec pour diagnostic

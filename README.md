@@ -126,6 +126,11 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
   && sudo ./install-secure.sh
 ```
 
+> 🔐 **`install-secure.sh`** vérifie la signature GPG de `install.sh` avant de le lancer.
+> C'est la commande recommandée — elle garantit que le script n'a pas été altéré.
+> `install.sh` seul reste disponible pour les environnements sans GPG.
+
+
 Le script est interactif. Il te pose **2 questions obligatoires** :
 
 1. Ta clé SSH publique (colle le contenu de `id_ed25519_vps.pub`)

@@ -11,9 +11,9 @@
 
 ---
 
-> 💳 **Script payant** — [Obtenir une licence](https://vps-secure.netlify.app/)
+> 🔑 Ce script nécessite une licence — [disponible ici](https://vps-secure.netlify.app/)
 > 
-> 👨‍💻 Tu es développeur et tu veux tester ? Écris-moi : [ceo@aiforceone.fr](mailto:ceo@aiforceone.fr)
+> 👨‍💻 Développeur ? Contacte-moi pour un accès : [ceo@aiforceone.fr](mailto:ceo@aiforceone.fr)
 
 ---
 

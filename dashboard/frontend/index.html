@@ -458,7 +458,7 @@ function updateCards(d) {
   $('val-endlessh-total').textContent=fmt(e.total);
   $('sub-endlessh').innerHTML=`24h : <b>${fmt(e.last24h)}</b>`;
   $('sub-endlessh-duration').innerHTML=`Durée moy. : <b>${e.avg_duration_fmt||'—'}</b>`;
-  setCard('card-endlessh',e.last24h>0?'a-rose':'');
+  setCard('card-endlessh',e.last24h>0?'a-green':'');
 
   $('val-crowdsec').textContent=fmt(c.active_bans);
   $('sub-crowdsec').innerHTML=`Alertes 24h : <b>${fmt(c.alerts_24h)}</b>`;

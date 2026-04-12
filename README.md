@@ -36,7 +36,7 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 ---
 
 <p align="center">
-  <img src="./WATCHME.jpg" alt="Ma Forteresse avec VPS-SECURE" width="100%">
+  <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
 
 ---

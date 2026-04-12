@@ -46,7 +46,7 @@ curl -fsSL "${REPO_RAW}/vps-secure-public.asc" \
   || log_fail "Import clé publique échoué"
 
 log_info "Vérification de la signature cryptographique..."
-GPG_OUT=$(gpg --verify "${TMPDIR_VPS}/install.sh.asc" "${TMPDIR_VPS}/install.sh" 2>&1 || true)
+GPG_OUT=$(gpg --verify "${TMPDIR_VPS}/install.sh.asc" "${TMPDIR_VPS}/install.sh" 2>&1) || true
 
 if ! echo "$GPG_OUT" | grep -q "Good signature"; then
   echo "$GPG_OUT" >&2

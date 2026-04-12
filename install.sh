@@ -337,7 +337,8 @@ apt-get upgrade -y -qq
 apt-get install -y -qq \
     curl wget gnupg lsb-release ca-certificates \
     apt-transport-https software-properties-common \
-    unzip jq htop ncdu tree openssl python3
+    unzip jq htop ncdu tree openssl python3 \
+    libpam-tmpdir debsums apt-listchanges  # Lynis DEB-0280/0811/PKGS-7370
 log_success "Système mis à jour."
 
 # Sécuriser /tmp (CIS Benchmark L1)
@@ -1061,6 +1062,21 @@ else
     echo "UMASK		027" >> /etc/login.defs
 fi
 log_success "umask 027 configuré dans /etc/login.defs."
+
+# ── Core dumps désactivés pour tous les utilisateurs (Lynis KRNL-5820) ──
+if ! grep -q "hard core" /etc/security/limits.conf 2>/dev/null; then
+    echo "* hard core 0" >> /etc/security/limits.conf
+    echo "* soft core 0" >> /etc/security/limits.conf
+    log_success "Core dumps désactivés dans /etc/security/limits.conf."
+fi
+
+# ── Password hashing rounds (Lynis AUTH-9230) ──
+if grep -q "^SHA_CRYPT_MIN_ROUNDS" /etc/login.defs 2>/dev/null; then
+    sed -i 's/^SHA_CRYPT_MIN_ROUNDS.*/SHA_CRYPT_MIN_ROUNDS 10000/' /etc/login.defs
+else
+    echo "SHA_CRYPT_MIN_ROUNDS 10000" >> /etc/login.defs
+fi
+log_success "Password hashing rounds configuré (SHA_CRYPT_MIN_ROUNDS=10000)."
 
 # ── Durcissement Postfix (Lynis MAIL-8818, MAIL-8820) ──
 # Postfix est installé par défaut sur Ubuntu — masquer le banner OS et désactiver VRFY
@@ -1872,6 +1888,13 @@ MOTDEOF
 chmod +x /etc/update-motd.d/00-vps-secure
 # Régénérer motd.dynamic avec uniquement notre script
 bash -c 'run-parts --lsbsysinit /etc/update-motd.d > /run/motd.dynamic 2>/dev/null' || true  # optionnel : erreurs attendues sur les scripts vidés
+# Fallback .bashrc — garantit l'affichage du MOTD même si PAM ne le régénère pas après reboot
+VPSADMIN_BASHRC="/home/$USERNAME/.bashrc"
+if ! grep -q "vps-secure-motd\|00-vps-secure" "$VPSADMIN_BASHRC" 2>/dev/null; then
+    echo '' >> "$VPSADMIN_BASHRC"
+    echo '# vps-secure MOTD' >> "$VPSADMIN_BASHRC"
+    echo 'sudo /etc/update-motd.d/00-vps-secure 2>/dev/null' >> "$VPSADMIN_BASHRC"
+fi
 log_success "MOTD personnalisé installé — affiché à chaque connexion SSH."
 
 # Résumé final

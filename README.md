@@ -2,7 +2,7 @@
 
 # 🔐 VPS-secure
 
-**🔐 Sécurise ton VPS en 15 min - honeypot, pare-feu, IPS, integrity monitoring. Une commande. Zéro compétence requise.**
+**🔐 Sécurise ton VPS en moins de 15 min - honeypot, pare-feu, IPS, integrity monitoring. Une commande. Zéro compétence requise.**
 
 > "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un VPS, et que tu tiens à tes données, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**
 > 15 minutes, une seule commande. Ton serveur passe du stade *cible facile* à *cible qui n'en vaut pas la peine*."

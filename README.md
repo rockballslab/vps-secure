@@ -412,7 +412,7 @@ ssh monvps
  
 Accessible depuis un navigateur, protégé par une page de connexion, déployé en Docker. CrowdSec et Endlessh sont détectés automatiquement.
 ```bash
-bash <(curl -fsSL .../dashboard/install-dashboard.sh)
+curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard.sh && chmod +x install-dashboard.sh && ./install-dashboard.sh
 ```
 
 

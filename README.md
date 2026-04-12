@@ -430,36 +430,7 @@ Testé et vérifié le 12 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2
 
 VPS-SECURE COMMERCIAL LICENSE
 Copyright (c) 2026 AIFORCEONE
-https://github.com/rockballslab/vps-secure
-
-TERMS AND CONDITIONS
-
-1. GRANT OF LICENSE
-   A valid activation key grants you a personal, non-exclusive, 
-   non-transferable license to install and use vps-secure on 
-   one (1) VPS server.
-
-2. PERMITTED USE
-   - Install and run vps-secure on your own server
-   - Modify the scripts for your personal use
-   - Use the dashboard and all included tools
-
-3. RESTRICTIONS
-   - You may not resell, sublicense or distribute this software
-   - You may not share your activation key
-   - You may not remove copyright notices
-
-4. OPEN SOURCE COMPONENTS
-   This software includes open source tools (CrowdSec, AIDE, 
-   rkhunter, Endlessh) governed by their respective licenses.
-   vps-secure scripts are commercial software.
-
-5. WARRANTY DISCLAIMER
-   THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.
-   USE AT YOUR OWN RISK.
-
-6. CONTACT
-   security@aiforceone.fr
+https://vps-secure.netlify.app/
 
 ---
 

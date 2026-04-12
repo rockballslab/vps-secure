@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VPS Secure — Monitor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    /* ── Thème clair (défaut) ── */
     :root {
       --bg: #f0ebe3;
       --card: #ffffff;
@@ -23,1029 +19,700 @@
       --gold-l: #dbb85c;
       --text: #1e1e1e;
       --muted: #9a9085;
-      --shadow-out:
-        -8px 8px 0px rgba(0, 0, 0, 0.07),
-        -12px 16px 28px rgba(0, 0, 0, 0.20),
-        -20px 24px 52px rgba(0, 0, 0, 0.09),
-        6px -6px 16px rgba(255, 255, 255, 0.96);
-      --shadow-in:
-        inset 4px 4px 10px rgba(0, 0, 0, 0.11),
-        inset -3px -3px 8px rgba(255, 255, 255, 0.88);
-      --shadow-teal:
-        -8px 10px 24px rgba(45, 125, 111, 0.55),
-        -14px 18px 40px rgba(45, 125, 111, 0.20),
-        4px -4px 10px rgba(255, 255, 255, 0.35);
-      --r: 30px;
-      --r-sm: 18px;
-      --r-xs: 12px;
+      --shadow-out: -8px 8px 0px rgba(0,0,0,0.07),-12px 16px 28px rgba(0,0,0,0.20),-20px 24px 52px rgba(0,0,0,0.09),6px -6px 16px rgba(255,255,255,0.96);
+      --shadow-in: inset 4px 4px 10px rgba(0,0,0,0.11),inset -3px -3px 8px rgba(255,255,255,0.88);
+      --shadow-teal: -8px 10px 24px rgba(45,125,111,0.55),-14px 18px 40px rgba(45,125,111,0.20),4px -4px 10px rgba(255,255,255,0.35);
+      --r: 30px; --r-sm: 18px; --r-xs: 12px;
       --btn-text: #ffffff;
       --donut-empty: rgba(0,0,0,0.06);
     }
-
-    /* ── Thème sombre ── */
     body.dark {
-      --bg: #0d0f0e;
-      --card: #161a18;
-      --card-border: rgba(255, 255, 255, 0.06);
-      --teal: #00ff88;
-      --teal-l: #33ffaa;
-      --rose: #ff4d6d;
-      --rose-l: #ff7090;
-      --gold: #f0b429;
-      --gold-l: #f5c842;
-      --text: #f0f0f0;
-      --muted: #6b7280;
-      --shadow-out:
-        0 2px 8px rgba(0, 0, 0, 0.4),
-        0 8px 24px rgba(0, 0, 0, 0.3),
-        0 0 0 1px var(--card-border);
-      --shadow-in:
-        inset 0 1px 3px rgba(0, 0, 0, 0.4),
-        inset 0 -1px 2px rgba(255, 255, 255, 0.03);
-      --shadow-teal:
-        0 4px 20px rgba(0, 255, 136, 0.25),
-        0 0 0 1px rgba(0, 255, 136, 0.15);
-      --r: 20px;
-      --r-sm: 14px;
-      --r-xs: 10px;
-      --btn-text: #0d0f0e;
+      --bg: #0d0f0e; --card: #161a18; --card-border: rgba(255,255,255,0.06);
+      --teal: #00ff88; --teal-l: #33ffaa; --rose: #ff4d6d; --rose-l: #ff7090;
+      --gold: #f0b429; --gold-l: #f5c842; --text: #f0f0f0; --muted: #6b7280;
+      --shadow-out: 0 2px 8px rgba(0,0,0,0.4),0 8px 24px rgba(0,0,0,0.3),0 0 0 1px var(--card-border);
+      --shadow-in: inset 0 1px 3px rgba(0,0,0,0.4),inset 0 -1px 2px rgba(255,255,255,0.03);
+      --shadow-teal: 0 4px 20px rgba(0,255,136,0.25),0 0 0 1px rgba(0,255,136,0.15);
+      --r: 20px; --r-sm: 14px; --r-xs: 10px; --btn-text: #0d0f0e;
       --donut-empty: rgba(255,255,255,0.05);
     }
+    body.dark .logo-icon { background: linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.05)); border:1px solid rgba(0,255,136,0.25); }
+    body.dark .btn-refresh, body.dark .btn-icon:not(.btn-icon-muted) { color: #0d0f0e; }
+    body.dark .ic-teal   { background: linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1)); border:1px solid rgba(0,255,136,0.2); }
+    body.dark .ic-rose   { background: linear-gradient(135deg,rgba(255,77,109,0.2),rgba(255,77,109,0.1)); border:1px solid rgba(255,77,109,0.2); }
+    body.dark .ic-gold   { background: linear-gradient(135deg,rgba(240,180,41,0.2),rgba(240,180,41,0.1)); border:1px solid rgba(240,180,41,0.2); }
+    body.dark .ic-green  { background: linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1)); border:1px solid rgba(0,255,136,0.2); }
+    body.dark .ic-violet { background: linear-gradient(135deg,rgba(167,139,250,0.2),rgba(167,139,250,0.1)); border:1px solid rgba(167,139,250,0.2); }
+    body.dark .ic-red    { background: linear-gradient(135deg,rgba(255,77,77,0.2),rgba(255,77,77,0.1)); border:1px solid rgba(255,77,77,0.2); }
 
-    /* Dark mode — surcharges spécifiques */
-    body.dark .logo-icon {
-      background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.05));
-      border: 1px solid rgba(0,255,136,0.25);
-    }
-    body.dark .btn-refresh,
-    body.dark .btn-icon:not(.btn-icon-muted) { color: #0d0f0e; }
-    body.dark .ic-teal {
-      background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.1));
-      border: 1px solid rgba(0,255,136,0.2);
-    }
-    body.dark .ic-rose {
-      background: linear-gradient(135deg, rgba(255,77,109,0.2), rgba(255,77,109,0.1));
-      border: 1px solid rgba(255,77,109,0.2);
-    }
-    body.dark .ic-gold {
-      background: linear-gradient(135deg, rgba(240,180,41,0.2), rgba(240,180,41,0.1));
-      border: 1px solid rgba(240,180,41,0.2);
-    }
-    body.dark .ic-green {
-      background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.1));
-      border: 1px solid rgba(0,255,136,0.2);
-    }
-    body.dark .ic-violet {
-      background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(167,139,250,0.1));
-      border: 1px solid rgba(167,139,250,0.2);
-    }
-    body.dark .icon-chip { box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-    body.dark .pill-ok   { background: rgba(0,255,136,0.12); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
-    body.dark .pill-warn { background: rgba(255,77,109,0.12); color: #ff4d6d; border: 1px solid rgba(255,77,109,0.2); }
-    body.dark .pill-unk  { background: rgba(240,180,41,0.12); color: #f0b429; border: 1px solid rgba(240,180,41,0.2); }
-    body.dark .a-green::before { background: linear-gradient(90deg, #00ff88, #33ffaa); }
-    body.dark .a-red::before   { background: linear-gradient(90deg, #ff4d6d, #ff7090); }
-    body.dark .card::after { display: none; }
-    body.dark .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,255,136,0.1);
-    }
-    body.dark .bar-wrap { background: rgba(255,255,255,0.06); }
-    body.dark .skel {
-      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; min-height: 100vh; }
+    .main { max-width: 1400px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 
-    /* Toggle bouton */
-    .btn-theme {
-      width: 38px; height: 38px;
-      border-radius: 50%;
-      border: none; cursor: pointer;
-      font-size: 16px;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--card);
-      color: var(--text);
-      box-shadow: var(--shadow-out);
-      transition: all 0.18s ease;
-    }
-    .btn-theme:hover { transform: translateY(-1px); }
+    /* Header */
+    .header { display: flex; align-items: center; gap: 16px; padding: 18px 26px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow-out); flex-wrap: wrap; }
+    .header-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 200px; }
+    .logo-icon { width: 46px; height: 46px; background: linear-gradient(135deg,rgba(45,125,111,0.15),rgba(45,125,111,0.05)); border: 1px solid rgba(45,125,111,0.2); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    .header-sub { font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; background: var(--bg); border-radius: 50px; font-size: 12px; font-weight: 600; box-shadow: var(--shadow-in); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6); }
+    .dot.error { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.6); }
+    .countdown { font-size: 11px; font-weight: 700; color: var(--muted); min-width: 28px; text-align: center; font-family: 'DM Mono', monospace; }
+    .btn-icon { width: 36px; height: 36px; border: none; border-radius: var(--r-xs); background: var(--teal); color: var(--btn-text); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-out); transition: transform 0.15s; }
+    .btn-icon:active { transform: scale(0.95); }
+    .btn-icon.loading { opacity: 0.7; }
+    .btn-icon-muted { background: var(--bg); color: var(--muted); box-shadow: var(--shadow-in); }
+    .btn-theme { width: 36px; height: 36px; border: none; border-radius: var(--r-xs); background: var(--bg); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-in); }
 
-    /* Transition douce entre les thèmes */
-    body, .card, .badge, .footer-badge, .countdown, .btn-theme {
-      transition: background 0.3s ease, color 0.2s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    }
+    /* Score global */
+    .score-bar { padding: 20px 26px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow-out); display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .score-ring { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+    .score-ring canvas { display: block; }
+    .score-ring-val { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .score-num { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+    .score-info { flex: 1; }
+    .score-label { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .score-issues { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .issue-pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .issue-critical { background: rgba(239,68,68,0.12); color: #b91c1c; }
+    .issue-high     { background: rgba(245,158,11,0.12); color: #92400e; }
+    .issue-medium   { background: rgba(201,168,76,0.12); color: #92400e; }
+    .issue-info     { background: rgba(45,125,111,0.12); color: #065f46; }
+    .score-ok       { font-size: 13px; color: var(--muted); font-weight: 500; }
 
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    /* Grids */
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    @media (max-width: 1100px) { .grid4 { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 700px)  { .grid4,.grid3,.grid2 { grid-template-columns: 1fr; } }
 
-    body {
-      background: var(--bg);
-      font-family: 'DM Sans', sans-serif;
-      color: var(--text);
-      min-height: 100vh;
-    }
+    /* Cards */
+    .card { background: var(--card); border-radius: var(--r); padding: 22px 24px; box-shadow: var(--shadow-out); transition: box-shadow 0.3s; position: relative; overflow: hidden; }
+    .card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius: var(--r) var(--r) 0 0; background: transparent; transition: background 0.3s; }
+    .a-teal::before  { background: linear-gradient(90deg,var(--teal),var(--teal-l)); }
+    .a-rose::before  { background: linear-gradient(90deg,var(--rose),var(--rose-l)); }
+    .a-gold::before  { background: linear-gradient(90deg,var(--gold),var(--gold-l)); }
+    .a-green::before { background: linear-gradient(90deg,#22c55e,#4ade80); }
+    .a-red::before   { background: linear-gradient(90deg,#ef4444,#f87171); }
+    .a-violet::before { background: linear-gradient(90deg,#7c3aed,#a78bfa); }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 10px; }
+    .card-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
+    .card-desc { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 3px; line-height: 1.4; }
+    .icon-chip { width: 38px; height: 38px; border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: -3px 3px 8px rgba(0,0,0,0.12),2px -2px 6px rgba(255,255,255,0.85); flex-shrink: 0; }
+    .ic-teal   { background: linear-gradient(135deg,var(--teal-l),var(--teal)); }
+    .ic-rose   { background: linear-gradient(135deg,var(--rose-l),var(--rose)); }
+    .ic-gold   { background: linear-gradient(135deg,var(--gold-l),var(--gold)); }
+    .ic-green  { background: linear-gradient(135deg,#4ade80,#22c55e); }
+    .ic-violet { background: linear-gradient(135deg,#a78bfa,#7c3aed); }
+    .ic-red    { background: linear-gradient(135deg,#f87171,#ef4444); }
+    .card-value { font-size: 40px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
+    .card-sub { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .card-sub b { color: var(--text); font-weight: 700; }
 
-    .main {
-      padding: 32px 44px 48px;
-      max-width: 1440px;
-      margin: 0 auto;
-      overflow-x: hidden;
-    }
-
-    /* ── Header ── */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 34px;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .logo-icon {
-      width: 48px; height: 48px;
-      background: linear-gradient(135deg, var(--teal-l), var(--teal));
-      border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      box-shadow: var(--shadow-teal);
-      flex-shrink: 0;
-    }
-
-    .header h1 {
-      font-size: 24px;
-      font-weight: 800;
-      letter-spacing: -0.6px;
-    }
-
-    .header-sub {
-      font-size: 12.5px;
-      color: var(--muted);
-      margin-top: 3px;
-      font-weight: 500;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .badge {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 8px 18px;
-      background: var(--card);
-      border-radius: 50px;
-      box-shadow: var(--shadow-out);
-      font-size: 12.5px;
-      font-weight: 600;
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #4ade80;
-      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2);
-    }
-
-    .dot.error {
-      background: #f87171;
-      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
-    }
-
-    .btn-refresh {
-      display: flex; align-items: center; gap: 6px;
-      padding: 10px 22px;
-      background: var(--teal); color: #fff;
-      border: none; border-radius: 50px; cursor: pointer;
-      font-size: 13px; font-weight: 700;
-      font-family: 'DM Sans', sans-serif;
-      box-shadow: var(--shadow-teal);
-      transition: all 0.18s ease;
-    }
-
-    .btn-refresh:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.08);
-    }
-
-    .btn-refresh:active {
-      transform: translateY(0);
-    }
-
-    .btn-refresh.loading {
-      opacity: 0.7;
-      pointer-events: none;
-    }
-      
-    .btn-icon {
-      width: 38px; height: 38px;
-      border-radius: 50%; border: none; cursor: pointer;
-      font-size: 16px;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--teal); color: #fff;
-      box-shadow: var(--shadow-teal);
-      transition: all 0.18s ease;
-    }
-    .btn-icon:hover { transform: translateY(-1px); filter: brightness(1.1); }
-    .btn-icon:active { transform: translateY(0); }
-    .btn-icon.loading { opacity: 0.6; pointer-events: none; }
-    .btn-icon-muted {
-      background: var(--bg);
-      color: var(--muted);
-      box-shadow: var(--shadow-out);
-    }
-    .btn-icon-muted:hover { color: var(--text); }
-
-    .countdown {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-      background: var(--card);
-      padding: 6px 13px;
-      border-radius: 50px;
-      box-shadow: var(--shadow-out);
-    }
-
-    /* ── Grids ── */
-    .grid4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 22px;
-      margin-bottom: 22px;
-    }
-
-    .grid3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 2fr;
-      gap: 22px;
-      margin-bottom: 22px;
-    }
-
-    /* ── Card ── */
-    .card {
-      background: var(--card);
-      border-radius: var(--r);
-      padding: 24px;
-      box-shadow: var(--shadow-out);
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    /* Highlight haut-droite — reflet lumière */
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 55%;
-      height: 45%;
-      background: linear-gradient(225deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 65%);
-      border-radius: 0 var(--r) 0 60%;
-      pointer-events: none;
-    }
-
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow:
-        0 4px 16px rgba(0, 0, 0, 0.5),
-        0 12px 32px rgba(0, 0, 0, 0.35),
-        0 0 0 1px rgba(0, 255, 136, 0.1);
-    }
-
-    /* Suppression du reflet lumière haut-droite (inutile en dark mode) */
-    .card::after {
-      display: none;
-    }
-
-    /* Accent top bar */
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      border-radius: var(--r) var(--r) 0 0;
-      z-index: 1;
-    }
-
-    .a-teal::before {
-      background: linear-gradient(90deg, var(--teal), var(--teal-l));
-    }
-
-    .a-rose::before {
-      background: linear-gradient(90deg, var(--rose), var(--rose-l));
-    }
-
-    .a-gold::before {
-      background: linear-gradient(90deg, var(--gold), var(--gold-l));
-    }
-
-    .a-green::before {
-      background: linear-gradient(90deg, #00ff88, #33ffaa);
-    }
-
-    .a-red::before {
-      background: linear-gradient(90deg, #ff4d6d, #ff7090);
-    }
-
-    .a-violet::before {
-      background: linear-gradient(90deg, #a78bfa, #c4b5fd);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 14px;
-    }
-
-    .card-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-    }
-
-    .card-desc {
-      font-size: 10.5px;
-      color: var(--muted);
-      font-weight: 400;
-      margin-top: 3px;
-      font-style: italic;
-      opacity: 0.8;
-    }
-
-    .icon-chip {
-      width: 36px;
-      height: 36px;
-      border-radius: 11px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      box-shadow: -3px 3px 8px rgba(0, 0, 0, 0.12), 2px -2px 6px rgba(255, 255, 255, 0.85);
-      flex-shrink: 0;
-    }
-
-    .ic-teal   { background: linear-gradient(135deg, var(--teal-l), var(--teal)); }
-    .ic-rose   { background: linear-gradient(135deg, var(--rose-l), var(--rose)); }
-    .ic-gold   { background: linear-gradient(135deg, var(--gold-l), var(--gold)); }
-    .ic-green  { background: linear-gradient(135deg, #4ade80, #22c55e); }
-    .ic-violet { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
-
-    .card-value {
-      font-size: 40px;
-      font-weight: 800;
-      letter-spacing: -2px;
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-
-    .card-sub {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    .card-sub b {
-      color: var(--text);
-      font-weight: 700;
-    }
-
-    /* Barres multi-segments */
-    .bar-wrap {
-      height: 5px;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 10px;
-      margin-top: 18px;
-      box-shadow: var(--shadow-in);
-      overflow: hidden;
-      display: flex;
-    }
-
-    .bar-seg {
-      height: 100%;
-      transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .bs-teal {
-      background: var(--teal);
-    }
-
-    .bs-teal-l {
-      background: var(--teal-l);
-    }
-
-    .bs-rose {
-      background: var(--rose);
-    }
-
-    .bs-gold {
-      background: var(--gold);
-    }
-
-    .bs-green {
-      background: #22c55e;
-    }
-
-    /* Compat ancienne classe single-fill */
-    .bar-fill {
-      height: 100%;
-      border-radius: 10px;
-      transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .bf-teal {
-      background: linear-gradient(90deg, var(--teal), var(--teal-l));
-    }
-
-    .bf-rose {
-      background: linear-gradient(90deg, var(--rose), var(--rose-l));
-    }
-
-    .bf-gold {
-      background: linear-gradient(90deg, var(--gold), var(--gold-l));
-    }
-
-    /* ── Status card ── */
-    .status-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .pill {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
+    /* Status */
+    .status-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+    .pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; }
     .pill-ok   { background: rgba(34,197,94,0.15); color: #15803d; }
     .pill-warn { background: rgba(248,113,113,0.15); color: #b91c1c; }
     .pill-unk  { background: rgba(201,168,76,0.15); color: #92400e; }
+    .status-label { font-size: 16px; font-weight: 700; }
 
-    .status-label {
-      font-size: 16px;
-      font-weight: 700;
-    }
+    /* System grid */
+    .sys-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .sys-item { background: var(--bg); border-radius: var(--r-xs); padding: 10px 13px; box-shadow: var(--shadow-in); }
+    .sys-lbl { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .sys-val { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
 
-    /* ── System grid ── */
-    .sys-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
+    /* Ports */
+    .ports-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .port-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; font-family: 'DM Mono', monospace; }
+    .port-ok    { background: rgba(34,197,94,0.12); color: #15803d; }
+    .port-alert { background: rgba(239,68,68,0.12); color: #b91c1c; }
 
-    .sys-item {
-      background: var(--bg);
-      border-radius: var(--r-xs);
-      padding: 10px 13px;
-      box-shadow: var(--shadow-in);
-    }
+    /* Timeline */
+    .timeline-card { background: var(--card); border-radius: var(--r); padding: 24px 26px; box-shadow: var(--shadow-out); }
+    .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .timeline-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
+    .timeline-list { display: flex; flex-direction: column; gap: 0; }
+    .tl-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); position: relative; }
+    body.dark .tl-item { border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .tl-item:last-child { border-bottom: none; }
+    .tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .tl-dot-teal   { background: var(--teal); box-shadow: 0 0 6px rgba(45,125,111,0.5); }
+    .tl-dot-rose   { background: var(--rose); box-shadow: 0 0 6px rgba(224,90,122,0.5); }
+    .tl-dot-gold   { background: var(--gold); box-shadow: 0 0 6px rgba(201,168,76,0.5); }
+    .tl-dot-purple { background: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,0.5); }
+    .tl-dot-red    { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+    .tl-dot-gray   { background: var(--muted); }
+    .tl-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+    .tl-content { flex: 1; min-width: 0; }
+    .tl-title { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tl-detail { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tl-time { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); flex-shrink: 0; text-align: right; }
+    .tl-date { font-size: 10px; color: var(--muted); opacity: 0.6; }
+    .tl-empty { text-align: center; padding: 28px; color: var(--muted); font-size: 13px; }
 
-    .sys-lbl {
-      font-size: 10px;
-      color: var(--muted);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
+    /* Footer */
+    .footer-bar { display: flex; justify-content: center; margin-top: 4px; }
+    .footer-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 22px; background: var(--card); border-radius: 50px; box-shadow: var(--shadow-out); font-size: 11.5px; color: var(--muted); font-weight: 500; }
 
-    .sys-val {
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
+    /* Skeleton */
+    .skel { display: inline-block; width: 90px; height: 38px; background: linear-gradient(90deg,rgba(128,128,128,0.06) 25%,rgba(128,128,128,0.12) 50%,rgba(128,128,128,0.06) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .spinning { display: inline-block; animation: spin 0.8s linear infinite; }
 
-    /* ── Chart card ── */
-    .chart-card {
-      background: var(--card);
-      border-radius: var(--r);
-      padding: 26px;
-      box-shadow: var(--shadow-out);
-    }
-
-    .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 22px;
-    }
-
-    .chart-title {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: -0.3px;
-    }
-
-    .legend {
-      display: flex;
-      gap: 16px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11.5px;
-      font-weight: 600;
-      color: var(--muted);
-    }
-
-    .legend-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
-    }
-
-    /* ── Footer ── */
-    .footer-bar {
-      display: flex;
-      justify-content: center;
-      margin-top: 22px;
-    }
-
-    .footer-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 22px;
-      background: var(--card);
-      border-radius: 50px;
-      box-shadow: var(--shadow-out);
-      font-size: 11.5px;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    /* ── Skeleton ── */
-    .skel {
-      display: inline-block;
-      width: 90px;
-      height: 38px;
-      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-      border-radius: 8px;
-    }
-
-    @keyframes shimmer {
-      0% {
-        background-position: 200% 0
-      }
-
-      100% {
-        background-position: -200% 0
-      }
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg)
-      }
-    }
-
-    .spinning {
-      display: inline-block;
-      animation: spin 0.8s linear infinite;
-    }
+    /* Bouncer card */
+    .bouncer-status { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .bouncer-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .bouncer-active   { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.6); animation: pulse-green 2s infinite; }
+    .bouncer-inactive { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.6); }
+    .bouncer-unknown  { background: var(--muted); }
+    @keyframes pulse-green { 0%,100%{box-shadow:0 0 8px rgba(34,197,94,0.6)} 50%{box-shadow:0 0 14px rgba(34,197,94,0.9)} }
   </style>
 </head>
-
 <body>
-  <main class="main">
+<main class="main">
 
-    <!-- Header -->
-    <div class="header">
-      <div class="header-left">
-        <div class="logo-icon">🛡️</div>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-icon">🛡️</div>
+      <div>
+        <h1>VPS Dashboard</h1>
+        <div class="header-sub" id="header-sub">Chargement…</div>
+      </div>
+    </div>
+    <div class="badge" id="badge-ip">🛡️ IP Serveur : <span id="val-ip">—</span></div>
+    <div class="header-right">
+      <span class="countdown" id="countdown">30s</span>
+      <div class="badge"><div class="dot" id="status-dot"></div><span id="status-txt">Connexion…</span></div>
+      <button class="btn-icon" id="btn-refresh" onclick="refresh()" title="Actualiser"><span id="refresh-icon">↻</span></button>
+      <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion">⏻</button>
+      <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Thème">🌙</button>
+    </div>
+  </div>
+
+  <!-- Score global -->
+  <div class="score-bar" id="score-bar">
+    <div class="score-ring">
+      <canvas id="donut-score" width="80" height="80"></canvas>
+      <div class="score-ring-val">
+        <span class="score-num" id="score-num">—</span>
+      </div>
+    </div>
+    <div class="score-info">
+      <div class="score-label" id="score-label">Chargement…</div>
+      <div class="score-issues" id="score-issues"></div>
+    </div>
+  </div>
+
+  <!-- Row 1 : 4 métriques principales -->
+  <div class="grid4">
+
+    <div class="card a-rose" id="card-endlessh">
+      <div class="card-header">
         <div>
-          <h1>VPS Dashboard</h1>
-          <div class="header-sub" id="header-sub">monvps.aiforceone.fr · Chargement…</div>
+          <div class="card-label">Endlessh</div>
+          <div class="card-desc">Piège les bots SSH port 22</div>
         </div>
+        <div class="icon-chip ic-rose">🪤</div>
       </div>
-      <div class="badge" id="badge-ip">
-        🛡️ IP Serveur : <span id="val-ip">—</span>
-      </div>
-      <div class="header-right">
-        <span class="countdown" id="countdown">30s</span>
-        <div class="badge">
-          <div class="dot" id="status-dot"></div>
-          <span id="status-txt">Connexion…</span>
-        </div>
-        <button class="btn-icon" id="btn-refresh" onclick="refresh()" title="Actualiser">
-          <span id="refresh-icon">↻</span>
-        </button>
-        <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion">
-          ⏻
-        </button>
-        <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Changer le thème">
-          🌙
-        </button>
-      </div>
+      <div class="card-value" id="val-endlessh-total"><span class="skel"></span></div>
+      <div class="card-sub">bots piégés <b>total</b></div>
+      <div class="card-sub" style="margin-top:4px" id="sub-endlessh">24h : —</div>
+      <div class="card-sub" style="margin-top:4px" id="sub-endlessh-duration">Durée moy. : —</div>
     </div>
 
-    <!-- Row 1 -->
-    <div class="grid4">
-
-      <div class="card a-rose" id="card-endlessh">
-        <div class="card-header">
-          <div>
-            <div class="card-label">Endlessh</div>
-            <div class="card-desc">Piège les bots SSH port 22 en boucle infinie</div>
-          </div>
-          <div class="icon-chip ic-rose">🪤</div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-label">CrowdSec IPS</div>
+          <div class="card-desc">Bans actifs & alertes</div>
         </div>
-        <div class="card-value" id="val-endlessh-total"><span class="skel"></span></div>
-        <div class="card-sub">bots piégés <b>total</b></div>
-        <div class="card-sub" style="margin-top:4px" id="sub-endlessh">24h : —</div>
+        <div class="icon-chip ic-teal">🛡️</div>
       </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-label">CrowdSec IPS</div>
-            <div class="card-desc">Détecte et bannit les IP malveillantes en temps réel</div>
-          </div>
-          <div class="icon-chip ic-teal">🛡️</div>
-        </div>
-        <div class="card-value" id="val-crowdsec"><span class="skel"></span></div>
-        <div class="card-sub">IP bannies <b>actives</b></div>
-        <div class="card-sub" style="margin-top:4px" id="sub-crowdsec">Alertes 24h : —</div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-label">UFW Firewall</div>
-          <div class="icon-chip ic-gold">🔥</div>
-        </div>
-        <div class="card-value" id="val-ufw"><span class="skel"></span></div>
-        <div class="card-sub">blocages <b>totaux</b></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-label">Auditd</div>
-            <div class="card-desc">Journalise les commandes sudo et accès fichiers sensibles</div>
-          </div>
-          <div class="icon-chip ic-teal">📋</div>
-        </div>
-        <div class="card-value" id="val-audit"><span class="skel"></span></div>
-        <div class="card-sub">escalades <b>aujourd'hui</b></div>
-      </div>
-
+      <div class="card-value" id="val-crowdsec"><span class="skel"></span></div>
+      <div class="card-sub">IP bannies <b>actives</b></div>
+      <div class="card-sub" style="margin-top:4px" id="sub-crowdsec">Alertes 24h : —</div>
     </div>
 
-    <!-- Row 2 -->
-    <div class="grid3">
-
-      <div class="card" id="card-rkhunter">
-        <div class="card-header">
-          <div>
-            <div class="card-label">rkhunter</div>
-            <div class="card-desc">Détecte rootkits, backdoors et binaires suspects</div>
-          </div>
-          <div class="icon-chip ic-green">🔍</div>
+    <div class="card" id="card-bouncer">
+      <div class="card-header">
+        <div>
+          <div class="card-label">CrowdSec Bouncer</div>
+          <div class="card-desc">Applique les bans iptables</div>
         </div>
-        <div class="status-row">
-          <span class="status-label" id="val-rkhunter">—</span>
-          <span class="pill pill-unk" id="pill-rkhunter">—</span>
-        </div>
-        <div class="card-sub" style="margin-top:12px" id="sub-rkhunter">Dernier scan : —</div>
+        <div class="icon-chip ic-green">⚡</div>
       </div>
-
-      <div class="card" id="card-aide">
-        <div class="card-header">
-          <div>
-            <div class="card-label">AIDE File Integrity</div>
-            <div class="card-desc">Vérifie l'intégrité des fichiers système par hash SHA512</div>
-          </div>
-          <div class="icon-chip ic-violet">🗂️</div>
-        </div>
-        <div class="status-row">
-          <span class="status-label" id="val-aide">—</span>
-          <span class="pill pill-unk" id="pill-aide">—</span>
-        </div>
-        <div class="card-sub" style="margin-top:12px" id="sub-aide">Dernier scan : —</div>
+      <div class="bouncer-status">
+        <div class="bouncer-dot bouncer-unknown" id="bouncer-dot"></div>
+        <span class="status-label" id="val-bouncer">—</span>
       </div>
+      <div class="card-sub" style="margin-top:10px" id="sub-bouncer">Sans le bouncer, les IPs ne sont pas bannies</div>
+    </div>
 
-      <div class="card a-teal" id="card-system">
-        <div class="card-header">
-          <div class="card-label">Système</div>
-          <div class="icon-chip ic-teal">⚙️</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">UFW Firewall</div>
+        <div class="icon-chip ic-gold">🔥</div>
+      </div>
+      <div class="card-value" id="val-ufw"><span class="skel"></span></div>
+      <div class="card-sub">blocages <b>totaux</b></div>
+    </div>
+
+  </div>
+
+  <!-- Row 2 -->
+  <div class="grid4">
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-label">Auditd</div>
+          <div class="card-desc">Commandes sudo aujourd'hui</div>
         </div>
-        <div style="display:flex;justify-content:space-around;align-items:center;padding:8px 0 4px;gap:8px">
-          <!-- CPU -->
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
-            <div style="position:relative;width:110px;height:110px">
-              <canvas id="donut-cpu" width="110" height="110"></canvas>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <span style="font-size:22px;font-weight:800;letter-spacing:-1px" id="sys-cpu">—</span>
-                <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">CPU</span>
-              </div>
+        <div class="icon-chip ic-teal">📋</div>
+      </div>
+      <div class="card-value" id="val-audit"><span class="skel"></span></div>
+      <div class="card-sub">escalades <b>aujourd'hui</b></div>
+    </div>
+
+    <div class="card" id="card-rkhunter">
+      <div class="card-header">
+        <div>
+          <div class="card-label">rkhunter</div>
+          <div class="card-desc">Rootkits & backdoors</div>
+        </div>
+        <div class="icon-chip ic-green">🔍</div>
+      </div>
+      <div class="status-row">
+        <span class="status-label" id="val-rkhunter">—</span>
+        <span class="pill pill-unk" id="pill-rkhunter">—</span>
+      </div>
+      <div class="card-sub" style="margin-top:12px" id="sub-rkhunter">Dernier scan : —</div>
+    </div>
+
+    <div class="card" id="card-aide">
+      <div class="card-header">
+        <div>
+          <div class="card-label">AIDE File Integrity</div>
+          <div class="card-desc">Hash SHA512 des binaires</div>
+        </div>
+        <div class="icon-chip ic-violet">🗂️</div>
+      </div>
+      <div class="status-row">
+        <span class="status-label" id="val-aide">—</span>
+        <span class="pill pill-unk" id="pill-aide">—</span>
+      </div>
+      <div class="card-sub" style="margin-top:12px" id="sub-aide">Dernier scan : —</div>
+    </div>
+
+    <div class="card a-teal" id="card-system">
+      <div class="card-header">
+        <div class="card-label">Système</div>
+        <div class="icon-chip ic-teal">⚙️</div>
+      </div>
+      <div style="display:flex;justify-content:space-around;align-items:center;padding:8px 0 4px;gap:8px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div style="position:relative;width:88px;height:88px">
+            <canvas id="donut-cpu" width="88" height="88"></canvas>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <span style="font-size:18px;font-weight:800;letter-spacing:-1px" id="sys-cpu">—</span>
+              <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">CPU</span>
             </div>
-            <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-cpu-cores">—</span>
           </div>
-          <!-- Mémoire -->
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
-            <div style="position:relative;width:110px;height:110px">
-              <canvas id="donut-mem" width="110" height="110"></canvas>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <span style="font-size:22px;font-weight:800;letter-spacing:-1px" id="sys-mem">—</span>
-                <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Mémoire</span>
-              </div>
+          <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-cpu-cores">—</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div style="position:relative;width:88px;height:88px">
+            <canvas id="donut-mem" width="88" height="88"></canvas>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <span style="font-size:18px;font-weight:800;letter-spacing:-1px" id="sys-mem">—</span>
+              <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">RAM</span>
             </div>
-            <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-mem-total">—</span>
           </div>
-          <!-- Disque -->
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
-            <div style="position:relative;width:110px;height:110px">
-              <canvas id="donut-disk" width="110" height="110"></canvas>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <span style="font-size:22px;font-weight:800;letter-spacing:-1px" id="sys-disk">—</span>
-                <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Disque</span>
-              </div>
+          <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-mem-total">—</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div style="position:relative;width:88px;height:88px">
+            <canvas id="donut-disk" width="88" height="88"></canvas>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <span style="font-size:18px;font-weight:800;letter-spacing:-1px" id="sys-disk">—</span>
+              <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Disque</span>
             </div>
-            <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-disk-total">—</span>
+          </div>
+          <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-disk-total">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Row 3 : SSH, Updates, Connexions, Ports -->
+  <div class="grid4">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Dernière connexion SSH</div>
+        <div class="icon-chip ic-teal">🔑</div>
+      </div>
+      <div class="card-value" style="font-size:20px;letter-spacing:-0.5px" id="val-ssh-ip">—</div>
+      <div class="card-sub" style="margin-top:6px" id="val-ssh-time">—</div>
+    </div>
+
+    <div class="card" id="card-updates">
+      <div class="card-header">
+        <div class="card-label">Mises à jour</div>
+        <div class="icon-chip ic-gold">📦</div>
+      </div>
+      <div class="card-value" id="val-updates"><span class="skel"></span></div>
+      <div class="card-sub" id="sub-updates">paquets <b>disponibles</b></div>
+    </div>
+
+    <div class="card" id="card-connections">
+      <div class="card-header">
+        <div class="card-label">Connexions TCP</div>
+        <div class="icon-chip ic-rose">🔗</div>
+      </div>
+      <div class="card-value" id="val-connections"><span class="skel"></span></div>
+      <div class="card-sub">connexions <b>établies</b></div>
+    </div>
+
+    <div class="card" id="card-ports">
+      <div class="card-header">
+        <div>
+          <div class="card-label">Ports ouverts</div>
+          <div class="card-desc">Ports TCP en écoute</div>
+        </div>
+        <div class="icon-chip ic-green">🔌</div>
+      </div>
+      <div class="ports-list" id="ports-list">
+        <div class="tl-empty">Chargement…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline-card">
+    <div class="timeline-header">
+      <div class="timeline-title">📜 Timeline des événements — 24h</div>
+      <button class="btn-icon btn-icon-muted" onclick="refreshTimeline()" title="Rafraîchir" style="width:30px;height:30px;font-size:13px">↻</button>
+    </div>
+    <div class="timeline-list" id="timeline-list">
+      <div class="tl-empty">Chargement des événements…</div>
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    <div class="footer-badge">
+      🕐 Dernière mise à jour : <b id="last-update">—</b>
+      &nbsp;·&nbsp; Rafraîchissement auto toutes les 30s
+    </div>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const fmt = n => (n == null ? '—' : Number(n).toLocaleString('fr-FR'));
+
+function setStatus(ok) {
+  $('status-dot').className = ok ? 'dot' : 'dot error';
+  $('status-txt').textContent = ok ? 'Connecté' : 'Erreur API';
+}
+function setCard(id, cls) { const el=$(id); if(el) el.className = `card ${cls}`; }
+function setPill(id, st) {
+  const el = $(id);
+  if (!el) return;
+  if (st === 'clean')                    { el.className='pill pill-ok';   el.textContent='OK'; }
+  else if (st==='warning'||st==='changes') { el.className='pill pill-warn'; el.textContent='ALERTE'; }
+  else                                   { el.className='pill pill-unk';  el.textContent='—'; }
+}
+
+function startCountdown() {
+  clearInterval(cdTimer); countdown = 30;
+  cdTimer = setInterval(() => { countdown=Math.max(0,countdown-1); $('countdown').textContent=`${countdown}s`; }, 1000);
+}
+
+// ── Score global ─────────────────────────────────────────────────────────────
+function updateScore(sc) {
+  if (!sc) return;
+  const num = sc.score ?? 0;
+  $('score-num').textContent = num;
+
+  const colors = { excellent:'#22c55e', good:'#2d7d6f', warning:'#c9a84c', critical:'#ef4444' };
+  const col = colors[sc.level] || '#22c55e';
+
+  if (donutScore) {
+    donutScore.data.datasets[0].data = [num, 100 - num];
+    donutScore.data.datasets[0].backgroundColor = [col, isDark() ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'];
+    donutScore.update();
+  }
+  $('score-num').style.color = col;
+  $('score-label').textContent = sc.label || '—';
+
+  const issuesEl = $('score-issues');
+  issuesEl.innerHTML = '';
+  if (!sc.issues || sc.issues.length === 0) {
+    issuesEl.innerHTML = '<span class="score-ok">✅ Aucun problème détecté</span>';
+  } else {
+    sc.issues.forEach(issue => {
+      const pill = document.createElement('span');
+      pill.className = `issue-pill issue-${issue.sev}`;
+      pill.textContent = issue.msg;
+      issuesEl.appendChild(pill);
+    });
+  }
+}
+
+// ── Bouncer ──────────────────────────────────────────────────────────────────
+function updateBouncer(b) {
+  if (!b) return;
+  const st = b.status || 'unknown';
+  const dot = $('bouncer-dot');
+  const val = $('val-bouncer');
+  const sub = $('sub-bouncer');
+  dot.className = 'bouncer-dot';
+  if (st === 'active') {
+    dot.classList.add('bouncer-active');
+    val.textContent = '✅ Actif';
+    sub.textContent = 'Les bans sont appliqués en temps réel';
+    setCard('card-bouncer', 'a-green');
+  } else if (st === 'inactive' || st === 'failed' || st === 'dead') {
+    dot.classList.add('bouncer-inactive');
+    val.textContent = '❌ Inactif';
+    sub.textContent = '⚠️ CrowdSec détecte mais ne bannit PAS';
+    setCard('card-bouncer', 'a-red');
+  } else {
+    dot.classList.add('bouncer-unknown');
+    val.textContent = '❓ Inconnu';
+    sub.textContent = 'Statut non déterminé';
+  }
+}
+
+// ── Ports ouverts ────────────────────────────────────────────────────────────
+function updatePorts(op) {
+  if (!op) return;
+  const list = $('ports-list');
+  const ports = op.ports || [];
+  if (ports.length === 0) {
+    list.innerHTML = '<div class="tl-empty">Aucun port détecté</div>';
+    return;
+  }
+  list.innerHTML = ports.map(p => `
+    <span class="port-chip ${p.expected ? 'port-ok' : 'port-alert'}">
+      ${p.expected ? '●' : '⚠'} ${p.port}
+    </span>
+  `).join('');
+  setCard('card-ports', op.alert ? 'a-red' : 'a-green');
+}
+
+// ── Timeline ─────────────────────────────────────────────────────────────────
+async function refreshTimeline() {
+  try {
+    const res = await fetch('/api/timeline', { cache: 'no-store', headers: { 'Authorization': AUTH } });
+    if (!res.ok) return;
+    const events = await res.json();
+    renderTimeline(events);
+  } catch(e) {}
+}
+
+function renderTimeline(events) {
+  const list = $('timeline-list');
+  if (!events || events.length === 0) {
+    list.innerHTML = '<div class="tl-empty">Aucun événement dans les dernières 24h</div>';
+    return;
+  }
+  const colorMap = { teal:'teal', rose:'rose', gold:'gold', purple:'purple', red:'red' };
+  list.innerHTML = events.map(e => {
+    const dotCls = `tl-dot-${colorMap[e.color] || 'gray'}`;
+    return `
+      <div class="tl-item">
+        <div class="tl-dot ${dotCls}"></div>
+        <div class="tl-icon">${e.icon || '•'}</div>
+        <div class="tl-content">
+          <div class="tl-title">${e.title || '—'}</div>
+          <div class="tl-detail">
+            ${e.detail || ''}
+            ${e.count > 1 ? `<span style="margin-left:6px;padding:1px 7px;border-radius:10px;background:rgba(45,125,111,0.15);color:var(--teal);font-size:10px;font-weight:700">${e.count}×</span>` : ''}
           </div>
         </div>
-      </div>
-
-    </div>
-
-    <!-- Row 3 -->
-    <div class="grid3" style="grid-template-columns: 1fr 1fr 1fr;">
-
-      <!-- Dernière connexion SSH -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-label">Dernière connexion SSH</div>
-          <div class="icon-chip ic-teal">🔑</div>
+        <div class="tl-time">
+          <div>${e.time || '—'}</div>
+          <div class="tl-date">${e.date || ''}</div>
         </div>
-        <div class="card-value" style="font-size:22px;letter-spacing:-0.5px" id="val-ssh-ip">—</div>
-        <div class="card-sub" style="margin-top:6px" id="val-ssh-time">—</div>
       </div>
+    `;
+  }).join('');
+}
 
-      <!-- Mises à jour -->
-      <div class="card" id="card-updates">
-        <div class="card-header">
-          <div class="card-label">Mises à jour</div>
-          <div class="icon-chip ic-gold">📦</div>
-        </div>
-        <div class="card-value" id="val-updates"><span class="skel"></span></div>
-        <div class="card-sub">paquets <b>disponibles</b></div>
-      </div>
+// ── Main update ──────────────────────────────────────────────────────────────
+function updateCards(d) {
+  const e = d.endlessh||{}, c = d.crowdsec||{}, u = d.ufw||{}, a = d.auditd||{};
+  const rk = d.rkhunter||{}, ai = d.aide||{}, s = d.system||{};
+  const mem = s.memory||{}, dsk = s.disk||{};
 
-      <!-- Connexions actives -->
-      <div class="card" id="card-connections">
-        <div class="card-header">
-          <div class="card-label">Connexions TCP</div>
-          <div class="icon-chip ic-rose">🔗</div>
-        </div>
-        <div class="card-value" id="val-connections"><span class="skel"></span></div>
-        <div class="card-sub">connexions <b>établies</b></div>
-      </div>
+  // Score
+  updateScore(d.score);
 
-    </div>
+  // Endlessh
+  $('val-endlessh-total').textContent = fmt(e.total);
+  $('sub-endlessh').innerHTML = `24h : <b>${fmt(e.last24h)}</b>`;
+  const durFmt = e.avg_duration_fmt || '—';
+  $('sub-endlessh-duration').innerHTML = `Durée moy. : <b>${durFmt}</b>`;
+  setCard('card-endlessh', e.last24h > 0 ? 'a-rose' : '');
 
-    <div class="footer-bar">
-      <div class="footer-badge">
-        🕐 Dernière mise à jour : <b id="last-update">—</b>
-        &nbsp;·&nbsp; Rafraîchissement auto toutes les 30s
-      </div>
-    </div>
+  // CrowdSec
+  $('val-crowdsec').textContent = fmt(c.active_bans);
+  $('sub-crowdsec').innerHTML = `Alertes 24h : <b>${fmt(c.alerts_24h)}</b>`;
 
-  </main>
+  // Bouncer
+  updateBouncer(d.bouncer);
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
-  <script>
-    'use strict';
+  // UFW
+  $('val-ufw').textContent = fmt(u.total);
 
-    const $ = id => document.getElementById(id);
-    const fmt = n => (n == null ? '—' : Number(n).toLocaleString('fr-FR'));
-    const pct = (v, s) => Math.min(Math.round((v || 0) / s * 100), 100) + '%';
+  // Auditd
+  $('val-audit').textContent = fmt(a.sudo_today);
 
-    function setStatus(ok) {
-      $('status-dot').className = ok ? 'dot' : 'dot error';
-      $('status-txt').textContent = ok ? 'Connecté' : 'Erreur API';
-    }
-    function setCard(id, cls) { $(id).className = `card ${cls}`; }
-    function setPill(id, st) {
-      const el = $(id);
-      if (st === 'clean') { el.className = 'pill pill-ok'; el.textContent = 'OK'; }
-      else if (st === 'warning' || st === 'changes') { el.className = 'pill pill-warn'; el.textContent = 'ALERTE'; }
-      else { el.className = 'pill pill-unk'; el.textContent = '—'; }
-    }
+  // rkhunter
+  const rkSt = rk.status || 'unknown';
+  $('val-rkhunter').textContent = rkSt==='clean' ? '✅ Propre' : rkSt==='warning' ? '⚠️ Alerte' : '❓ Inconnu';
+  setPill('pill-rkhunter', rkSt);
+  $('sub-rkhunter').textContent = `Dernier scan : ${rk.last_scan||'—'}`;
+  setCard('card-rkhunter', rkSt==='warning' ? 'a-red' : 'a-green');
 
-    function startCountdown() {
-      clearInterval(cdTimer); countdown = 30;
-      cdTimer = setInterval(() => { countdown = Math.max(0, countdown - 1); $('countdown').textContent = `${countdown}s`; }, 1000);
-    }
+  // AIDE
+  const aiSt = ai.status || 'unknown';
+  $('val-aide').textContent = aiSt==='clean' ? '✅ Propre' : aiSt==='changes' ? '⚠️ Modifs' : '❓ Inconnu';
+  setPill('pill-aide', aiSt==='changes' ? 'warning' : aiSt);
+  $('sub-aide').textContent = `Dernier scan : ${ai.last_scan||'—'}`;
+  setCard('card-aide', aiSt==='changes' ? 'a-red' : aiSt==='clean' ? 'a-green' : '');
 
-    function updateCards(d) {
-      const e = d.endlessh || {}, c = d.crowdsec || {}, u = d.ufw || {}, a = d.auditd || {};
-      const rk = d.rkhunter || {}, ai = d.aide || {}, s = d.system || {};
-      const mem = s.memory || {}, dsk = s.disk || {};
-      const sysOk = parseFloat(s.load?.['1m'] || 99) < 1
-                 && (mem.pct || 99) < 80
-                 && (dsk.pct || 99) < 80;
-      setCard('card-system', sysOk ? 'a-green' : 'a-teal');
+  // System
+  $('val-ip').textContent = s.ip || '—';
+  $('sys-mem').textContent  = mem.pct != null ? `${mem.pct}%` : '—';
+  $('sys-disk').textContent = dsk.pct != null ? `${dsk.pct}%` : '—';
+  $('sys-mem-total').textContent  = mem.total_mb ? `${Math.round(mem.total_mb/1024*10)/10} GB` : '';
+  $('sys-disk-total').textContent = dsk.total_gb ? `${dsk.total_gb} GB` : '';
+  updateDonuts(mem, dsk, s.load);
+  const sysOk = parseFloat(s.load?.['1m']||99) < 1 && (mem.pct||99) < 80 && (dsk.pct||99) < 80;
+  setCard('card-system', sysOk ? 'a-green' : 'a-teal');
+  $('header-sub').textContent = `${s.ip||'—'} · Uptime ${s.uptime||'—'}`;
 
-      // Endlessh — barres multi-segments + accent dynamique
-      $('val-endlessh-total').textContent = fmt(e.total);
-      $('sub-endlessh').innerHTML         = `24h : <b>${fmt(e.last24h)}</b>`;
-      const ep = Math.min(Math.round((e.last24h || 0) / 200 * 100), 100);
-      setCard('card-endlessh', e.last24h > 0 ? 'a-rose' : '');
+  // SSH
+  const ssh = d.ssh_last||{};
+  $('val-ssh-ip').textContent   = ssh.ip   || '—';
+  $('val-ssh-time').textContent = ssh.time || '—';
 
-      // CrowdSec — barres multi-segments
-      $('val-crowdsec').textContent = fmt(c.active_bans);
-      $('sub-crowdsec').innerHTML = `Alertes 24h : <b>${fmt(c.alerts_24h)}</b>`;
-      const cp = Math.min(Math.round((c.active_bans || 0) / 50 * 100), 100);
+  // Updates
+  const updCount = d.updates?.count ?? null;
+  $('val-updates').textContent = fmt(updCount);
+  if (updCount === 0) {
+    $('sub-updates').textContent = '✅ Serveur à jour';
+    setCard('card-updates', 'a-green');
+  } else {
+    $('sub-updates').innerHTML = 'paquets <b>disponibles</b>';
+    setCard('card-updates', updCount > 0 ? 'a-gold' : '');
+  }
 
-      // UFW (barres statiques indicatives)
-      $('val-ufw').textContent = fmt(u.total);
+  // Connexions TCP
+  $('val-connections').textContent = fmt(d.connections?.established ?? '—');
+  setCard('card-connections', (d.connections?.established||0) > 500 ? 'a-red' : 'a-green');
 
-      // Auditd
-      $('val-audit').textContent = fmt(a.sudo_today);
-      const ap = Math.min(Math.round((a.sudo_today || 0) / 20 * 100), 100);
+  // Ports ouverts
+  updatePorts(d.open_ports);
+}
 
-      // rkhunter
-      const rkSt = rk.status || 'unknown';
-      $('val-rkhunter').textContent = rkSt === 'clean' ? '✅ Propre' : rkSt === 'warning' ? '⚠️ Alerte' : '❓ Inconnu';
-      setPill('pill-rkhunter', rkSt);
-      $('sub-rkhunter').textContent = `Dernier scan : ${rk.last_scan || '—'}`;
-      setCard('card-rkhunter', rkSt === 'warning' ? 'a-red' : 'a-green');
+// ── Refresh ───────────────────────────────────────────────────────────────────
+async function refresh() {
+  const btn=$('btn-refresh'), icon=$('refresh-icon');
+  btn.classList.add('loading'); icon.className='spinning';
+  clearTimeout(refreshTimer);
+  try {
+    const res = await fetch('/api/metrics', { cache:'no-store', headers:{'Authorization':AUTH} });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    updateCards(data); setStatus(true);
+    $('last-update').textContent = new Date().toLocaleTimeString('fr-FR');
+    // Rafraîchir la timeline en parallèle
+    refreshTimeline();
+  } catch(err) {
+    console.error('[VPS Monitor]', err); setStatus(false);
+  } finally {
+    btn.classList.remove('loading'); icon.className=''; icon.textContent='↻';
+    startCountdown(); refreshTimer = setTimeout(refresh, 30_000);
+  }
+}
 
-      // AIDE
-      const aiSt = ai.status || 'unknown';
-      $('val-aide').textContent = aiSt === 'clean' ? '✅ Propre' : aiSt === 'changes' ? '⚠️ Modifs' : '❓ Inconnu';
-      setPill('pill-aide', aiSt === 'changes' ? 'warning' : aiSt);
-      $('sub-aide').textContent = `Dernier scan : ${ai.last_scan || '—'}`;
-      setCard('card-aide', aiSt === 'changes' ? 'a-red' : aiSt === 'clean' ? 'a-green' : '');
+// ── Donuts ────────────────────────────────────────────────────────────────────
+let donutMem=null, donutDisk=null, donutCpu=null, donutScore=null;
+const isDark = () => document.body.classList.contains('dark');
 
-      // System
-      $('val-ip').textContent = s.ip || '—';
-      $('sys-mem').textContent  = mem.pct != null ? `${mem.pct}%` : '—';
-      $('sys-disk').textContent = dsk.pct != null ? `${dsk.pct}%` : '—';
-      $('sys-mem-total').textContent  = mem.total_mb  ? `${Math.round(mem.total_mb / 1024 * 10) / 10} GB` : '';
-      $('sys-disk-total').textContent = dsk.total_gb  ? `${dsk.total_gb} GB total` : '';
-      updateDonuts(mem, dsk, s.load);
-      const mp = mem.pct || 0;
+function initDonuts() {
+  const makeDonut = (id, size) => {
+    const ctx = $(id).getContext('2d');
+    return new Chart(ctx, {
+      type: 'doughnut',
+      data: { datasets: [{ data:[0,100], backgroundColor:['#22c55e','rgba(0,0,0,0.06)'], borderWidth:0, hoverOffset:0 }] },
+      options: { cutout:'72%', responsive:false, animation:{duration:600,easing:'easeInOutQuart'}, plugins:{legend:{display:false},tooltip:{enabled:false}} }
+    });
+  };
+  donutMem   = makeDonut('donut-mem');
+  donutDisk  = makeDonut('donut-disk');
+  donutCpu   = makeDonut('donut-cpu');
+  donutScore = makeDonut('donut-score');
+}
 
-      $('header-sub').textContent = `monvps.aiforceone.fr · Uptime ${s.uptime || '—'}`;
+function updateDonuts(mem, dsk, load) {
+  const mp = mem.pct||0, dp = dsk.pct||0;
+  const cores = load?.cores||1;
+  const cp = Math.min(Math.round(parseFloat(load?.['1m']||0)/cores*100),100);
+  const dark = isDark();
+  const empty = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+  const col = pct => pct>85 ? (dark?'#ff4d6d':'#e05a7a') : pct>70 ? (dark?'#f0b429':'#c9a84c') : (dark?'#00ff88':'#22c55e');
+  if (donutMem)  { donutMem.data.datasets[0].data=[mp,100-mp];   donutMem.data.datasets[0].backgroundColor=[col(mp),empty];  donutMem.update(); }
+  if (donutDisk) { donutDisk.data.datasets[0].data=[dp,100-dp];  donutDisk.data.datasets[0].backgroundColor=[col(dp),empty]; donutDisk.update(); }
+  if (donutCpu)  { donutCpu.data.datasets[0].data=[cp,100-cp];   donutCpu.data.datasets[0].backgroundColor=[col(cp),empty];  donutCpu.update(); }
+  $('sys-cpu').textContent       = cp+'%';
+  $('sys-cpu-cores').textContent = cores+' core'+(cores>1?'s':'');
+}
 
-      // SSH dernière connexion
-      const ssh = d.ssh_last || {};
-      $('val-ssh-ip').textContent   = ssh.ip   || '—';
-      $('val-ssh-time').textContent = ssh.time  || '—';
+// ── Auth & Theme ──────────────────────────────────────────────────────────────
+const AUTH = sessionStorage.getItem('vps_auth');
+if (!AUTH) { window.location.href = '/login.html'; }
 
-      // Mises à jour
-      const upd = d.updates || {};
-      const updCount = upd.count ?? null;
-      if (updCount === 0) {
-        $('val-updates').textContent = '0';
-        $('val-updates').style.cssText = '';
-        $('val-updates').nextElementSibling.textContent = '✅ Serveur à jour';
-        setCard('card-updates', 'a-green');
-      } else {
-        $('val-updates').textContent = fmt(updCount);
-        $('val-updates').style.cssText = '';
-        $('val-updates').nextElementSibling.textContent = 'paquets disponibles';
-        setCard('card-updates', updCount > 0 ? 'a-gold' : '');
-      }
+const DARK_KEY = 'vps_theme_dark';
+function applyTheme(dark) {
+  document.body.classList.toggle('dark', dark);
+  const btn = $('btn-theme');
+  if (btn) btn.textContent = dark ? '☀️' : '🌙';
+  if (donutMem && donutDisk && donutCpu) {
+    const mem = { pct: parseInt($('sys-mem')?.textContent)||0 };
+    const dsk = { pct: parseInt($('sys-disk')?.textContent)||0 };
+    const load = { cores: parseInt($('sys-cpu-cores')?.textContent)||1, '1m':'0' };
+    updateDonuts(mem, dsk, load);
+  }
+}
+function toggleTheme() {
+  const dark = !document.body.classList.contains('dark');
+  sessionStorage.setItem(DARK_KEY, dark?'1':'0');
+  applyTheme(dark);
+}
+function logout() { sessionStorage.removeItem('vps_auth'); window.location.href='/login.html'; }
 
-      // Connexions TCP
-      const conn = d.connections || {};
-      $('val-connections').textContent = fmt(conn.established ?? '—');
-      setCard('card-connections', (conn.established || 0) > 500 ? 'a-red' : 'a-green');
-    }
+let refreshTimer=null, countdown=30, cdTimer=null;
 
-
-    async function refresh() {
-      const btn = $('btn-refresh'), icon = $('refresh-icon');
-      btn.classList.add('loading'); icon.className = 'spinning';
-      clearTimeout(refreshTimer);
-      try {
-        const res = await fetch('/api/metrics', { cache: 'no-store', headers: { 'Authorization': AUTH } });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        updateCards(data); setStatus(true);
-        $('last-update').textContent = new Date().toLocaleTimeString('fr-FR');
-      } catch (err) {
-        console.error('[VPS Monitor]', err); setStatus(false);
-      } finally {
-        btn.classList.remove('loading'); icon.className = ''; icon.textContent = '↻';
-        startCountdown(); refreshTimer = setTimeout(refresh, 30_000);
-      }
-    }
-
-    // ── Donuts système ────────────────────────────────────────────────────────
-    let donutMem = null, donutDisk = null, donutCpu = null;
-
-    function initDonuts() {
-      const makeDonut = (id) => {
-        const ctx = $(id).getContext('2d');
-        return new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            datasets: [{
-              data: [0, 100],
-              backgroundColor: ['#22c55e', 'rgba(0,0,0,0.06)'],
-              borderWidth: 0,
-              hoverOffset: 0,
-            }]
-          },
-          options: {
-            cutout: '72%',
-            responsive: false,
-            animation: { duration: 600, easing: 'easeInOutQuart' },
-            plugins: { legend: { display: false }, tooltip: { enabled: false } },
-          }
-        });
-      };
-      donutMem  = makeDonut('donut-mem');
-      donutDisk = makeDonut('donut-disk');
-      donutCpu  = makeDonut('donut-cpu');
-    }
-
-    function updateDonuts(mem, dsk, load) {
-      const mp = mem.pct || 0;
-      const dp = dsk.pct || 0;
-      const cores = load?.cores || 1;
-      const cp = Math.min(Math.round(parseFloat(load?.['1m'] || 0) / cores * 100), 100);
-      const isDark = document.body.classList.contains('dark');
-      const emptyColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
-      const color = pct => pct > 85 ? (isDark ? '#ff4d6d' : '#e05a7a') : pct > 70 ? (isDark ? '#f0b429' : '#c9a84c') : (isDark ? '#00ff88' : '#22c55e');
-      if (donutMem)  { donutMem.data.datasets[0].data  = [mp, 100-mp];  donutMem.data.datasets[0].backgroundColor  = [color(mp),  emptyColor]; donutMem.update(); }
-      if (donutDisk) { donutDisk.data.datasets[0].data = [dp, 100-dp];  donutDisk.data.datasets[0].backgroundColor = [color(dp), emptyColor]; donutDisk.update(); }
-      if (donutCpu)  { donutCpu.data.datasets[0].data  = [cp, 100-cp];  donutCpu.data.datasets[0].backgroundColor  = [color(cp),  emptyColor]; donutCpu.update(); }
-      $('sys-cpu').textContent       = cp + '%';
-      $('sys-cpu-cores').textContent = cores + ' core' + (cores > 1 ? 's' : '');
-    }
-
-    // ── Auth ─────────────────────────────────────────────────────────────────────
-    const AUTH = sessionStorage.getItem('vps_auth');
-    if (!AUTH) { window.location.href = '/login.html'; }
-
-    // ── Thème ────────────────────────────────────────────────────────────────
-    const DARK_KEY = 'vps_theme_dark';
-    function applyTheme(dark) {
-      document.body.classList.toggle('dark', dark);
-      const btn = document.getElementById('btn-theme');
-      if (btn) btn.textContent = dark ? '☀️' : '🌙';
-      // Forcer la mise à jour des donuts avec les nouvelles couleurs
-      if (donutMem && donutDisk && donutCpu) {
-        const mem = { pct: parseInt($('sys-mem')?.textContent) || 0 };
-        const dsk = { pct: parseInt($('sys-disk')?.textContent) || 0 };
-        const load = { cores: parseInt($('sys-cpu-cores')?.textContent) || 1, '1m': '0' };
-        updateDonuts(mem, dsk, load);
-      }
-    }
-    function toggleTheme() {
-      const isDark = !document.body.classList.contains('dark');
-      sessionStorage.setItem(DARK_KEY, isDark ? '1' : '0');
-      applyTheme(isDark);
-    }
-
-    let refreshTimer = null;
-    let countdown = 30;
-    let cdTimer = null;
-
-    function logout() {
-      sessionStorage.removeItem('vps_auth');
-      window.location.href = '/login.html';
-    }
-
-    initDonuts();
-    const savedDark = sessionStorage.getItem(DARK_KEY) === '1';
-    applyTheme(savedDark);
-    refresh();
-  </script>
+initDonuts();
+applyTheme(sessionStorage.getItem(DARK_KEY)==='1');
+refresh();
+</script>
 </body>
-
 </html>

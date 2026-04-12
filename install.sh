@@ -112,6 +112,56 @@ USERNAME="vpsadmin"
 TOTAL_ETAPES=15
 
 # ============================================================
+# Vérification de la Licence VPS-SECURE
+# ============================================================
+echo -e "\n\033[1;34m[INFO] Vérification de la licence VPS-SECURE...\033[0m"
+echo -e "💡 Pas encore de clé ? \033[1;36mhttps://vps-secure.netlify.app/\033[0m"
+echo ""
+read -rp "🔑 Clé d'activation : " ACTIVATION_KEY
+
+# Validation format — bloque l'injection JSON
+if [[ -z "$ACTIVATION_KEY" ]]; then
+    echo -e "\n\033[1;31m❌ Clé obligatoire.\033[0m"
+    echo -e "   👉 https://vps-secure.netlify.app/"
+    exit 1
+fi
+
+if ! [[ "$ACTIVATION_KEY" =~ ^[a-zA-Z0-9_-]{8,64}$ ]]; then
+    echo -e "\n\033[1;31m❌ Format de clé invalide (caractères non autorisés).\033[0m"
+    exit 1
+fi
+
+# Appel webhook n8n
+CHECK_URL="https://api.genieshot.com/webhooks/check-license"
+
+HTTP_CODE=$(curl -s --max-time 10 \
+    -o /tmp/_vps_lic.json \
+    -w "%{http_code}" \
+    -X POST "$CHECK_URL" \
+    -H "Content-Type: application/json" \
+    -d "{\"key\": \"$ACTIVATION_KEY\"}")
+
+RESPONSE=$(cat /tmp/_vps_lic.json 2>/dev/null || echo "")
+rm -f /tmp/_vps_lic.json
+
+# Réseau inaccessible / timeout
+if [[ "$HTTP_CODE" == "000" ]]; then
+    echo -e "\n\033[1;33m⚠️  Serveur de licence injoignable (réseau/timeout).\033[0m"
+    echo -e "   👉 Vérifiez votre connexion ou contactez : support@aiforceone.fr"
+    exit 1
+fi
+
+# Validation stricte — {"status": "success", "message": "Licence valide"}
+if echo "$RESPONSE" | grep -qE '"status"\s*:\s*"success"'; then
+    echo -e "\033[1;32m✅ Licence validée. Bienvenue dans la forteresse.\033[0m\n"
+else
+    echo -e "\n\033[1;31m❌ Clé invalide ou commande non finalisée.\033[0m"
+    echo -e "   👉 https://vps-secure.netlify.app/"
+    echo -e "   📧 support@aiforceone.fr\n"
+    exit 1
+fi
+
+# ============================================================
 # Étape 1 : Créer l'utilisateur vpsadmin
 # ============================================================
 etape "1" "$TOTAL_ETAPES" "Création de l'utilisateur $USERNAME"

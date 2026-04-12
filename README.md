@@ -10,8 +10,6 @@
 > 
 > 15 minutes, une seule commande. Ton serveur passe du stade *cible facile*... à *cible qui n'en vaut pas la peine*."
 
-> 🔒 Score Lynis 81/100 — +50% vs un VPS Ubuntu standard. Vérifiable en 2 min après installation.
-
 
 ---
 
@@ -28,6 +26,8 @@
 Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est précisément la configuration que j'utilise pour sécuriser mes serveurs de production.
 
 **Choisis VPS-SECURE pour que ton serveur devienne une forteresse prête à accueillir tes services en toute sécurité.**
+
+> 🔒 Score Lynis 81/100 — +50% vs un VPS Ubuntu standard. Vérifiable en 2 min après installation.
 
 ---
 

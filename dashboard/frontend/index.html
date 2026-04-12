@@ -234,48 +234,6 @@
       </div>
       <div class="card-sub" style="margin-top:10px" id="sub-bouncer">Sans le bouncer, les IPs ne sont pas bannies</div>
     </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-label">UFW Firewall</div>
-        <div class="icon-chip ic-gold">🔥</div>
-      </div>
-      <div class="card-value" id="val-ufw"><span class="skel"></span></div>
-      <div class="card-sub">blocages <b>totaux</b></div>
-    </div>
-  </div>
-
-  <!-- Row 2 -->
-  <div class="grid4">
-    <div class="card">
-      <div class="card-header">
-        <div><div class="card-label">Auditd</div><div class="card-desc">Commandes sudo aujourd'hui</div></div>
-        <div class="icon-chip ic-teal">📋</div>
-      </div>
-      <div class="card-value" id="val-audit"><span class="skel"></span></div>
-      <div class="card-sub">escalades <b>aujourd'hui</b></div>
-    </div>
-    <div class="card" id="card-rkhunter">
-      <div class="card-header">
-        <div><div class="card-label">rkhunter</div><div class="card-desc">Rootkits & backdoors</div></div>
-        <div class="icon-chip ic-green">🔍</div>
-      </div>
-      <div class="status-row">
-        <span class="status-label" id="val-rkhunter">—</span>
-        <span class="pill pill-unk" id="pill-rkhunter">—</span>
-      </div>
-      <div class="card-sub" style="margin-top:12px" id="sub-rkhunter">Dernier scan : —</div>
-    </div>
-    <div class="card" id="card-aide">
-      <div class="card-header">
-        <div><div class="card-label">AIDE File Integrity</div><div class="card-desc">Hash SHA512 des binaires</div></div>
-        <div class="icon-chip ic-violet">🗂️</div>
-      </div>
-      <div class="status-row">
-        <span class="status-label" id="val-aide">—</span>
-        <span class="pill pill-unk" id="pill-aide">—</span>
-      </div>
-      <div class="card-sub" style="margin-top:12px" id="sub-aide">Dernier scan : —</div>
-    </div>
     <div class="card a-teal" id="card-system">
       <div class="card-header">
         <div class="card-label">Système</div>
@@ -313,6 +271,48 @@
           <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-disk-total">—</span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Row 2 -->
+  <div class="grid4">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">UFW Firewall</div>
+        <div class="icon-chip ic-gold">🔥</div>
+      </div>
+      <div class="card-value" id="val-ufw"><span class="skel"></span></div>
+      <div class="card-sub">blocages <b>totaux</b></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-label">Auditd</div><div class="card-desc">Commandes sudo aujourd'hui</div></div>
+        <div class="icon-chip ic-teal">📋</div>
+      </div>
+      <div class="card-value" id="val-audit"><span class="skel"></span></div>
+      <div class="card-sub">escalades <b>aujourd'hui</b></div>
+    </div>
+    <div class="card" id="card-rkhunter">
+      <div class="card-header">
+        <div><div class="card-label">rkhunter</div><div class="card-desc">Rootkits & backdoors</div></div>
+        <div class="icon-chip ic-green">🔍</div>
+      </div>
+      <div class="status-row">
+        <span class="status-label" id="val-rkhunter">—</span>
+        <span class="pill pill-unk" id="pill-rkhunter">—</span>
+      </div>
+      <div class="card-sub" style="margin-top:12px" id="sub-rkhunter">Dernier scan : —</div>
+    </div>
+    <div class="card" id="card-aide">
+      <div class="card-header">
+        <div><div class="card-label">AIDE File Integrity</div><div class="card-desc">Hash SHA512 des binaires</div></div>
+        <div class="icon-chip ic-violet">🗂️</div>
+      </div>
+      <div class="status-row">
+        <span class="status-label" id="val-aide">—</span>
+        <span class="pill pill-unk" id="pill-aide">—</span>
+      </div>
+      <div class="card-sub" style="margin-top:12px" id="sub-aide">Dernier scan : —</div>
     </div>
   </div>
 

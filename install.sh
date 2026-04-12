@@ -132,7 +132,7 @@ if ! [[ "$ACTIVATION_KEY" =~ ^[a-zA-Z0-9_-]{8,64}$ ]]; then
 fi
 
 # Appel webhook n8n
-CHECK_URL="https://api.genieshot.com/webhooks/check-license"
+CHECK_URL="https://n8n.rockballsmedia.eu/webhook/check-license"
 
 _LIC_TMP=$(mktemp)
 HTTP_CODE=$(curl -s --max-time 10 \

@@ -1575,7 +1575,13 @@ rm -f "$AIDE_INIT_LOG"
 if [[ -f /var/lib/aide/aide.db.new ]]; then
     cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
     chmod 600 /var/lib/aide/aide.db
-    log_success "Baseline AIDE créée — état sain du système enregistré."
+    # Rendre la baseline immuable — empêche la modification directe même en root (anti-tampering)
+    if chattr +i /var/lib/aide/aide.db 2>/dev/null; then
+        log_success "Baseline AIDE créée — état sain enregistré · immuable (anti-tampering actif)."
+    else
+        log_success "Baseline AIDE créée — état sain du système enregistré."
+        log_warn "  chattr +i non supporté sur ce filesystem — protection immuable ignorée."
+    fi
 else
     log_warn "Baseline AIDE non créée automatiquement."
     log_warn "  Lance manuellement après installation :"
@@ -1608,8 +1614,10 @@ DPKG_N=$(awk -v c="$CUTOFF" '$0>c && /status installed/{n++} END{print n+0}' /va
 CHANGED=$(grep -E '^File: ' /var/log/aide-daily.log 2>/dev/null | awk '{print $2}' | sort -u || true)
 if [[ -z "$CHANGED" ]]; then
     # AIDE signale des changements mais sans fichiers identifiables → update silencieux
+    chattr -i /var/lib/aide/aide.db 2>/dev/null || true
     aide --update --config /etc/aide/aide.conf >> /var/log/aide-daily.log 2>&1 || true
     [[ -f /var/lib/aide/aide.db.new ]] && cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db || true
+    chattr +i /var/lib/aide/aide.db 2>/dev/null || true
     echo 0 > /var/log/aide-daily.exit
     exit 0
 fi
@@ -1630,8 +1638,10 @@ while IFS= read -r fp; do
 done <<< "$CHANGED"
 # Tous les changements expliqués par apt → update silencieux de la baseline
 if [[ $UNMATCHED -eq 0 ]]; then
+    chattr -i /var/lib/aide/aide.db 2>/dev/null || true
     aide --update --config /etc/aide/aide.conf >> /var/log/aide-daily.log 2>&1 || true
     [[ -f /var/lib/aide/aide.db.new ]] && cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db || true
+    chattr +i /var/lib/aide/aide.db 2>/dev/null || true
     echo 0 > /var/log/aide-daily.exit
 fi
 exit 0

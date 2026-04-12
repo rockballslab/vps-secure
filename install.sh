@@ -1054,14 +1054,17 @@ done
 log_info "  Services vérifiés : avahi-daemon, cups, bluetooth, ModemManager, whoopsie, apport"
 log_info "  Pour voir les services actifs : systemctl list-units --type=service --state=active"
 
-# ── umask 027 (Lynis AUTH-9328) ──
-# Restreint la création de fichiers — groupe ne peut pas lire, autres ne peuvent rien
-if grep -q "^UMASK" /etc/login.defs 2>/dev/null; then
-    sed -i 's/^UMASK.*/UMASK\t\t027/' /etc/login.defs
-else
-    echo "UMASK		027" >> /etc/login.defs
+# ── umask 027 pour vpsadmin uniquement (Lynis AUTH-9328) ──
+# Appliqué via profile.d et non login.defs — évite d'impacter les services système
+# qui créent des fichiers avec des permissions group-readable (Docker, n8n, Baserow...)
+cat > /etc/profile.d/vpsadmin-umask.sh << 'UMASKEOF'
+# vps-secure — umask restrictif pour les sessions interactives vpsadmin uniquement
+if [[ "$(id -un)" == "vpsadmin" ]]; then
+    umask 027
 fi
-log_success "umask 027 configuré dans /etc/login.defs."
+UMASKEOF
+chmod 644 /etc/profile.d/vpsadmin-umask.sh
+log_success "umask 027 configuré pour vpsadmin uniquement (/etc/profile.d/)."
 
 # ── Core dumps désactivés pour tous les utilisateurs (Lynis KRNL-5820) ──
 if ! grep -q "hard core" /etc/security/limits.conf 2>/dev/null; then

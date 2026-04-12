@@ -121,7 +121,9 @@ Le serveur va te demander un mot de passe — c'est le mot de passe root fourni 
 ### Étape 3 — Lance le script
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh)
+curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
+  && chmod +x install-secure.sh \
+  && sudo ./install-secure.sh
 ```
 
 Le script est interactif. Il te pose **2 questions obligatoires** :

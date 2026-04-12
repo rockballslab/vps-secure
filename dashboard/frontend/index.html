@@ -6,6 +6,7 @@
   <title>VPS Secure — Monitor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js"></script>
   <style>
     :root {
       --bg: #f0ebe3;
@@ -60,7 +61,7 @@
     .btn-icon:hover { transform: scale(1.08); }
     .btn-icon.loading { opacity: 0.7; }
     .btn-icon-muted { background: var(--bg); color: var(--muted); box-shadow: var(--shadow-out); }
-    .btn-theme { width: 36px; height: 36px; border: none; border-radius: var(--r-xs); background: var(--bg); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-out); transition: transform 0.15s ease; }
+    .btn-theme { width: 36px; height: 36px; border: none; border-radius: var(--r-xs); background: var(--bg); color: var(--text); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-out); transition: transform 0.15s ease; }
     .btn-theme:hover { transform: scale(1.08); }
 
     .score-bar { padding: 20px 26px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow-out); display: flex; align-items: flex-start; gap: 0; transition: transform 0.2s ease; }
@@ -98,7 +99,8 @@
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 10px; }
     .card-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
     .card-desc { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 3px; line-height: 1.4; }
-    .icon-chip { width: 38px; height: 38px; border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: -3px 3px 8px rgba(0,0,0,0.12),2px -2px 6px rgba(255,255,255,0.85); flex-shrink: 0; }
+    .icon-chip { width: 38px; height: 38px; border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: -3px 3px 8px rgba(0,0,0,0.12),2px -2px 6px rgba(255,255,255,0.85); flex-shrink: 0; }
+    .icon-chip i { font-size: 20px; line-height: 1; }
     .ic-teal   { background: linear-gradient(135deg,var(--teal-l),var(--teal)); }
     .ic-rose   { background: linear-gradient(135deg,var(--rose-l),var(--rose)); }
     .ic-gold   { background: linear-gradient(135deg,var(--gold-l),var(--gold)); }
@@ -165,7 +167,7 @@
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <div class="logo-icon">🛡️</div>
+      <div class="logo-icon"><i class="ph-fill ph-shield-star" style="font-size:24px;"></i></div>
       <div>
         <h1>VPS Dashboard</h1>
         <div class="header-sub" id="header-sub">Chargement…</div>
@@ -177,9 +179,9 @@
     <div class="header-right">
       <span class="countdown" id="countdown">30s</span>
       <div class="badge"><div class="dot" id="status-dot"></div><span id="status-txt">Connexion…</span></div>
-      <button class="btn-icon" id="btn-refresh" onclick="refresh()" title="Actualiser"><span id="refresh-icon">↻</span></button>
-      <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion">⏻</button>
-      <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Thème">🌙</button>
+      <button class="btn-icon" id="btn-refresh" onclick="refresh()" title="Actualiser"><i id="refresh-icon" class="ph ph-arrows-clockwise"></i></button>
+      <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion"><i class="ph ph-power"></i></button>
+      <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Thème"><i id="theme-icon" class="ph ph-moon"></i></button>
     </div>
   </div>
 
@@ -207,7 +209,7 @@
     <div class="card a-rose" id="card-endlessh">
       <div class="card-header">
         <div><div class="card-label">Endlessh</div><div class="card-desc">Piège les bots SSH port 22</div></div>
-        <div class="icon-chip ic-rose">🪤</div>
+        <div class="icon-chip ic-rose"><i class="ph-fill ph-bug-beetle"></i></div>
       </div>
       <div class="card-value" id="val-endlessh-total"><span class="skel"></span></div>
       <div class="card-sub">bots piégés <b>total</b></div>
@@ -217,7 +219,7 @@
     <div class="card">
       <div class="card-header">
         <div><div class="card-label">CrowdSec IPS</div><div class="card-desc">Bans actifs & alertes</div></div>
-        <div class="icon-chip ic-teal">🛡️</div>
+        <div class="icon-chip ic-teal"><i class="ph-fill ph-shield-check"></i></div>
       </div>
       <div class="card-value" id="val-crowdsec"><span class="skel"></span></div>
       <div class="card-sub">IP bannies <b>actives</b></div>
@@ -226,7 +228,7 @@
     <div class="card" id="card-bouncer">
       <div class="card-header">
         <div><div class="card-label">CrowdSec Bouncer</div><div class="card-desc">Applique les bans iptables</div></div>
-        <div class="icon-chip ic-green">⚡</div>
+        <div class="icon-chip ic-green"><i class="ph-fill ph-lightning"></i></div>
       </div>
       <div class="bouncer-status">
         <div class="bouncer-dot bouncer-unknown" id="bouncer-dot"></div>
@@ -237,7 +239,7 @@
     <div class="card a-teal" id="card-system">
       <div class="card-header">
         <div class="card-label">Système</div>
-        <div class="icon-chip ic-teal">⚙️</div>
+        <div class="icon-chip ic-teal"><i class="ph-fill ph-cpu"></i></div>
       </div>
       <div style="display:flex;justify-content:space-around;align-items:center;padding:8px 0 4px;gap:8px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
@@ -279,7 +281,7 @@
     <div class="card">
       <div class="card-header">
         <div class="card-label">UFW Firewall</div>
-        <div class="icon-chip ic-gold">🔥</div>
+        <div class="icon-chip ic-gold"><i class="ph-fill ph-fire"></i></div>
       </div>
       <div class="card-value" id="val-ufw"><span class="skel"></span></div>
       <div class="card-sub">blocages <b>totaux</b></div>
@@ -287,7 +289,7 @@
     <div class="card">
       <div class="card-header">
         <div><div class="card-label">Auditd</div><div class="card-desc">Commandes sudo aujourd'hui</div></div>
-        <div class="icon-chip ic-teal">📋</div>
+        <div class="icon-chip ic-teal"><i class="ph-fill ph-clipboard-text"></i></div>
       </div>
       <div class="card-value" id="val-audit"><span class="skel"></span></div>
       <div class="card-sub">escalades <b>aujourd'hui</b></div>
@@ -295,7 +297,7 @@
     <div class="card" id="card-rkhunter">
       <div class="card-header">
         <div><div class="card-label">rkhunter</div><div class="card-desc">Rootkits & backdoors</div></div>
-        <div class="icon-chip ic-green">🔍</div>
+        <div class="icon-chip ic-green"><i class="ph-fill ph-magnifying-glass"></i></div>
       </div>
       <div class="status-row">
         <span class="status-label" id="val-rkhunter">—</span>
@@ -306,7 +308,7 @@
     <div class="card" id="card-aide">
       <div class="card-header">
         <div><div class="card-label">AIDE File Integrity</div><div class="card-desc">Hash SHA512 des binaires</div></div>
-        <div class="icon-chip ic-violet">🗂️</div>
+        <div class="icon-chip ic-violet"><i class="ph-fill ph-lock-key"></i></div>
       </div>
       <div class="status-row">
         <span class="status-label" id="val-aide">—</span>
@@ -321,7 +323,7 @@
     <div class="card" id="card-updates">
       <div class="card-header">
         <div class="card-label">Mises à jour</div>
-        <div class="icon-chip ic-gold">📦</div>
+        <div class="icon-chip ic-gold"><i class="ph-fill ph-package"></i></div>
       </div>
       <div class="card-value" id="val-updates"><span class="skel"></span></div>
       <div class="card-sub" id="sub-updates">paquets <b>disponibles</b></div>
@@ -329,7 +331,7 @@
     <div class="card" id="card-connections">
       <div class="card-header">
         <div class="card-label">Connexions TCP</div>
-        <div class="icon-chip ic-rose">🔗</div>
+        <div class="icon-chip ic-rose"><i class="ph-fill ph-arrows-left-right"></i></div>
       </div>
       <div class="card-value" id="val-connections"><span class="skel"></span></div>
       <div class="card-sub">connexions <b>établies</b></div>
@@ -337,7 +339,7 @@
     <div class="card" id="card-ports">
       <div class="card-header">
         <div><div class="card-label">Ports ouverts</div><div class="card-desc">Ports TCP en écoute</div></div>
-        <div class="icon-chip ic-green">🔌</div>
+        <div class="icon-chip ic-green"><i class="ph-fill ph-plugs-connected"></i></div>
       </div>
       <div class="ports-list" id="ports-list"><div class="tl-empty">Chargement…</div></div>
     </div>
@@ -345,7 +347,7 @@
 
   <div class="footer-bar">
     <div class="footer-badge">
-      🕐 Dernière mise à jour : <b id="last-update">—</b>
+      <i class="ph ph-clock" style="font-size:13px;"></i> Dernière mise à jour : <b id="last-update">—</b>
       &nbsp;·&nbsp; Rafraîchissement auto toutes les 30s
     </div>
   </div>
@@ -502,7 +504,7 @@ function updateCards(d) {
 
 async function refresh() {
   const btn=$('btn-refresh'), icon=$('refresh-icon');
-  btn.classList.add('loading'); icon.className='spinning';
+  btn.classList.add('loading'); icon.className='ph ph-arrows-clockwise spinning';
   clearTimeout(refreshTimer);
   try {
     const res=await fetch('/api/metrics',{cache:'no-store',headers:{'Authorization':AUTH}});
@@ -513,7 +515,7 @@ async function refresh() {
     refreshTimeline();
   } catch(err){console.error('[VPS Monitor]',err); setStatus(false);}
   finally {
-    btn.classList.remove('loading'); icon.className=''; icon.textContent='↻';
+    btn.classList.remove('loading'); icon.className='ph ph-arrows-clockwise';
     startCountdown(); refreshTimer=setTimeout(refresh,30_000);
   }
 }
@@ -547,7 +549,7 @@ if(!AUTH){window.location.href='/login.html';}
 const DARK_KEY='vps_theme_dark';
 function applyTheme(dark) {
   document.body.classList.toggle('dark',dark);
-  const btn=$('btn-theme'); if(btn) btn.textContent=dark?'☀️':'🌙';
+  const btn=$('btn-theme'); if(btn){ const ic=$('theme-icon'); if(ic) ic.className=dark?'ph ph-sun':'ph ph-moon'; }
   if(donutMem&&donutDisk&&donutCpu){
     updateDonuts({pct:parseInt($('sys-mem')?.textContent)||0},{pct:parseInt($('sys-disk')?.textContent)||0},{cores:parseInt($('sys-cpu-cores')?.textContent)||1,'1m':'0'});
   }

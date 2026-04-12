@@ -432,6 +432,8 @@ fi
 # Raison : CrowdSec et Docker sont téléchargés ensuite.
 # Sans DoT, les résolutions DNS transitent en clair — fenêtre de DNS poisoning.
 log_info "Activation du DNS chiffré avant les téléchargements..."
+# Détection anticipée de l'interface — utilisée ici et réutilisée à l'étape 5 (UFW)
+MAIN_IFACE=$(ip route show default 2>/dev/null | awk '/default/ {print $5}' | head -1)
 mkdir -p /etc/systemd/resolved.conf.d
 cat > /etc/systemd/resolved.conf.d/vps-secure-dns.conf << 'DNSEOF'
 # vps-secure — DNS over TLS
@@ -449,6 +451,27 @@ systemctl enable systemd-resolved
 systemctl restart systemd-resolved
 # Forcer /etc/resolv.conf vers le stub systemd-resolved
 ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+# Fix Hostinger (et cloud-init en général) : netplan réécrit les DNS au reboot
+# Un drop-in systemd-networkd sur l'interface principale force Quad9+DoT
+# et résiste à la régénération cloud-init
+if [[ -n "$MAIN_IFACE" ]]; then
+    mkdir -p /etc/systemd/network/10-netplan-${MAIN_IFACE}.network.d
+    cat > /etc/systemd/network/10-netplan-${MAIN_IFACE}.network.d/override-dns.conf << 'DNSOVEREOF'
+[Network]
+DNS=
+DNS=9.9.9.9
+DNS=149.112.112.112
+DNS=1.1.1.1
+DNSOverTLS=yes
+DNSOVEREOF
+    systemctl restart systemd-networkd
+    systemctl restart systemd-resolved
+    log_success "DNS override appliqué sur $MAIN_IFACE — résiste au reboot cloud-init."
+else
+    log_warn "Interface principale non détectée — override DNS cloud-init non appliqué."
+    log_warn "  Lance manuellement : sudo resolvectl dns eth0 9.9.9.9 149.112.112.112 && sudo resolvectl dnsovertls eth0 yes"
+fi
 
 if resolvectl query quad9.net &>/dev/null; then
     log_success "DNS over TLS actif — Quad9 + Cloudflare (mDNS/LLMNR désactivés)."
@@ -608,7 +631,7 @@ ufw allow 80/tcp  comment 'HTTP'
 ufw allow 443/tcp comment 'HTTPS'
 
 # Détecter l'interface réseau principale (ens3, ens18, eth0... selon l'hébergeur)
-MAIN_IFACE=$(ip route show default 2>/dev/null | awk '/default/ {print $5}' | head -1)
+# MAIN_IFACE détecté à l'étape 3 — déjà disponible ici
 if [[ -z "$MAIN_IFACE" ]]; then
     log_warn "Interface réseau principale non détectée — forwarding Docker bridge ignoré."
     log_warn "  Si tes containers n'ont pas internet après installation, lance :"

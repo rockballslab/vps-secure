@@ -8,23 +8,17 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:    #f0ebe3;
-      --card:  #ffffff;
-      --teal:  #2d7d6f;
-      --teal-l:#3a9e8e;
-      --rose:  #e05a7a;
-      --gold:  #c9a84c;
-      --text:  #1e1e1e;
-      --muted: #9a9085;
-      --so: -8px 8px 0px rgba(0,0,0,0.07),
-            -12px 16px 28px rgba(0,0,0,0.20),
-            -20px 24px 52px rgba(0,0,0,0.09),
-            6px -6px 16px rgba(255,255,255,0.96);
-      --si: inset 4px 4px 10px rgba(0,0,0,0.11),
-            inset -3px -3px 8px rgba(255,255,255,0.88);
-      --st: -8px 10px 24px rgba(45,125,111,0.55),
-            -14px 18px 40px rgba(45,125,111,0.20),
-            4px -4px 10px rgba(255,255,255,0.35);
+      --bg:    #0d0f0e;
+      --card:  #161a18;
+      --teal:  #00ff88;
+      --teal-l:#33ffaa;
+      --rose:  #ff4d6d;
+      --text:  #f0f0f0;
+      --muted: #6b7280;
+      --border: rgba(255,255,255,0.06);
+      --so: 0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px var(--border);
+      --si: inset 0 1px 3px rgba(0,0,0,0.5), inset 0 -1px 2px rgba(255,255,255,0.03);
+      --st: 0 4px 20px rgba(0,255,136,0.3), 0 0 0 1px rgba(0,255,136,0.15);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,23 +33,26 @@
       justify-content: center;
     }
 
-    /* Décoration fond */
+    /* Grille décorative fond */
     body::before {
       content: '';
       position: fixed;
-      top: -120px; right: -120px;
-      width: 420px; height: 420px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(45,125,111,0.08) 0%, transparent 70%);
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
       pointer-events: none;
     }
+
+    /* Halo vert haut-droite */
     body::after {
       content: '';
       position: fixed;
-      bottom: -100px; left: -100px;
-      width: 360px; height: 360px;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(224,90,122,0.07) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(0,255,136,0.06) 0%, transparent 65%);
       pointer-events: none;
     }
 
@@ -63,6 +60,8 @@
       width: 100%;
       max-width: 400px;
       padding: 24px;
+      position: relative;
+      z-index: 1;
     }
 
     /* Logo */
@@ -76,50 +75,48 @@
 
     .logo-icon {
       width: 52px; height: 52px;
-      background: linear-gradient(135deg, var(--teal-l), var(--teal));
+      background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.05));
+      border: 1px solid rgba(0,255,136,0.25);
       border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
       font-size: 24px;
       box-shadow: var(--st);
     }
 
-    .logo-text .name { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-text .name {
+      font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
+      color: var(--text);
+    }
     .logo-text .sub  { font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 2px; }
 
     /* Card */
     .card {
       background: var(--card);
-      border-radius: 30px;
+      border-radius: 20px;
       padding: 36px 32px;
       box-shadow: var(--so);
       position: relative;
       overflow: hidden;
     }
 
-    /* Highlight haut-droite */
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 0; right: 0;
-      width: 55%; height: 45%;
-      background: linear-gradient(225deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 65%);
-      border-radius: 0 30px 0 60%;
-      pointer-events: none;
-    }
-
-    /* Accent top */
+    /* Accent top vert acide */
     .card::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 4px;
-      border-radius: 30px 30px 0 0;
+      height: 3px;
+      border-radius: 20px 20px 0 0;
       background: linear-gradient(90deg, var(--teal), var(--teal-l));
+      box-shadow: 0 0 20px rgba(0,255,136,0.4);
     }
+
+    /* Suppression reflet light mode */
+    .card::after { display: none; }
 
     .card-title {
       font-size: 18px; font-weight: 800; letter-spacing: -0.4px;
       margin-bottom: 6px;
+      color: var(--text);
     }
     .card-sub {
       font-size: 12.5px; color: var(--muted); font-weight: 500;
@@ -139,20 +136,23 @@
     .field input {
       width: 100%;
       padding: 13px 16px;
-      background: var(--bg);
-      border: none;
-      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
       font-size: 14px; font-weight: 500;
       font-family: 'DM Sans', sans-serif;
       color: var(--text);
       box-shadow: var(--si);
       outline: none;
-      transition: box-shadow 0.18s ease;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
     .field input:focus {
-      box-shadow: var(--si), 0 0 0 3px rgba(45,125,111,0.15);
+      border-color: rgba(0,255,136,0.4);
+      box-shadow: var(--si), 0 0 0 3px rgba(0,255,136,0.1);
     }
+
+    .field input::placeholder { color: var(--muted); opacity: 0.6; }
 
     .field input[type="password"] {
       font-family: 'DM Mono', monospace;
@@ -164,9 +164,9 @@
       width: 100%;
       padding: 14px;
       background: var(--teal);
-      color: #fff;
+      color: #0d0f0e;
       border: none;
-      border-radius: 16px;
+      border-radius: 12px;
       font-size: 14px; font-weight: 800;
       font-family: 'DM Sans', sans-serif;
       cursor: pointer;
@@ -178,22 +178,22 @@
 
     .btn-login:hover  { transform: translateY(-2px); filter: brightness(1.08); }
     .btn-login:active { transform: translateY(0); }
-    .btn-login:disabled { opacity: 0.6; pointer-events: none; }
+    .btn-login:disabled { opacity: 0.5; pointer-events: none; }
 
     /* Erreur */
     .error-box {
       display: none;
       margin-top: 16px;
       padding: 12px 16px;
-      background: rgba(224,90,122,0.1);
-      border-radius: 12px;
+      background: rgba(255,77,109,0.1);
+      border: 1px solid rgba(255,77,109,0.2);
+      border-radius: 10px;
       font-size: 12.5px; font-weight: 600;
-      color: #b91c1c;
+      color: #ff4d6d;
       text-align: center;
     }
     .error-box.visible { display: block; }
 
-    /* Loading spinner */
     @keyframes spin { to { transform: rotate(360deg); } }
     .spin { display: inline-block; animation: spin 0.7s linear infinite; }
 
@@ -202,6 +202,8 @@
       text-align: center;
       margin-top: 24px;
       font-size: 11px; color: var(--muted); font-weight: 500;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>

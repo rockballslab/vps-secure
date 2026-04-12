@@ -19,13 +19,13 @@
 |---|---|
 | **Le problème** | Un VPS livré "nu" tourne avec l'utilisateur `root` ouvert sur le port 22, sans firewall configuré et sans aucun système de détection d'intrusion. |
 | **Le risque** | Les bots et scanners automatiques trouvent ton IP et tentent des attaques par force brute en **moins de 2 minutes** après l'activation du serveur. |
-| **La solution** | En **15 minutes**, ce script installe une stack complète clé en main — pare-feu UFW, IPS CrowdSec, honeypot Endlessh, integrity monitoring AIDE, audit système, DNS chiffré, hardening kernel — et configure des alertes Telegram en temps réel. |
+| **La solution** | En **15 minutes**, ce script installe une stack complète clé en main - pare-feu UFW, IPS CrowdSec, honeypot Endlessh, integrity monitoring AIDE, audit système, DNS chiffré, hardening kernel - et configure des alertes Telegram en temps réel. |
 
 Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est précisément la configuration que j'utilise pour sécuriser mes serveurs de production.
 
 **Choisis VPS-SECURE pour que ton serveur devienne une forteresse prête à accueillir tes services en toute sécurité.**
 
-> 🔒 Score Lynis 81/100 — +50% vs un VPS Ubuntu standard. Vérifiable en 2 min après installation.
+> 🔒 Score Lynis 81/100 - +50% vs un VPS Ubuntu standard. Vérifiable en 2 min après installation.
 
 ---
 
@@ -41,21 +41,21 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 
 | # | Quoi | Pourquoi |
 |---|---|---|
-| 1 | Crée l'utilisateur `vpsadmin` | Fini le root — impossible de faire une erreur fatale |
-| 2 | SSH port 2222, clé uniquement | Port 22 scanné en permanence par des bots — on déménage. Connexion limitée à `vpsadmin` uniquement |
-| 3 | Mise à jour système + DNS chiffré + `/tmp`, `/var/tmp` et `/dev/shm` sécurisés | Ferme les failles connues. DNS over TLS activé **avant** tout téléchargement — élimine la fenêtre de DNS poisoning. `/tmp`, `/var/tmp` et `/dev/shm` montés `noexec` — les scripts malveillants ne peuvent pas s'y exécuter |
-| 4 | **CrowdSec** | Détecte et bannit les IP malveillantes. Installé via dépôt GPG signé avec vérification d'empreinte — intégrité vérifiée |
-| 5 | **UFW** (pare-feu) | Tout bloqué sauf les ports 2222, 80 et 443. Le forwarding Docker est ciblé — pas global |
-| 6 | **Docker** Engine + Compose v2 | Docker permet de faire tourner des applications dans des "boîtes isolées" (containers). Configuré pour ne **pas** bypasser UFW — les ports exposés restent sous contrôle du pare-feu. Règle NAT ajoutée dans UFW — les containers ont accès à internet |
+| 1 | Crée l'utilisateur `vpsadmin` | Fini le root - impossible de faire une erreur fatale |
+| 2 | SSH port 2222, clé uniquement | Port 22 scanné en permanence par des bots - on déménage. Connexion limitée à `vpsadmin` uniquement |
+| 3 | Mise à jour système + DNS chiffré + `/tmp`, `/var/tmp` et `/dev/shm` sécurisés | Ferme les failles connues. DNS over TLS activé **avant** tout téléchargement - élimine la fenêtre de DNS poisoning. `/tmp`, `/var/tmp` et `/dev/shm` montés `noexec` - les scripts malveillants ne peuvent pas s'y exécuter |
+| 4 | **CrowdSec** | Détecte et bannit les IP malveillantes. Installé via dépôt GPG signé avec vérification d'empreinte - intégrité vérifiée |
+| 5 | **UFW** (pare-feu) | Tout bloqué sauf les ports 2222, 80 et 443. Le forwarding Docker est ciblé - pas global |
+| 6 | **Docker** Engine + Compose v2 | Docker permet de faire tourner des applications dans des "boîtes isolées" (containers). Configuré pour ne **pas** bypasser UFW - les ports exposés restent sous contrôle du pare-feu. Règle NAT ajoutée dans UFW - les containers ont accès à internet |
 | 7 | unattended-upgrades | Patches de sécurité installés automatiquement chaque nuit |
 | 8 | Kernel hardening | 33 paramètres : réseau (spoofing, SYN flood, ICMP, redirections sécurisées) + ASLR + protection ptrace + core dumps désactivés + perf events restreints |
 | 9 | **auditd** | Journalise tout : SSH, sudo, Docker, fichiers sensibles, crontabs (vecteur de persistence) et `/etc/hosts` (MITM DNS local) |
-| 10 | Swap 2 GB | Mémoire virtuelle d'urgence — évite les crashs |
-| 11 | **rkhunter** | Scanne les backdoors et rootkits. Scan quotidien automatique à 04h00 — indépendant de Telegram |
-| 12 | Désactivation des services inutiles | avahi, cups, bluetooth, ModemManager désactivés — chaque service actif = surface d'attaque (CIS 2.x). Ctrl-Alt-Delete masqué (DISA STIG) |
-| 13 | Alertes **Telegram** | Rapport de sécurité quotidien + alerte immédiate à chaque connexion SSH — optionnel |
-| 14 | **Endlessh** (honeypot port 22) | SSH est sur le port 2222 — le port 22 est libre. Endlessh le capture et maintient les bots connectés des heures en leur envoyant un banner SSH infini. Ils ne peuvent pas attaquer ailleurs pendant ce temps |
-| 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 — toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram de 07h00. Les mises à jour automatiques (`unattended-upgrades`) sont détectées et la baseline est mise à jour silencieusement — zéro fausse alerte |
+| 10 | Swap 2 GB | Mémoire virtuelle d'urgence - évite les crashs |
+| 11 | **rkhunter** | Scanne les backdoors et rootkits. Scan quotidien automatique à 04h00 - indépendant de Telegram |
+| 12 | Désactivation des services inutiles | avahi, cups, bluetooth, ModemManager désactivés - chaque service actif = surface d'attaque (CIS 2.x). Ctrl-Alt-Delete masqué (DISA STIG) |
+| 13 | Alertes **Telegram** | Rapport de sécurité quotidien + alerte immédiate à chaque connexion SSH - optionnel |
+| 14 | **Endlessh** (honeypot port 22) | SSH est sur le port 2222 - le port 22 est libre. Endlessh le capture et maintient les bots connectés des heures en leur envoyant un banner SSH infini. Ils ne peuvent pas attaquer ailleurs pendant ce temps |
+| 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 - toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram de 07h00. Les mises à jour automatiques (`unattended-upgrades`) sont détectées et la baseline est mise à jour silencieusement - zéro fausse alerte |
 
 ---
 
@@ -67,10 +67,10 @@ Avant de commencer, tu as besoin de :
 - ✅ L'**IP** et le **mot de passe root** fournis par ton hébergeur
 - ✅ Une **clé SSH** générée sur ton ordinateur
 
-> 💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd) — recommandé : CPX21 (4 GB RAM · 9,99€/mois) ou CPX32 (8 GB RAM · 14,49€/mois)
+> 💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd) - recommandé : CPX21 (4 GB RAM · 9,99€/mois) ou CPX32 (8 GB RAM · 14,49€/mois)
 
 
-> 🔑 Ce script nécessite une licence — [disponible ici](https://vps-secure.netlify.app/)
+> 🔑 Ce script nécessite une licence - [disponible ici](https://vps-secure.netlify.app/)
 > 
 > 👨‍💻 Développeur ? Contacte-moi pour un accès : [free4dev@aiforceone.fr](mailto:free4dev@aiforceone.fr)
 
@@ -79,7 +79,7 @@ Avant de commencer, tu as besoin de :
 
 ## Installation
 
-### Étape 0 — Utilise le guide interactif (recommandé)
+### Étape 0 - Utilise le guide interactif (recommandé)
 
 Avant de commencer, ouvre le [Guide d'installation interactif](https://guide-vps-secure.netlify.app/) et suit les indications.
 
@@ -90,7 +90,7 @@ Il te permet de :
 
 > 💡 Ouvre le [guide d'installation](https://guide-vps-secure.netlify.app/) depuis ton navigateur.
 
-### Étape 1 — Génère ta clé SSH (sur ton ordinateur)
+### Étape 1 - Génère ta clé SSH (sur ton ordinateur)
 
 Ouvre un terminal sur ton ordinateur :
 - **Mac** → Spotlight (`Cmd+Espace`) → tape `Terminal` → Entrée
@@ -104,14 +104,14 @@ ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_vps
 
 Appuie sur Entrée 3 fois (pas besoin de mot de passe).
 
-Récupère la clé publique — tu en auras besoin pendant le script :
+Récupère la clé publique - tu en auras besoin pendant le script :
 ```bash
 cat ~/.ssh/id_ed25519_vps.pub
 ```
 
 Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`).
 
-### Étape 2 — Connecte-toi en root
+### Étape 2 - Connecte-toi en root
 
 > 💡 Si tu as déjà utilisé cette IP (rebuild VPS), supprime l'ancienne clé connue :
 > ```bash
@@ -124,11 +124,11 @@ ssh root@IP_DU_VPS
 
 Remplace `IP_DU_VPS` par l'IP que tu as notée dans le guide interactif.
 
-Le serveur va te demander un mot de passe — c'est le mot de passe root fourni par ton hébergeur par email après provisioning.
+Le serveur va te demander un mot de passe - c'est le mot de passe root fourni par ton hébergeur par email après provisioning.
 
 > 💡 C'est la seule fois où ce mot de passe est utilisé. Après l'installation, la connexion root par mot de passe est définitivement désactivée.
 
-### Étape 3 — Lance le script
+### Étape 3 - Lance le script
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
@@ -137,7 +137,7 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 ```
 
 > 🔐 **`install-secure.sh`** vérifie la signature GPG de `install.sh` avant de le lancer.
-> C'est la commande recommandée — elle garantit que le script n'a pas été altéré.
+> C'est la commande recommandée - elle garantit que le script n'a pas été altéré.
 > `install.sh` seul reste disponible pour les environnements sans GPG.
 
 
@@ -148,20 +148,20 @@ Le script est interactif. Il te pose **2 questions obligatoires** :
 
 Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 
-À la toute fin, le script affiche la commande pour te reconnecter et la commande de vérification — puis attend que tu appuies sur Entrée avant de redémarrer. Prends le temps de les noter.
+À la toute fin, le script affiche la commande pour te reconnecter et la commande de vérification - puis attend que tu appuies sur Entrée avant de redémarrer. Prends le temps de les noter.
 
 > ⚠️ **Ne ferme pas cette session root avant que le script te le demande.**
 > Il vérifie lui-même que tu peux te reconnecter avant de désactiver root.
 
-### Étape 4 — Reconnecte-toi en vpsadmin (après le redémarrage)
+### Étape 4 - Reconnecte-toi en vpsadmin (après le redémarrage)
 
 ```bash
 ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/id_ed25519_vps
 ```
 
-### Étape 5 — Vérifie l'installation
+### Étape 5 - Vérifie l'installation
 
-Le script t'a affiché cette commande à la fin — lance-la maintenant :
+Le script t'a affiché cette commande à la fin - lance-la maintenant :
 
 ```bash
 sudo vps-secure-verify
@@ -181,7 +181,7 @@ sudo vps-secure-verify
   [PASS] DNS over TLS : systemd-resolved actif · DoT=yes · serveur principal : 9.9.9.9
   [PASS] Telegram     : config présente · API OK · bot : @monbot
 
-  ✅ Installation 100% complète — tous les composants sont opérationnels.
+  ✅ Installation 100% complète - tous les composants sont opérationnels.
 ```
 
 Chaque composant retourne `[PASS]` ou `[FAIL]` avec la raison. Tout doit être PASS.
@@ -194,8 +194,8 @@ C'est tout. Le VPS est sécurisé.
 
 À la fin de l'installation, le script te propose de configurer deux niveaux d'alertes :
 
-- **Rapport quotidien à 07h00** — état global du serveur (CrowdSec, rkhunter, auditd)
-- **Alerte immédiate** — notification Telegram à chaque connexion SSH réussie (utilisateur + IP source)
+- **Rapport quotidien à 07h00** - état global du serveur (CrowdSec, rkhunter, auditd)
+- **Alerte immédiate** - notification Telegram à chaque connexion SSH réussie (utilisateur + IP source)
 
 **Ce dont tu as besoin :**
 1. Crée un bot → ouvre [@BotFather](https://t.me/BotFather) → `/newbot` → copie le token
@@ -204,7 +204,7 @@ C'est tout. Le VPS est sécurisé.
 **Ce que tu reçois chaque matin à 07h00 :**
 
 ```
-🔐 vps-secure — Rapport quotidien
+🔐 vps-secure - Rapport quotidien
 📅 05/04/2026 · monvps
 
 ✅ Tout va bien sur ton VPS
@@ -254,7 +254,7 @@ sudo ufw allow 8080/tcp comment 'Mon application'
 
 ## 🛡️ Niveau de sécurité
 
-Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% du DISA STIG Ubuntu 24.04** — largement au-dessus de n'importe quel script public comparable.
+Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% du DISA STIG Ubuntu 24.04** - largement au-dessus de n'importe quel script public comparable.
 
 
 | Standard | Couverture |
@@ -262,11 +262,11 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 | CIS Benchmark L1 | ~87% |
 | DISA STIG Ubuntu 24.04 | ~77% |
 | OWASP Infrastructure | Supply chain (GPG + empreinte vérifiée), secrets, logging |
-| Lynis Audit | 81/100 | +50% vs un VPS Ubuntu standard (54/100) — vérifiable en 2 min après installation |
+| Lynis Audit | 81/100 | +50% vs un VPS Ubuntu standard (54/100) - vérifiable en 2 min après installation |
 
-**CIS Benchmark** — CIS = Center for Internet Security, organisation américaine à but non lucratif qui publie des guides de configuration sécurisée pour tous les OS majeurs. Le Level 1 cible une sécurité raisonnable sans impact sur les fonctionnalités — c'est le standard utilisé par les entreprises pour leurs serveurs en production. 87% CIS L1 signifie 4 contrôles sur 5 couverts. Les 20% restants sont des contrôles non applicables sur VPS (partitions dédiées `/var`, `/home`) ou volontairement exclus pour garder le script accessible.
+**CIS Benchmark** - CIS = Center for Internet Security, organisation américaine à but non lucratif qui publie des guides de configuration sécurisée pour tous les OS majeurs. Le Level 1 cible une sécurité raisonnable sans impact sur les fonctionnalités - c'est le standard utilisé par les entreprises pour leurs serveurs en production. 87% CIS L1 signifie 4 contrôles sur 5 couverts. Les 20% restants sont des contrôles non applicables sur VPS (partitions dédiées `/var`, `/home`) ou volontairement exclus pour garder le script accessible.
 
-**DISA STIG** — DISA = Defense Information Systems Agency, l'agence IT du Département de la Défense américain. Les STIGs sont leurs guides de configuration, plus stricts que CIS, obligatoires pour tous les systèmes du gouvernement US. 77% DISA STIG est très bon pour un script public — les 23% restants concernent des contrôles militaires sans sens pour un VPS perso (accès physique, smartcard auth) ou nécessitant une infrastructure d'entreprise (LDAP, SIEM centralisé).
+**DISA STIG** - DISA = Defense Information Systems Agency, l'agence IT du Département de la Défense américain. Les STIGs sont leurs guides de configuration, plus stricts que CIS, obligatoires pour tous les systèmes du gouvernement US. 77% DISA STIG est très bon pour un script public - les 23% restants concernent des contrôles militaires sans sens pour un VPS perso (accès physique, smartcard auth) ou nécessitant une infrastructure d'entreprise (LDAP, SIEM centralisé).
 
 **Lynis** - outil d'audit de sécurité Linux open-source = Il scanne la configuration du serveur et donne un score sur 100. Référence industrie, utilisé par les sysadmins professionnels.
 
@@ -307,7 +307,7 @@ sudo vps-secure-stats
 
 ```
 ╔══════════════════════════════════════════════════════╗
-║          vps-secure — Tableau de bord                ║
+║          vps-secure - Tableau de bord                ║
 ╚══════════════════════════════════════════════════════╝
   monvps · 05/04/2026 07:00
 
@@ -339,7 +339,7 @@ sudo vps-secure-stats
 
 
 > ⓘ Le jour de l'installation, les escalades de privilèges affichent un nombre élevé (1000+).
-> C'est normal — le script install.sh tourne en root et chaque commande système est auditée.
+> C'est normal - le script install.sh tourne en root et chaque commande système est auditée.
 > Dès le lendemain, le compteur reflète uniquement tes actions réelles.
 
 
@@ -371,17 +371,17 @@ sudo /usr/local/bin/vps-secure-check.sh
 sudo sed -i 's/^0 [0-9]* \* \* \*/0 8 * * */' /etc/cron.d/vps-secure
 sudo cat /etc/cron.d/vps-secure  # vérifier
 
-# Honeypot Endlessh — logs en direct
+# Honeypot Endlessh - logs en direct
 sudo docker logs -f endlessh
 
-# AIDE — lancer un scan d'intégrité manuellement
+# AIDE - lancer un scan d'intégrité manuellement
 sudo aide --check
 
-# AIDE — mettre à jour la baseline après une mise à jour OS majeure (upgrade de version)
+# AIDE - mettre à jour la baseline après une mise à jour OS majeure (upgrade de version)
 # Note : les patches de sécurité quotidiens (unattended-upgrades) sont gérés automatiquement
 sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 
-# Cache sécurité (Endlessh + CrowdSec) — mis à jour toutes les 5 min
+# Cache sécurité (Endlessh + CrowdSec) - mis à jour toutes les 5 min
 cat /var/cache/vps-secure/security-stats.json
 ```
 
@@ -432,7 +432,7 @@ Le script te demande un domaine et un mot de passe, configure tout et lance auto
 
 ## Compatibilité
 
-Testé et vérifié le 12 Avril 2026 sur **Ubuntu 24.04 LTS** — Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 12 min · 100% fonctionnel
+Testé et vérifié le 12 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 12 min · 100% fonctionnel
 
 ---
 

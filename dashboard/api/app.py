@@ -187,6 +187,67 @@ def get_bouncer_status() -> dict:
         return {"status": "unknown"}
 
 
+def get_telegram_status() -> dict:
+    """Statut des alertes Telegram — rapport quotidien et alerte SSH."""
+    conf = "/etc/vps-secure/telegram.conf"
+    configured = os.path.exists(conf)
+
+    report = False
+    try:
+        cron = Path("/etc/cron.d/vps-secure")
+        if cron.exists():
+            c = cron.read_text()
+            report = bool(re.search(r"^[^#].*vps-secure-check\.sh", c, re.MULTILINE))
+    except Exception:
+        pass
+
+    ssh_alert = False
+    try:
+        pam = Path("/etc/pam.d/sshd")
+        if pam.exists():
+            c = pam.read_text()
+            ssh_alert = bool(re.search(r"^[^#].*vps-secure-ssh-alert\.sh", c, re.MULTILINE))
+    except Exception:
+        pass
+
+    return {"configured": configured, "report": report, "ssh": ssh_alert}
+
+
+def toggle_telegram(toggle_type: str) -> dict:
+    """Activer/désactiver rapport quotidien ou alerte SSH Telegram."""
+    if toggle_type == "report":
+        cron_path = "/etc/cron.d/vps-secure"
+        try:
+            content = Path(cron_path).read_text()
+            if re.search(r"^[^#].*vps-secure-check\.sh", content, re.MULTILINE):
+                new = re.sub(r"^(.*vps-secure-check\.sh.*)$", r"#\1", content, flags=re.MULTILINE)
+                enabled = False
+            else:
+                new = re.sub(r"^#(.*vps-secure-check\.sh.*)$", r"\1", content, flags=re.MULTILINE)
+                enabled = True
+            Path(cron_path).write_text(new)
+            return {"ok": True, "report": enabled}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+
+    elif toggle_type == "ssh":
+        pam_path = "/etc/pam.d/sshd"
+        try:
+            content = Path(pam_path).read_text()
+            if re.search(r"^[^#].*vps-secure-ssh-alert\.sh", content, re.MULTILINE):
+                new = re.sub(r"^(.*vps-secure-ssh-alert\.sh.*)$", r"#\1", content, flags=re.MULTILINE)
+                enabled = False
+            else:
+                new = re.sub(r"^#(.*vps-secure-ssh-alert\.sh.*)$", r"\1", content, flags=re.MULTILINE)
+                enabled = True
+            Path(pam_path).write_text(new)
+            return {"ok": True, "ssh": enabled}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+
+    return {"ok": False, "error": "type invalide"}
+
+
 def get_ufw() -> dict:
     total = 0
     for path in ["/var/log/ufw.log", "/var/log/ufw.log.1"]:
@@ -245,22 +306,26 @@ def get_aide() -> dict:
     status    = "unknown"
     last_scan = "Jamais"
 
-    for path in ["/var/log/aide/aide.log", "/var/log/aide.log", "/var/log/aide/check.log"]:
-        try:
-            p = Path(path)
-            if not p.exists() or p.stat().st_size == 0:
-                continue
-            content = p.read_text(errors="replace")
+    # Lire l'exit code du script vps-secure-aide-check.sh
+    try:
+        with open("/var/log/aide-daily.exit") as f:
+            exit_code = int(f.read().strip())
+        if exit_code == 0:
+            status = "clean"
+        elif (exit_code & 7) != 0 and (exit_code & 56) == 0:
+            status = "changes"
+        else:
+            status = "unknown"
+    except Exception:
+        pass
 
-            if re.search(r"found no differences|0 changed.*0 added.*0 removed|Looks okay|No differences", content, re.IGNORECASE):
-                status = "clean"
-            elif re.search(r"[1-9]\d* changed|[1-9]\d* added|[1-9]\d* removed|Changed entries:|Added entries:|Removed entries:", content):
-                status = "changes"
-
+    # Date depuis aide-daily.log
+    try:
+        p = Path("/var/log/aide-daily.log")
+        if p.exists() and p.stat().st_size > 0:
             last_scan = datetime.fromtimestamp(p.stat().st_mtime).strftime("%d/%m/%Y %H:%M")
-            break
-        except Exception:
-            continue
+    except Exception:
+        pass
 
     return {"status": status, "last_scan": last_scan}
 
@@ -728,6 +793,7 @@ ROUTES = {
     "/api/health":   lambda: {"status": "ok", "ts": int(time.time())},
     "/api/history":  lambda: _history,
     "/api/timeline": lambda: get_timeline(),
+    "/api/telegram/status": lambda: get_telegram_status(),
 }
 
 
@@ -748,6 +814,26 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as exc:
             self.send_error(500, str(exc))
 
+
+    def do_POST(self) -> None:
+        path = self.path.rstrip("/")
+        if path == "/api/telegram/toggle":
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length)) if length else {}
+                toggle_type = body.get("type", "")
+                result = toggle_telegram(toggle_type)
+                resp = json.dumps(result, ensure_ascii=False).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(resp)))
+                self.end_headers()
+                self.wfile.write(resp)
+            except Exception as exc:
+                self.send_error(500, str(exc))
+        else:
+            self.send_error(404)
+
     def log_message(self, fmt: str, *args) -> None:
         ts = time.strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{ts}] {fmt % args}", flush=True)
@@ -759,3 +845,5 @@ if __name__ == "__main__":
     srv = HTTPServer((API_HOST, API_PORT), Handler)
     print(f"[VPS Monitor] API on {API_HOST}:{API_PORT} — cache TTL {CACHE_TTL}s", flush=True)
     srv.serve_forever()
+
+# ── Telegram status & toggle ─────────────────────────────────────────────────

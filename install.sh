@@ -1640,6 +1640,9 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/var/lib/command-not-found
 !/var/log/vps-monitor-history\.json$
 !/^/$
+!/var/cache/vps-secure/security-stats\.json$
+!/var/lib/aide/aide\.db$
+!/home/[^/]+/vps-monitor
 AIDEEXCLEOF
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)
@@ -1862,6 +1865,33 @@ if [[ -f /var/log/aide-daily.exit ]]; then
 else
     AIDE_STATUS="${JAUNE}Pas encore exécuté (scan à 03h00)${RESET}"
 fi
+
+# ── Fix post-premier-scan : rkhunter + AIDE baseline update (J+1) ──
+# AIDE et rkhunter tournent la première nuit et génèrent des faux positifs
+# sur les fichiers système créés par AIDE lui-même (_aide user/group).
+# Ce script tourne une seule fois à 05h00 le lendemain pour corriger.
+cat > /usr/local/bin/vps-secure-first-scan-fix.sh << 'FIXEOF'
+#!/usr/bin/env bash
+# Mettre à jour rkhunter propupd
+rkhunter --propupd --nocolors > /dev/null 2>&1 || true
+# Mettre à jour baseline AIDE
+chattr -i /var/lib/aide/aide.db 2>/dev/null || true
+aide --update --config /etc/aide/aide.conf > /dev/null 2>&1 || true
+if [[ -f /var/lib/aide/aide.db.new ]]; then
+    cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+    chattr +i /var/lib/aide/aide.db 2>/dev/null || true
+fi
+# Auto-supprimer ce script et son cron après exécution
+rm -f /etc/cron.d/vps-secure-first-scan-fix
+rm -f /usr/local/bin/vps-secure-first-scan-fix.sh
+FIXEOF
+chmod 700 /usr/local/bin/vps-secure-first-scan-fix.sh
+
+# Cron unique à 05h00 J+1 — se supprime lui-même après exécution
+echo "0 5 * * * root /usr/local/bin/vps-secure-first-scan-fix.sh" \
+    > /etc/cron.d/vps-secure-first-scan-fix
+chmod 644 /etc/cron.d/vps-secure-first-scan-fix
+log_success "Fix post-premier-scan configuré — baselines mises à jour automatiquement demain à 05h00."
 
 # ── Système ──
 UPTIME=$(uptime -p 2>/dev/null | sed 's/up //' || echo "inconnu")

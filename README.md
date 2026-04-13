@@ -37,7 +37,7 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 
 ## Ce que fait `install-secure.sh`
 
-15 étapes automatiques, zéro compétence technique requise.
+1 commande - 15 étapes automatiques, zéro compétence technique requise.
 
 | # | Quoi | Pourquoi |
 |---|---|---|

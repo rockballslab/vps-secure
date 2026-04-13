@@ -447,7 +447,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main
 
 Le script te demande un domaine et un mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.
  
-> Prérequis : un enregistrement DNS A pointant sur l'IP de ton VPS ·
+> Prérequis : un enregistrement DNS A pointant sur l'IP de ton VPS · Explications complémentaires dans le guide.
 
 > 💡 Pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`
 

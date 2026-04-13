@@ -417,12 +417,19 @@ ssh monvps
  Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
 
 > Design system complet clair/sombre
+> 
 > 11 métriques temps réel avec score de santé
+> 
 > Timeline d'événements sécurité
+> 
 > Toggles Telegram interactifs
+> 
 > Icônes Phosphor, animations, hover effects
+> 
 > Backend Python stdlib zero-dependency
+> 
 > Auth Caddy + bcrypt
+> 
 > Responsive
 
  

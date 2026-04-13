@@ -81,10 +81,10 @@ Avant de commencer, tu as besoin de :
 
 ### Étape 0 - Utilise le guide interactif (recommandé)
 
-Avant de commencer, ouvre le [Guide d'installation interactif](https://guide-vps-secure.netlify.app/) et suit les indications.
+Avant de commencer, ouvre le [Guide d'installation interactif](https://guide-vps-secure.netlify.app/) et suit les indications pas à pas sans avoir besoin de revenir ici.
 
-Il te permet de :
-- Noter ton IP et ta clé SSH au même endroit
+Ce guide te permet de :
+- Noter ton IP et toutes les infos qui te seront demandées pendant l'installation en UN SEUL ENDROIT localement
 - Exporter ta config en `.txt` ou `.pdf`
 - Déverrouiller la commande de lancement quand tout est prêt
 
@@ -109,7 +109,7 @@ Récupère la clé publique - tu en auras besoin pendant le script :
 cat ~/.ssh/id_ed25519_vps.pub
 ```
 
-Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`).
+Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`) et colle-la dans le guide interactif.
 
 ### Étape 2 - Connecte-toi en root
 

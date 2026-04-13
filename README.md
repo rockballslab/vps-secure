@@ -13,7 +13,7 @@
 
 ## 🛡️ Pourquoi utiliser ce script ?
 
-> **Le constat est simple :** les protections par défaut fournies par les hébergeurs (OVH, Hostinger, Hetzner, DigitalOcean, etc.) sont **insuffisantes** pour une mise en production vraiment sécurisée.
+> **Le constat est simple :** les protections par défaut fournies par les hébergeurs (OVH, Hostinger, Hetzner, etc.) sont **insuffisantes** pour une mise en production vraiment sécurisée.
 
 | | |
 |---|---|

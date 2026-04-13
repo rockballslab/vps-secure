@@ -159,6 +159,9 @@ Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/id_ed25519_vps
 ```
 
+Ton VPS est déjà PRÊT. Y'a plus qu'à vérifier !
+
+
 ### Étape 5 - Vérifie l'installation
 
 Le script t'a affiché cette commande à la fin - lance-la maintenant :
@@ -186,7 +189,7 @@ sudo vps-secure-verify
 
 Chaque composant retourne `[PASS]` ou `[FAIL]` avec la raison. Tout doit être PASS.
 
-C'est tout. Le VPS est sécurisé.
+C'est tout. Le VPS est SÉCURISÉ. C'est officiellement une FORTERESSE.
 
 ---
 

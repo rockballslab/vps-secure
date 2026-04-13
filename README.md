@@ -21,7 +21,7 @@
 | **Le risque** | Les bots et scanners automatiques trouvent ton IP et tentent des attaques par force brute en **moins de 2 minutes** après l'activation du serveur. |
 | **La solution** | En **15 minutes**, ce script installe une stack complète clé en main - pare-feu UFW, IPS CrowdSec, honeypot Endlessh, integrity monitoring AIDE, audit système, DNS chiffré, hardening kernel - et configure des alertes Telegram en temps réel. |
 
-Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est précisément la configuration que j'utilise pour sécuriser mes serveurs de production.
+Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est précisément la configuration que j'utilise pour sécuriser mes nouveaux serveurs de production ou de tests d'agents autonomes.
 
 **Choisis VPS-SECURE pour que ton serveur devienne une forteresse prête à accueillir tes services en toute sérennité.**
 

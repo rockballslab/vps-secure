@@ -158,6 +158,14 @@
     .bouncer-active   { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.6); animation: pulse-green 2s infinite; }
     .bouncer-inactive { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.6); }
     .bouncer-unknown  { background: var(--muted); }
+
+    /* Toggle Telegram */
+    .tg-toggle { position:relative; display:inline-block; width:36px; height:20px; cursor:pointer; }
+    .tg-toggle input { opacity:0; width:0; height:0; }
+    .tg-slider { position:absolute; inset:0; background:var(--muted); border-radius:20px; transition:background 0.2s; }
+    .tg-slider:before { content:""; position:absolute; width:14px; height:14px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform 0.2s; }
+    .tg-toggle input:checked + .tg-slider { background:var(--teal); }
+    .tg-toggle input:checked + .tg-slider:before { transform:translateX(16px); }
     @keyframes pulse-green { 0%,100%{box-shadow:0 0 8px rgba(34,197,94,0.6)} 50%{box-shadow:0 0 14px rgba(34,197,94,0.9)} }
   </style>
 </head>
@@ -205,6 +213,29 @@
     <div style="flex:1;min-width:0;">
       <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px;"><i class="ph ph-list-bullets" style="font-size:13px;margin-right:4px;"></i> Événements récents</div>
       <div id="timeline-inline" style="width:100%;"></div>
+    </div>
+    <div style="width:1px;background:rgba(0,0,0,0.08);align-self:stretch;margin:0 24px;flex-shrink:0;"></div>
+    <div style="flex-shrink:0;display:flex;flex-direction:column;gap:14px;min-width:160px;padding-right:16px;">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:0px;"><i class="ph-fill ph-telegram-logo" style="font-size:13px;margin-right:4px;"></i> Alertes Telegram</div>
+      <div style="display:flex;flex-direction:column;gap:10px;" id="tg-not-configured" style="display:none;">
+        <span style="font-size:11px;color:var(--muted);">Non configuré</span>
+      </div>
+      <div id="tg-toggles" style="display:flex;flex-direction:row;gap:24px;align-items:center;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Rapport 07h00</span>
+          <label class="tg-toggle">
+            <input type="checkbox" id="tg-report" onchange="toggleTelegram('report',this.checked)">
+            <span class="tg-slider"></span>
+          </label>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Alerte SSH</span>
+          <label class="tg-toggle">
+            <input type="checkbox" id="tg-ssh" onchange="toggleTelegram('ssh',this.checked)">
+            <span class="tg-slider"></span>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -377,6 +408,39 @@ function setPill(id, st) {
 function startCountdown() {
   clearInterval(cdTimer); countdown=30;
   cdTimer=setInterval(()=>{countdown=Math.max(0,countdown-1);$('countdown').textContent=`${countdown}s`;},1000);
+}
+
+
+async function loadTelegramStatus() {
+  try {
+    const res = await fetch('/api/telegram/status', { cache:'no-store', headers:{'Authorization':AUTH} });
+    if (!res.ok) return;
+    const d = await res.json();
+    if (!d.configured) {
+      const tog = document.getElementById('tg-toggles');
+      const nc = document.getElementById('tg-not-configured');
+      if (tog) tog.style.display = 'none';
+      if (nc) nc.style.display = 'block';
+    } else {
+      const report = document.getElementById('tg-report');
+      const ssh = document.getElementById('tg-ssh');
+      if (report) report.checked = d.report;
+      if (ssh) ssh.checked = d.ssh;
+    }
+  } catch(e) { console.error('loadTelegramStatus:', e); }
+}
+
+async function toggleTelegram(type, enabled) {
+  try {
+    const res = await fetch('/api/telegram/toggle', {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Authorization': AUTH, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type })
+    });
+    const d = await res.json();
+    if (!d.ok) { console.error('Toggle failed:', d.error); loadTelegramStatus(); }
+  } catch(e) { loadTelegramStatus(); }
 }
 
 function updateScore(sc) {
@@ -565,6 +629,7 @@ let refreshTimer=null, countdown=30, cdTimer=null;
 initDonuts();
 applyTheme(sessionStorage.getItem(DARK_KEY)==='1');
 refresh();
+loadTelegramStatus();
 </script>
 </body>
 </html>

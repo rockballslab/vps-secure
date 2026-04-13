@@ -432,6 +432,11 @@ bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main
 </p>
 
 
+ <p align="center">
+  <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">
+</p>
+
+
 > Design system complet clair/sombre
 > 
 > 11 métriques temps réel avec score de santé

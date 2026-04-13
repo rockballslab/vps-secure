@@ -168,7 +168,8 @@
     }
     body.dark .tl-item { border-bottom: 1px solid rgba(255,255,255,0.05); }
     .tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .tl-dot-teal   { background: var(--teal); box-shadow: 0 0 6px rgba(45,125,111,0.5); }
+    /* Synchronisé avec le vert du Bouncer (#22c55e) */
+    .tl-dot-teal   { background: #22c55e !important; box-shadow: 0 0 8px rgba(34, 197, 94, 0.6) !important; }
     .tl-dot-rose   { background: var(--rose); box-shadow: 0 0 6px rgba(224,90,122,0.5); }
     .tl-dot-gold   { background: var(--gold); box-shadow: 0 0 6px rgba(201,168,76,0.5); }
     .tl-dot-purple { background: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,0.5); }
@@ -552,7 +553,7 @@ function renderTimeline(events) {
       <div class="tl-icon">${e.icon||'•'}</div>
       <div class="tl-content">
         <div class="tl-title">${e.title||'—'}</div>
-        <div class="tl-detail">${e.detail||''}${(e.count||0)>1?`<span style="margin-left:6px;padding:1px 7px;border-radius:10px;background:rgba(45,125,111,0.15);color:var(--teal);font-size:10px;font-weight:700">${e.count}×</span>`:''}</div>
+        <div class="tl-detail">${e.detail||''}${(e.count||0)>1?`<span style="margin-left:6px;padding:1px 7px;border-radius:10px;background:rgba(0,255,136,0.2);color:#008547;font-size:10px;font-weight:700">${e.count}×</span>`:''}</div>
       </div>
       <div class="tl-time">${e.time||'—'}</div>
     </div>`;

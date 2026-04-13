@@ -416,10 +416,10 @@ ssh monvps
  
  Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
  
-Accessible depuis un navigateur, protégé par une page de connexion, déployé en Docker. CrowdSec et Endlessh sont détectés automatiquement.
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard.sh && chmod +x install-dashboard.sh && ./install-dashboard.sh
+bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)
 ```
+> 🔐 **`install-dashboard-secure.sh`** vérifie la signature GPG de `install-dashboard.sh` avant de le lancer - garantit l'intégrité du script.
 
 
 

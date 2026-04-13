@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPS Secure — Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js"></script>
+  <style>
+    :root {
+      --bg: #f0ebe3;
+      --card: #ffffff;
+      --card-border: transparent;
+      --teal: #2d7d6f;
+      --teal-l: #3a9e8e;
+      --rose: #e05a7a;
+      --rose-l: #f07090;
+      --gold: #c9a84c;
+      --gold-l: #dbb85c;
+      --text: #1e1e1e;
+      --muted: #9a9085;
+      --shadow-out: -8px 8px 0px rgba(0,0,0,0.07),-12px 16px 28px rgba(0,0,0,0.20),-20px 24px 52px rgba(0,0,0,0.09),6px -6px 16px rgba(255,255,255,0.96);
+      --shadow-in: inset 4px 4px 10px rgba(0,0,0,0.11),inset -3px -3px 8px rgba(255,255,255,0.88);
+      --r: 30px; --r-sm: 18px; --r-xs: 12px;
+      --btn-text: #ffffff;
+    }
+    body.dark {
+      --bg: #0d0f0e; --card: #161a18; --card-border: rgba(255,255,255,0.06);
+      --teal: #00ff88; --teal-l: #33ffaa; --rose: #ff4d6d; --rose-l: #ff7090;
+      --gold: #f0b429; --gold-l: #f5c842; --text: #f0f0f0; --muted: #6b7280;
+      --shadow-out: 0 2px 8px rgba(0,0,0,0.4),0 8px 24px rgba(0,0,0,0.3),0 0 0 1px var(--card-border);
+      --shadow-in: inset 0 1px 3px rgba(0,0,0,0.4),inset 0 -1px 2px rgba(255,255,255,0.03);
+      --r: 20px; --r-sm: 14px; --r-xs: 10px; --btn-text: #0d0f0e;
+    }
+    body.dark .logo-icon { background: linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.05)); border:1px solid rgba(0,255,136,0.25); }
+    body.dark .btn-refresh, body.dark .btn-icon:not(.btn-icon-muted) { color: #0d0f0e; }
+    body.dark .ic-teal   { background: linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1)); border:1px solid rgba(0,255,136,0.2); }
+    body.dark .ic-rose   { background: linear-gradient(135deg,rgba(255,77,109,0.2),rgba(255,77,109,0.1)); border:1px solid rgba(255,77,109,0.2); }
+    body.dark .ic-gold   { background: linear-gradient(135deg,rgba(240,180,41,0.2),rgba(240,180,41,0.1)); border:1px solid rgba(240,180,41,0.2); }
+    body.dark .ic-green  { background: linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1)); border:1px solid rgba(0,255,136,0.2); }
+    body.dark .ic-violet { background: linear-gradient(135deg,rgba(167,139,250,0.2),rgba(167,139,250,0.1)); border:1px solid rgba(167,139,250,0.2); }
+    body.dark .ic-red    { background: linear-gradient(135deg,rgba(255,77,77,0.2),rgba(255,77,77,0.1)); border:1px solid rgba(255,77,77,0.2); }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; min-height: 100vh; }
+    .main { max-width: 1400px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+    .header { display: flex; align-items: center; gap: 16px; padding: 18px 26px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow-out); flex-wrap: wrap; }
+    .header-left { display: flex; align-items: center; gap: 14px; min-width: 200px; }
+    .logo-icon { width: 46px; height: 46px; background: linear-gradient(135deg,rgba(45,125,111,0.15),rgba(45,125,111,0.05)); border: 1px solid rgba(45,125,111,0.2); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    .header-sub { font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+    .header-right { display: flex; align-items: center; gap: 14px; min-width: fit-content; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; background: var(--bg); border-radius: 50px; font-size: 12px; font-weight: 600; box-shadow: var(--shadow-in); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6); }
+    .dot.error { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.6); }
+    .countdown { font-size: 11px; font-weight: 700; color: var(--muted); min-width: 28px; text-align: center; font-family: 'DM Mono', monospace; }
+    .btn-icon { width: 36px; height: 36px; border: none; border-radius: var(--r-xs); background: var(--teal); color: var(--btn-text); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-out); transition: transform 0.15s ease; }
+    .btn-icon:active { transform: scale(0.95); }
+    .btn-icon:hover { transform: scale(1.08); }
+    .btn-icon.loading { opacity: 0.7; }
+    .btn-icon-muted { background: var(--bg); color: var(--muted); box-shadow: var(--shadow-out); }
+    .btn-theme { width: 36px; height: 36px; border: none; border-radius: var(--r-xs); background: var(--bg); color: var(--text); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-out); transition: transform 0.15s ease; }
+    .btn-theme:hover { transform: scale(1.08); }
+
+    .score-bar { padding: 20px 26px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow-out); display: flex; align-items: flex-start; gap: 0; transition: transform 0.2s ease; }
+    .score-bar:hover { transform: translateY(-1px); }
+    .score-ring { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+    .score-ring canvas { display: block; }
+    .score-ring-val { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .score-num { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+    .score-info { min-width: 0; }
+    .score-label { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .score-issues { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .issue-pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .issue-critical { background: rgba(239,68,68,0.12); color: #b91c1c; }
+    .issue-high     { background: rgba(245,158,11,0.12); color: #92400e; }
+    .issue-medium   { background: rgba(201,168,76,0.12); color: #92400e; }
+    .issue-info     { background: rgba(45,125,111,0.12); color: #065f46; }
+    .score-ok       { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .grid-last { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 20px; }
+    @media (max-width: 1100px) { .grid4 { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 700px)  { .grid4,.grid3,.grid-last { grid-template-columns: 1fr; } }
+
+    .card { background: var(--card); border-radius: var(--r); padding: 22px 24px; box-shadow: var(--shadow-out); transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative; overflow: hidden; }
+    .card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius: var(--r) var(--r) 0 0; background: transparent; transition: background 0.3s; }
+    .card:hover { transform: translateY(-2px); box-shadow: -10px 12px 32px rgba(0,0,0,0.15),-16px 20px 48px rgba(0,0,0,0.10),8px -8px 20px rgba(255,255,255,0.95); }
+    body.dark .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.5),0 12px 32px rgba(0,0,0,0.4),0 0 0 1px var(--card-border); }
+    .a-teal::before   { background: linear-gradient(90deg,var(--teal),var(--teal-l)); }
+    .a-rose::before   { background: linear-gradient(90deg,var(--rose),var(--rose-l)); }
+    .a-gold::before   { background: linear-gradient(90deg,var(--gold),var(--gold-l)); }
+    .a-green::before  { background: linear-gradient(90deg,#22c55e,#4ade80); }
+    .a-red::before    { background: linear-gradient(90deg,#ef4444,#f87171); }
+    .a-violet::before { background: linear-gradient(90deg,#7c3aed,#a78bfa); }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 10px; }
+    .card-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
+    .card-desc { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 3px; line-height: 1.4; }
+    .icon-chip { width: 38px; height: 38px; border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: -3px 3px 8px rgba(0,0,0,0.12),2px -2px 6px rgba(255,255,255,0.85); flex-shrink: 0; }
+    .icon-chip i { font-size: 20px; line-height: 1; }
+    .ic-teal   { background: linear-gradient(135deg,var(--teal-l),var(--teal)); }
+    .ic-rose   { background: linear-gradient(135deg,var(--rose-l),var(--rose)); }
+    .ic-gold   { background: linear-gradient(135deg,var(--gold-l),var(--gold)); }
+    .ic-green  { background: linear-gradient(135deg,#4ade80,#22c55e); }
+    .ic-violet { background: linear-gradient(135deg,#a78bfa,#7c3aed); }
+    .ic-red    { background: linear-gradient(135deg,#f87171,#ef4444); }
+    .card-value { font-size: 40px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
+    .card-sub { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .card-sub b { color: var(--text); font-weight: 700; }
+
+    .status-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+    .pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; }
+    .pill-ok   { background: rgba(34,197,94,0.15); color: #15803d; }
+    .pill-warn { background: rgba(248,113,113,0.15); color: #b91c1c; }
+    .pill-unk  { background: rgba(201,168,76,0.15); color: #92400e; }
+    .status-label { font-size: 16px; font-weight: 700; }
+
+    .ports-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .port-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; font-family: 'DM Mono', monospace; }
+    .port-ok    { background: rgba(34,197,94,0.12); color: #15803d; }
+    .port-alert { background: rgba(239,68,68,0.12); color: #b91c1c; }
+
+    /* --- TICKER PRO INFINI --- */
+    #timeline-inline {
+      height: 45px;
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+    }
+    .tl-wrapper {
+      position: absolute;
+      width: 100%;
+      will-change: transform;
+    }
+    .tl-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 5px 0;
+      height: 45px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    body.dark .tl-item { border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .tl-dot-teal   { background: var(--teal); box-shadow: 0 0 6px rgba(45,125,111,0.5); }
+    .tl-dot-rose   { background: var(--rose); box-shadow: 0 0 6px rgba(224,90,122,0.5); }
+    .tl-dot-gold   { background: var(--gold); box-shadow: 0 0 6px rgba(201,168,76,0.5); }
+    .tl-dot-purple { background: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,0.5); }
+    .tl-dot-red    { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+    .tl-dot-gray   { background: var(--muted); }
+    .tl-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+    .tl-content { flex: 1; min-width: 0; }
+    .tl-title { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tl-detail { font-size: 10px; color: var(--muted); margin-top: 1px; font-family: 'DM Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tl-time { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); flex-shrink: 0; text-align: right; min-width: 56px; }
+    .tl-empty { padding: 12px 0; color: var(--muted); font-size: 12px; }
+
+    .footer-bar { display: flex; justify-content: center; margin-top: 4px; }
+    .footer-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 22px; background: var(--card); border-radius: 50px; box-shadow: var(--shadow-out); font-size: 11.5px; color: var(--muted); font-weight: 500; }
+
+    .skel { display: inline-block; width: 90px; height: 38px; background: linear-gradient(90deg,rgba(128,128,128,0.06) 25%,rgba(128,128,128,0.12) 50%,rgba(128,128,128,0.06) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .spinning { display: inline-block; animation: spin 0.8s linear infinite; }
+
+    .bouncer-status { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .bouncer-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .bouncer-active   { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.6); animation: pulse-green 2s infinite; }
+    .bouncer-inactive { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.6); }
+    .bouncer-unknown  { background: var(--muted); }
+
+    .tg-toggle { position:relative; display:inline-block; width:36px; height:20px; cursor:pointer; }
+    .tg-toggle input { opacity:0; width:0; height:0; }
+    .tg-slider { position:absolute; inset:0; background:var(--muted); border-radius:20px; transition:background 0.2s; }
+    .tg-slider:before { content:""; position:absolute; width:14px; height:14px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform 0.2s; }
+    .tg-toggle input:checked + .tg-slider { background:#22c55e; }
+    .tg-toggle input:checked + .tg-slider:before { transform:translateX(16px); }
+    @keyframes pulse-green { 0%,100%{box-shadow:0 0 8px rgba(34,197,94,0.6)} 50%{box-shadow:0 0 14px rgba(34,197,94,0.9)} }
+  </style>
+</head>
+<body>
+<main class="main">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-icon"><i class="ph-fill ph-shield-star" style="font-size:24px;"></i></div>
+      <div>
+        <h1>VPS Dashboard</h1>
+        <div class="header-sub" id="header-sub">Chargement…</div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;justify-content:center;">
+      <div class="badge" id="badge-ip" style="font-size:14px;padding:9px 24px;font-weight:700;gap:12px;">
+        <i class="ph-fill ph-shield" style="font-size:14px;"></i> IP Serveur : <span id="val-ip" style="font-size:22px;font-weight:800;letter-spacing:-0.5px;">—</span>
+        <span style="width:1px;background:rgba(0,0,0,0.1);align-self:stretch;margin:0 4px;"></span>
+        <div class="dot" id="status-dot"></div>
+        <span id="status-txt" style="font-size:12px;font-weight:600;">Connexion…</span>
+        <span class="countdown" id="countdown" style="font-size:11px;">30s</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-icon" id="btn-refresh" onclick="refresh()" title="Actualiser"><i id="refresh-icon" class="ph ph-arrows-clockwise"></i></button>
+      <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion"><i class="ph ph-power"></i></button>
+      <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Thème"><i id="theme-icon" class="ph ph-moon"></i></button>
+    </div>
+  </div>
+
+  <div class="score-bar" id="score-bar">
+    <div style="display:flex;align-items:flex-start;gap:24px;flex-shrink:0;min-width:0;">
+        <img id="mascot" src="/mascot-dark.png" style="height:80px;width:auto;object-fit:contain;flex-shrink:0;align-self:center;display:none;" alt="">
+      <div class="score-ring">
+        <canvas id="donut-score" width="80" height="80"></canvas>
+        <div class="score-ring-val"><span class="score-num" id="score-num">—</span></div>
+      </div>
+      <div class="score-info">
+        <div class="score-label" id="score-label">Chargement…</div>
+        <div class="score-issues" id="score-issues"></div>
+      </div>
+    </div>
+    <div style="width:1px;background:rgba(0,0,0,0.08);align-self:stretch;margin:0 24px;flex-shrink:0;"></div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px;"><i class="ph ph-list-bullets" style="font-size:13px;margin-right:4px;"></i> Événements récents</div>
+      <div id="timeline-inline" style="width:100%;"></div>
+    </div>
+    <div style="width:1px;background:rgba(0,0,0,0.08);align-self:stretch;margin:0 24px;flex-shrink:0;"></div>
+    <div style="flex-shrink:0;display:flex;flex-direction:column;gap:14px;min-width:160px;padding-right:16px;">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:0px;"><i class="ph-fill ph-telegram-logo" style="font-size:13px;margin-right:4px;"></i> Alertes Telegram</div>
+      <div id="tg-not-configured" style="display:none;">
+        <span style="font-size:11px;color:var(--muted);">Non configuré</span>
+      </div>
+      <div id="tg-toggles" style="display:flex;flex-direction:row;gap:24px;align-items:center;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Rapport 07h00</span>
+          <label class="tg-toggle">
+            <input type="checkbox" id="tg-report" onchange="toggleTelegram('report',this.checked)">
+            <span class="tg-slider"></span>
+          </label>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Alerte SSH</span>
+          <label class="tg-toggle">
+            <input type="checkbox" id="tg-ssh" onchange="toggleTelegram('ssh',this.checked)">
+            <span class="tg-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid4">
+    <div class="card a-rose" id="card-endlessh">
+      <div class="card-header">
+        <div><div class="card-label">Endlessh</div><div class="card-desc">Piège les bots SSH port 22</div></div>
+        <div class="icon-chip ic-rose"><i class="ph-fill ph-bug-beetle"></i></div>
+      </div>
+      <div class="card-value" id="val-endlessh-total"><span class="skel"></span></div>
+      <div class="card-sub">bots piégés <b>total</b></div>
+      <div class="card-sub" style="margin-top:4px" id="sub-endlessh">24h : —</div>
+      <div class="card-sub" style="margin-top:4px" id="sub-endlessh-duration">Durée moy. : —</div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-label">CrowdSec IPS</div><div class="card-desc">Bans actifs & alertes</div></div>
+        <div class="icon-chip ic-teal"><i class="ph-fill ph-shield-check"></i></div>
+      </div>
+      <div class="card-value" id="val-crowdsec"><span class="skel"></span></div>
+      <div class="card-sub">IP bannies <b>actives</b></div>
+      <div class="card-sub" style="margin-top:4px" id="sub-crowdsec">Alertes 24h : —</div>
+    </div>
+    <div class="card" id="card-bouncer">
+      <div class="card-header">
+        <div><div class="card-label">CrowdSec Bouncer</div><div class="card-desc">Applique les bans iptables</div></div>
+        <div class="icon-chip ic-green"><i class="ph-fill ph-lightning"></i></div>
+      </div>
+      <div class="bouncer-status">
+        <div class="bouncer-dot bouncer-unknown" id="bouncer-dot"></div>
+        <span class="status-label" id="val-bouncer">—</span>
+      </div>
+      <div class="card-sub" style="margin-top:10px" id="sub-bouncer">Sans le bouncer, les IPs ne sont pas bannies</div>
+    </div>
+    <div class="card a-teal" id="card-system">
+      <div class="card-header">
+        <div class="card-label">Système</div>
+        <div class="icon-chip ic-teal"><i class="ph-fill ph-cpu"></i></div>
+      </div>
+      <div style="display:flex;justify-content:space-around;align-items:center;padding:8px 0 4px;gap:8px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div style="position:relative;width:88px;height:88px">
+            <canvas id="donut-cpu" width="88" height="88"></canvas>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <span style="font-size:18px;font-weight:800;letter-spacing:-1px" id="sys-cpu">—</span>
+              <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">CPU</span>
+            </div>
+          </div>
+          <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-cpu-cores">—</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div style="position:relative;width:88px;height:88px">
+            <canvas id="donut-mem" width="88" height="88"></canvas>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <span style="font-size:18px;font-weight:800;letter-spacing:-1px" id="sys-mem">—</span>
+              <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">RAM</span>
+            </div>
+          </div>
+          <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-mem-total">—</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div style="position:relative;width:88px;height:88px">
+            <canvas id="donut-disk" width="88" height="88"></canvas>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <span style="font-size:18px;font-weight:800;letter-spacing:-1px" id="sys-disk">—</span>
+              <span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Disque</span>
+            </div>
+          </div>
+          <span style="font-size:11px;color:var(--muted);font-weight:600" id="sys-disk-total">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid4">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">UFW Firewall</div>
+        <div class="icon-chip ic-gold"><i class="ph-fill ph-fire"></i></div>
+      </div>
+      <div class="card-value" id="val-ufw"><span class="skel"></span></div>
+      <div class="card-sub">blocages <b>totaux</b></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-label">Auditd</div><div class="card-desc">Commandes sudo aujourd'hui</div></div>
+        <div class="icon-chip ic-teal"><i class="ph-fill ph-clipboard-text"></i></div>
+      </div>
+      <div class="card-value" id="val-audit"><span class="skel"></span></div>
+      <div class="card-sub">escalades <b>aujourd'hui</b></div>
+    </div>
+    <div class="card" id="card-rkhunter">
+      <div class="card-header">
+        <div><div class="card-label">rkhunter</div><div class="card-desc">Rootkits & backdoors</div></div>
+        <div class="icon-chip ic-green"><i class="ph-fill ph-magnifying-glass"></i></div>
+      </div>
+      <div class="status-row">
+        <span class="status-label" id="val-rkhunter">—</span>
+        <span class="pill pill-unk" id="pill-rkhunter">—</span>
+      </div>
+      <div class="card-sub" style="margin-top:12px" id="sub-rkhunter">Dernier scan : —</div>
+    </div>
+    <div class="card" id="card-aide">
+      <div class="card-header">
+        <div><div class="card-label">AIDE File Integrity</div><div class="card-desc">Hash SHA512 des binaires</div></div>
+        <div class="icon-chip ic-violet"><i class="ph-fill ph-lock-key"></i></div>
+      </div>
+      <div class="status-row">
+        <span class="status-label" id="val-aide">—</span>
+        <span class="pill pill-unk" id="pill-aide">—</span>
+      </div>
+      <div class="card-sub" style="margin-top:12px" id="sub-aide">Dernier scan : —</div>
+    </div>
+  </div>
+
+  <div class="grid-last">
+    <div class="card" id="card-updates">
+      <div class="card-header">
+        <div class="card-label">Mises à jour</div>
+        <div class="icon-chip ic-gold"><i class="ph-fill ph-package"></i></div>
+      </div>
+      <div class="card-value" id="val-updates"><span class="skel"></span></div>
+      <div class="card-sub" id="sub-updates">paquets <b>disponibles</b></div>
+    </div>
+    <div class="card" id="card-connections">
+      <div class="card-header">
+        <div class="card-label">Connexions TCP</div>
+        <div class="icon-chip ic-rose"><i class="ph-fill ph-arrows-left-right"></i></div>
+      </div>
+      <div class="card-value" id="val-connections"><span class="skel"></span></div>
+      <div class="card-sub">connexions <b>établies</b></div>
+    </div>
+    <div class="card" id="card-ports">
+      <div class="card-header">
+        <div><div class="card-label">Ports ouverts</div><div class="card-desc">Ports TCP en écoute</div></div>
+        <div class="icon-chip ic-green"><i class="ph-fill ph-plugs-connected"></i></div>
+      </div>
+      <div class="ports-list" id="ports-list"><div class="tl-empty">Chargement…</div></div>
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    <div class="footer-badge">
+      <i class="ph ph-clock" style="font-size:13px;"></i> Dernière mise à jour : <b id="last-update">—</b>
+      &nbsp;·&nbsp; Rafraîchissement auto toutes les 30s
+    </div>
+  </div>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const fmt = n => (n == null ? '—' : Number(n).toLocaleString('fr-FR'));
+
+function setStatus(ok) {
+  $('status-dot').className = ok ? 'dot' : 'dot error';
+  $('status-txt').textContent = ok ? 'Connecté' : 'Erreur API';
+}
+function setCard(id, cls) { const el=$(id); if(el) el.className=`card ${cls}`; }
+function setPill(id, st) {
+  const el=$(id); if(!el) return;
+  if(st==='clean')                       {el.className='pill pill-ok';   el.textContent='OK';}
+  else if(st==='warning'||st==='changes'){el.className='pill pill-warn'; el.textContent='ALERTE';}
+  else                                   {el.className='pill pill-unk';  el.textContent='—';}
+}
+function startCountdown() {
+  clearInterval(cdTimer); countdown=30;
+  cdTimer=setInterval(()=>{countdown=Math.max(0,countdown-1);$('countdown').textContent=`${countdown}s`;},1000);
+}
+
+
+async function loadTelegramStatus() {
+  try {
+    const res = await fetch('/api/telegram/status', { cache:'no-store', headers:{'Authorization':AUTH} });
+    if (!res.ok) return;
+    const d = await res.json();
+    if (!d.configured) {
+      const tog = document.getElementById('tg-toggles');
+      const nc = document.getElementById('tg-not-configured');
+      if (tog) tog.style.display = 'none';
+      if (nc) nc.style.display = 'block';
+    } else {
+      const report = document.getElementById('tg-report');
+      const ssh = document.getElementById('tg-ssh');
+      if (report) report.checked = d.report;
+      if (ssh) ssh.checked = d.ssh;
+    }
+  } catch(e) { console.error('loadTelegramStatus:', e); }
+}
+
+async function toggleTelegram(type, enabled) {
+  try {
+    const res = await fetch('/api/telegram/toggle', {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Authorization': AUTH, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type })
+    });
+    const d = await res.json();
+    if (!d.ok) { console.error('Toggle failed:', d.error); loadTelegramStatus(); }
+  } catch(e) { loadTelegramStatus(); }
+}
+
+function updateScore(sc) {
+  if(!sc) return;
+  const num=sc.score??0;
+  $('score-num').textContent=num;
+  const colors={excellent:'#22c55e',good:'#388042',warning:'#c9a84c',critical:'#ef4444'};
+  const col=colors[sc.level]||'#22c55e';
+  if(donutScore){
+    donutScore.data.datasets[0].data=[num,100-num];
+    donutScore.data.datasets[0].backgroundColor=[col,isDark()?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)'];
+    donutScore.update();
+  }
+  $('score-num').style.color=col;
+  $('score-label').textContent=sc.label||'—';
+  const mascot = document.getElementById('mascot');
+  if (mascot) {
+    mascot.style.display = num === 100 ? 'block' : 'none';
+    if (num === 100) mascot.src = isDark() ? '/mascot-dark.png' : '/mascot-light.png';
+  }
+  const el=$('score-issues'); el.innerHTML='';
+  if(!sc.issues||sc.issues.length===0){
+    el.innerHTML='<span class="score-ok">✅ Aucun problème détecté</span>';
+  } else {
+    sc.issues.forEach(i=>{
+      const p=document.createElement('span');
+      p.className=`issue-pill issue-${i.sev}`; p.textContent=i.msg; el.appendChild(p);
+    });
+  }
+}
+
+function updateBouncer(b) {
+  if(!b) return;
+  const st=b.status||'unknown';
+  const dot=$('bouncer-dot'), val=$('val-bouncer'), sub=$('sub-bouncer');
+  dot.className='bouncer-dot';
+  if(st==='active'){
+    dot.classList.add('bouncer-active'); val.textContent='✅ Actif';
+    sub.textContent='Les bans sont appliqués en temps réel'; setCard('card-bouncer','a-green');
+  } else if(st==='inactive'||st==='failed'||st==='dead'){
+    dot.classList.add('bouncer-inactive'); val.textContent='❌ Inactif';
+    sub.textContent='⚠️ CrowdSec détecte mais ne bannit PAS'; setCard('card-bouncer','a-red');
+  } else {
+    dot.classList.add('bouncer-unknown'); val.textContent='❓ Inconnu';
+    sub.textContent='Statut non déterminé';
+  }
+}
+
+function updatePorts(op) {
+  if(!op) return;
+  const list=$('ports-list'), ports=op.ports||[];
+  if(ports.length===0){list.innerHTML='<div class="tl-empty">Aucun port détecté</div>'; return;}
+  list.innerHTML=ports.map(p=>`<span class="port-chip ${p.expected?'port-ok':'port-alert'}">${p.expected?'●':'⚠'} ${p.port}</span>`).join('');
+  setCard('card-ports',op.alert?'a-red':'a-green');
+}
+
+async function refreshTimeline() {
+  try {
+    const res=await fetch('/api/timeline',{cache:'no-store',headers:{'Authorization':AUTH}});
+    if(!res.ok) return;
+    renderTimeline(await res.json());
+  } catch(e){}
+}
+
+// --- LOGIQUE TICKER DYNAMIQUE PRO ---
+function renderTimeline(events) {
+  const list = $('timeline-inline'); if (!list) return;
+  if (!events || events.length === 0) {
+    list.innerHTML = '<div class="tl-empty">Aucun événement récent</div>'; return;
+  }
+  
+  const cm = {teal:'teal', rose:'rose', gold:'gold', purple:'purple', red:'red'};
+  const itemCount = events.length;
+  
+  const drawItem = (e) => `
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-${cm[e.color]||'gray'}"></div>
+      <div class="tl-icon">${e.icon||'•'}</div>
+      <div class="tl-content">
+        <div class="tl-title">${e.title||'—'}</div>
+        <div class="tl-detail">${e.detail||''}${(e.count||0)>1?`<span style="margin-left:6px;padding:1px 7px;border-radius:10px;background:rgba(45,125,111,0.15);color:var(--teal);font-size:10px;font-weight:700">${e.count}×</span>`:''}</div>
+      </div>
+      <div class="tl-time">${e.time||'—'}</div>
+    </div>`;
+
+  // Clone pour boucle infinie
+  const mainContent = events.map(e => drawItem(e)).join('');
+  const cloneFirst = drawItem(events[0]);
+  list.innerHTML = `<div id="tl-moving-box" class="tl-wrapper">${mainContent}${cloneFirst}</div>`;
+
+  // Animation dynamique
+  const duration = itemCount * 4; // 4s par news
+  const stepPct = 100 / itemCount;
+  const pausePct = stepPct * 0.8;
+  
+  const styleId = 'dynamic-timeline-style';
+  let styleEl = $(styleId) || document.createElement('style');
+  styleEl.id = styleId;
+  
+  let keyframes = `@keyframes scrollInfinitePro {`;
+  for(let i = 0; i <= itemCount; i++) {
+    let startStep = i * stepPct;
+    let stopStep = startStep + (i < itemCount ? pausePct : 0);
+    let y = i * 45;
+    keyframes += `${startStep}% { transform: translateY(-${y}px); }`;
+    if(i < itemCount) keyframes += `${stopStep}% { transform: translateY(-${y}px); }`;
+  }
+  keyframes += `}`;
+
+  styleEl.innerHTML = `
+    ${keyframes}
+    #tl-moving-box { animation: scrollInfinitePro ${duration}s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+  `;
+  if (!$(styleId)) document.head.appendChild(styleEl);
+}
+
+function updateCards(d) {
+  const e=d.endlessh||{}, c=d.crowdsec||{}, u=d.ufw||{}, a=d.auditd||{};
+  const rk=d.rkhunter||{}, ai=d.aide||{}, s=d.system||{};
+  const mem=s.memory||{}, dsk=s.disk||{};
+
+  updateScore(d.score);
+
+  $('val-endlessh-total').textContent=fmt(e.total);
+  $('sub-endlessh').innerHTML=`24h : <b>${fmt(e.last24h)}</b>`;
+  $('sub-endlessh-duration').innerHTML=`Durée moy. : <b>${e.avg_duration_fmt||'—'}</b>`;
+  setCard('card-endlessh',e.last24h>0?'a-green':'');
+
+  $('val-crowdsec').textContent=fmt(c.active_bans);
+  $('sub-crowdsec').innerHTML=`Alertes 24h : <b>${fmt(c.alerts_24h)}</b>`;
+
+  updateBouncer(d.bouncer);
+
+  $('val-ufw').textContent=fmt(u.total);
+  $('val-audit').textContent=fmt(a.sudo_today);
+
+  const rkSt=rk.status||'unknown';
+  $('val-rkhunter').textContent=rkSt==='clean'?'✅ Propre':rkSt==='warning'?'⚠️ Alerte':'❓ Inconnu';
+  setPill('pill-rkhunter',rkSt);
+  $('sub-rkhunter').textContent=`Dernier scan : ${rk.last_scan||'—'}`;
+  setCard('card-rkhunter',rkSt==='warning'?'a-red':'a-green');
+
+  const aiSt=ai.status||'unknown';
+  $('val-aide').textContent=aiSt==='clean'?'✅ Propre':aiSt==='changes'?'⚠️ Modifs':'❓ Inconnu';
+  setPill('pill-aide',aiSt==='changes'?'warning':aiSt);
+  $('sub-aide').textContent=`Dernier scan : ${ai.last_scan||'—'}`;
+  setCard('card-aide',aiSt==='changes'?'a-red':aiSt==='clean'?'a-green':'');
+
+  $('val-ip').textContent=s.ip||'—';
+  $('sys-mem').textContent=mem.pct!=null?`${mem.pct}%`:'—';
+  $('sys-disk').textContent=dsk.pct!=null?`${dsk.pct}%`:'—';
+  $('sys-mem-total').textContent=mem.total_mb?`${Math.round(mem.total_mb/1024*10)/10} GB`:'';
+  $('sys-disk-total').textContent=dsk.total_gb?`${dsk.total_gb} GB`:'';
+  updateDonuts(mem,dsk,s.load);
+  setCard('card-system',(parseFloat(s.load?.['1m']||99)<1&&(mem.pct||99)<80&&(dsk.pct||99)<80)?'a-green':'a-teal');
+  $('header-sub').textContent=`Uptime ${s.uptime||'—'}`;
+
+  const updCount=d.updates?.count??null;
+  $('val-updates').textContent=fmt(updCount);
+  if(updCount===0){$('sub-updates').textContent='✅ Serveur à jour'; setCard('card-updates','a-green');}
+  else{$('sub-updates').innerHTML='paquets <b>disponibles</b>'; setCard('card-updates',updCount>0?'a-gold':'');}
+
+  $('val-connections').textContent=fmt(d.connections?.established??'—');
+  setCard('card-connections',(d.connections?.established||0)>500?'a-red':'a-green');
+
+  updatePorts(d.open_ports);
+}
+
+async function refresh() {
+  const btn=$('btn-refresh'), icon=$('refresh-icon');
+  btn.classList.add('loading'); icon.className='ph ph-arrows-clockwise spinning';
+  clearTimeout(refreshTimer);
+  try {
+    const res=await fetch('/api/metrics',{cache:'no-store',headers:{'Authorization':AUTH}});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
+    updateCards(data); setStatus(true);
+    $('last-update').textContent=new Date().toLocaleTimeString('fr-FR');
+    refreshTimeline();
+  } catch(err){console.error('[VPS Monitor]',err); setStatus(false);}
+  finally {
+    btn.classList.remove('loading'); icon.className='ph ph-arrows-clockwise';
+    startCountdown(); refreshTimer=setTimeout(refresh,30_000);
+  }
+}
+
+let donutMem=null,donutDisk=null,donutCpu=null,donutScore=null;
+const isDark=()=>document.body.classList.contains('dark');
+
+function initDonuts() {
+  const mk=id=>{
+    const ctx=$(id).getContext('2d');
+    return new Chart(ctx,{type:'doughnut',data:{datasets:[{data:[0,100],backgroundColor:['#22c55e','rgba(0,0,0,0.06)'],borderWidth:0,hoverOffset:0}]},options:{cutout:'72%',responsive:false,animation:{duration:600,easing:'easeInOutQuart'},plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+  };
+  donutMem=mk('donut-mem'); donutDisk=mk('donut-disk'); donutCpu=mk('donut-cpu'); donutScore=mk('donut-score');
+}
+
+function updateDonuts(mem,dsk,load) {
+  const mp=mem.pct||0, dp=dsk.pct||0, cores=load?.cores||1;
+  const cp=Math.min(Math.round(parseFloat(load?.['1m']||0)/cores*100),100);
+  const dark=isDark(), empty=dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)';
+  const col=p=>p>85?(dark?'#ff4d6d':'#e05a7a'):p>70?(dark?'#f0b429':'#c9a84c'):(dark?'#00ff88':'#22c55e');
+  if(donutMem) {donutMem.data.datasets[0].data=[mp,100-mp];   donutMem.data.datasets[0].backgroundColor=[col(mp),empty];  donutMem.update();}
+  if(donutDisk){donutDisk.data.datasets[0].data=[dp,100-dp];  donutDisk.data.datasets[0].backgroundColor=[col(dp),empty]; donutDisk.update();}
+  if(donutCpu) {donutCpu.data.datasets[0].data=[cp,100-cp];   donutCpu.data.datasets[0].backgroundColor=[col(cp),empty];  donutCpu.update();}
+  $('sys-cpu').textContent=cp+'%';
+  $('sys-cpu-cores').textContent=cores+' core'+(cores>1?'s':'');
+}
+
+const AUTH=sessionStorage.getItem('vps_auth');
+if(!AUTH){window.location.href='/login.html';}
+
+const DARK_KEY='vps_theme_dark';
+function applyTheme(dark) {
+  document.body.classList.toggle('dark',dark);
+  const btn=$('btn-theme'); if(btn){ const ic=$('theme-icon'); if(ic) ic.className=dark?'ph ph-sun':'ph ph-moon'; }
+  const mascot = document.getElementById('mascot');
+  if (mascot && mascot.style.display !== 'none') {
+    mascot.src = dark ? '/mascot-dark.png' : '/mascot-light.png';
+  }
+  if(donutMem&&donutDisk&&donutCpu){
+    updateDonuts({pct:parseInt($('sys-mem')?.textContent)||0},{pct:parseInt($('sys-disk')?.textContent)||0},{cores:parseInt($('sys-cpu-cores')?.textContent)||1,'1m':'0'});
+  }
+}
+function toggleTheme(){const dark=!document.body.classList.contains('dark'); sessionStorage.setItem(DARK_KEY,dark?'1':'0'); applyTheme(dark);}
+function logout(){sessionStorage.removeItem('vps_auth'); window.location.href='/login.html';}
+
+let refreshTimer=null, countdown=30, cdTimer=null;
+initDonuts();
+applyTheme(sessionStorage.getItem(DARK_KEY)==='1');
+refresh();
+loadTelegramStatus();
+</script>
+</body>
+</html>

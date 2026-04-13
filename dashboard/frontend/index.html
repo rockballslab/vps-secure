@@ -99,14 +99,37 @@
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 10px; }
     .card-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
     .card-desc { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 3px; line-height: 1.4; }
-    .icon-chip { width: 38px; height: 38px; border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: -3px 3px 8px rgba(0,0,0,0.12),2px -2px 6px rgba(255,255,255,0.85); flex-shrink: 0; }
-    .icon-chip i { font-size: 20px; line-height: 1; }
-    .ic-teal   { background: linear-gradient(135deg,var(--teal-l),var(--teal)); }
-    .ic-rose   { background: linear-gradient(135deg,var(--rose-l),var(--rose)); }
-    .ic-gold   { background: linear-gradient(135deg,var(--gold-l),var(--gold)); }
-    .ic-green  { background: linear-gradient(135deg,#4ade80,#22c55e); }
-    .ic-violet { background: linear-gradient(135deg,#a78bfa,#7c3aed); }
-    .ic-red    { background: linear-gradient(135deg,#f87171,#ef4444); }
+    
+    .icon-chip {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--r-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      /* Fond translucide très léger (marche sur blanc et sur noir) */
+      background: rgba(45, 125, 111, 0.12) !important;
+      border: 1px solid rgba(45, 125, 111, 0.2) !important;
+      box-shadow: none !important; /* On enlève l'ombre pour plus de pureté */
+    }
+
+    /* Force l'icône en Teal profond, pas de vert acide */
+    .icon-chip i {
+      font-size: 20px;
+      color: #2d7d6f !important; /* Code hex direct pour éviter les variations de variables */
+      line-height: 1;
+    }
+
+    /* On s'assure qu'aucune règle "body.dark" ne vienne écraser cela */
+    body.dark .icon-chip {
+      background: rgba(45, 125, 111, 0.2) !important;
+      border: 1px solid rgba(45, 125, 111, 0.3) !important;
+    }
+    body.dark .icon-chip i {
+      color: #2d7d6f !important;
+    }
+
     .card-value { font-size: 40px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
     .card-sub { font-size: 12px; color: var(--muted); font-weight: 500; }
     .card-sub b { color: var(--text); font-weight: 700; }
@@ -123,11 +146,28 @@
     .port-ok    { background: rgba(34,197,94,0.12); color: #15803d; }
     .port-alert { background: rgba(239,68,68,0.12); color: #b91c1c; }
 
-    .tl-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); transition: all 0.15s ease; }
+    /* --- TICKER PRO INFINI --- */
+    #timeline-inline {
+      height: 45px;
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+    }
+    .tl-wrapper {
+      position: absolute;
+      width: 100%;
+      will-change: transform;
+    }
+    .tl-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 5px 0;
+      height: 45px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
     body.dark .tl-item { border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .tl-item:last-child { border-bottom: none; }
-    .tl-item:hover { background: var(--bg); border-radius: var(--r-xs); padding-left: 8px; }
-    .tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .tl-dot-teal   { background: var(--teal); box-shadow: 0 0 6px rgba(45,125,111,0.5); }
     .tl-dot-rose   { background: var(--rose); box-shadow: 0 0 6px rgba(224,90,122,0.5); }
     .tl-dot-gold   { background: var(--gold); box-shadow: 0 0 6px rgba(201,168,76,0.5); }
@@ -136,14 +176,10 @@
     .tl-dot-gray   { background: var(--muted); }
     .tl-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
     .tl-content { flex: 1; min-width: 0; }
-    .tl-title { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .tl-detail { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .tl-time { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); flex-shrink: 0; text-align: right; }
+    .tl-title { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tl-detail { font-size: 10px; color: var(--muted); margin-top: 1px; font-family: 'DM Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tl-time { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); flex-shrink: 0; text-align: right; min-width: 56px; }
     .tl-empty { padding: 12px 0; color: var(--muted); font-size: 12px; }
-    #timeline-inline .tl-item { padding: 5px 0; }
-    #timeline-inline .tl-title { font-size: 12px; }
-    #timeline-inline .tl-detail { font-size: 10px; }
-    #timeline-inline .tl-time { font-size: 10px; min-width: 56px; }
 
     .footer-bar { display: flex; justify-content: center; margin-top: 4px; }
     .footer-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 22px; background: var(--card); border-radius: 50px; box-shadow: var(--shadow-out); font-size: 11.5px; color: var(--muted); font-weight: 500; }
@@ -159,7 +195,6 @@
     .bouncer-inactive { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.6); }
     .bouncer-unknown  { background: var(--muted); }
 
-    /* Toggle Telegram */
     .tg-toggle { position:relative; display:inline-block; width:36px; height:20px; cursor:pointer; }
     .tg-toggle input { opacity:0; width:0; height:0; }
     .tg-slider { position:absolute; inset:0; background:var(--muted); border-radius:20px; transition:background 0.2s; }
@@ -172,12 +207,11 @@
 <body>
 <main class="main">
 
-  <!-- Header -->
   <div class="header">
     <div class="header-left">
       <div class="logo-icon"><i class="ph-fill ph-shield-star" style="font-size:24px;"></i></div>
       <div>
-        <h1>VPS Dashboard</h1>
+        <h1>VPS Cockpit Surveillance</h1>
         <div class="header-sub" id="header-sub">Chargement…</div>
       </div>
     </div>
@@ -197,7 +231,6 @@
     </div>
   </div>
 
-  <!-- Score + Timeline -->
   <div class="score-bar" id="score-bar">
     <div style="display:flex;align-items:flex-start;gap:24px;flex-shrink:0;min-width:0;">
         <img id="mascot" src="/mascot-dark.png" style="height:80px;width:auto;object-fit:contain;flex-shrink:0;align-self:center;display:none;" alt="">
@@ -240,7 +273,6 @@
     </div>
   </div>
 
-  <!-- Row 1 -->
   <div class="grid4">
     <div class="card a-rose" id="card-endlessh">
       <div class="card-header">
@@ -312,7 +344,6 @@
     </div>
   </div>
 
-  <!-- Row 2 -->
   <div class="grid4">
     <div class="card">
       <div class="card-header">
@@ -354,7 +385,6 @@
     </div>
   </div>
 
-  <!-- Row 3 -->
   <div class="grid-last">
     <div class="card" id="card-updates">
       <div class="card-header">
@@ -506,13 +536,17 @@ async function refreshTimeline() {
   } catch(e){}
 }
 
+// --- LOGIQUE TICKER DYNAMIQUE PRO ---
 function renderTimeline(events) {
-  const list=$('timeline-inline'); if(!list) return;
-  if(!events||events.length===0){
-    list.innerHTML='<div class="tl-empty">Aucun événement récent</div>'; return;
+  const list = $('timeline-inline'); if (!list) return;
+  if (!events || events.length === 0) {
+    list.innerHTML = '<div class="tl-empty">Aucun événement récent</div>'; return;
   }
-  const cm={teal:'teal',rose:'rose',gold:'gold',purple:'purple',red:'red'};
-  list.innerHTML=events.slice(0,5).map(e=>`
+  
+  const cm = {teal:'teal', rose:'rose', gold:'gold', purple:'purple', red:'red'};
+  const itemCount = events.length;
+  
+  const drawItem = (e) => `
     <div class="tl-item">
       <div class="tl-dot tl-dot-${cm[e.color]||'gray'}"></div>
       <div class="tl-icon">${e.icon||'•'}</div>
@@ -521,7 +555,37 @@ function renderTimeline(events) {
         <div class="tl-detail">${e.detail||''}${(e.count||0)>1?`<span style="margin-left:6px;padding:1px 7px;border-radius:10px;background:rgba(45,125,111,0.15);color:var(--teal);font-size:10px;font-weight:700">${e.count}×</span>`:''}</div>
       </div>
       <div class="tl-time">${e.time||'—'}</div>
-    </div>`).join('');
+    </div>`;
+
+  // Clone pour boucle infinie
+  const mainContent = events.map(e => drawItem(e)).join('');
+  const cloneFirst = drawItem(events[0]);
+  list.innerHTML = `<div id="tl-moving-box" class="tl-wrapper">${mainContent}${cloneFirst}</div>`;
+
+  // Animation dynamique
+  const duration = itemCount * 4; // 4s par news
+  const stepPct = 100 / itemCount;
+  const pausePct = stepPct * 0.8;
+  
+  const styleId = 'dynamic-timeline-style';
+  let styleEl = $(styleId) || document.createElement('style');
+  styleEl.id = styleId;
+  
+  let keyframes = `@keyframes scrollInfinitePro {`;
+  for(let i = 0; i <= itemCount; i++) {
+    let startStep = i * stepPct;
+    let stopStep = startStep + (i < itemCount ? pausePct : 0);
+    let y = i * 45;
+    keyframes += `${startStep}% { transform: translateY(-${y}px); }`;
+    if(i < itemCount) keyframes += `${stopStep}% { transform: translateY(-${y}px); }`;
+  }
+  keyframes += `}`;
+
+  styleEl.innerHTML = `
+    ${keyframes}
+    #tl-moving-box { animation: scrollInfinitePro ${duration}s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+  `;
+  if (!$(styleId)) document.head.appendChild(styleEl);
 }
 
 function updateCards(d) {

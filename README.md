@@ -6,7 +6,7 @@
 
 > "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un VPS, et que tu tiens à tes données, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**
 > 
-> 15 minutes, une seule commande. Ton serveur passe du stade *cible facile*... à *cible qui n'en vaut pas la peine*."
+> #15 minutes#, une seule commande. Ton serveur passe du stade *cible facile*... à *cible qui n'en vaut pas la peine*."
 
 
 ---
@@ -25,7 +25,7 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 
 **Choisis VPS-SECURE pour que ton serveur devienne une forteresse prête à accueillir tes services en toute sérennité.**
 
-> 🔒 Score Lynis **81/100**.
+> **🔒 Score Lynis** #81/100#.
 >
 > +50% vs un VPS Ubuntu standard. Vérifiable en 2 min après installation.
 

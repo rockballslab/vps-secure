@@ -123,11 +123,11 @@
 
     /* On s'assure qu'aucune règle "body.dark" ne vienne écraser cela */
     body.dark .icon-chip {
-      background: rgba(45, 125, 111, 0.2) !important;
-      border: 1px solid rgba(45, 125, 111, 0.3) !important;
+      background: rgba(0, 255, 136, 0.1) !important;
+      border: 1px solid rgba(0, 255, 136, 0.2) !important;
     }
     body.dark .icon-chip i {
-      color: #2d7d6f !important;
+      color: #00ff88 !important;
     }
 
     .card-value { font-size: 40px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
@@ -170,6 +170,13 @@
     .tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     /* Synchronisé avec le vert du Bouncer (#22c55e) */
     .tl-dot-teal   { background: #22c55e !important; box-shadow: 0 0 8px rgba(34, 197, 94, 0.6) !important; }
+    
+    /* Harmonisation du badge multiplicateur (ex: 3x) dans le JS */
+    #timeline-inline span[style*="background:rgba(45,125,111,0.15)"] {
+        background: rgba(34, 197, 94, 0.15) !important;
+        color: #22c55e !important;
+    }
+      
     .tl-dot-rose   { background: var(--rose); box-shadow: 0 0 6px rgba(224,90,122,0.5); }
     .tl-dot-gold   { background: var(--gold); box-shadow: 0 0 6px rgba(201,168,76,0.5); }
     .tl-dot-purple { background: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,0.5); }

@@ -200,6 +200,7 @@
   <!-- Score + Timeline -->
   <div class="score-bar" id="score-bar">
     <div style="display:flex;align-items:flex-start;gap:24px;flex-shrink:0;min-width:0;">
+        <img id="mascot" src="/mascot-dark.png" style="height:80px;width:auto;object-fit:contain;flex-shrink:0;align-self:center;display:none;" alt="">
       <div class="score-ring">
         <canvas id="donut-score" width="80" height="80"></canvas>
         <div class="score-ring-val"><span class="score-num" id="score-num">—</span></div>
@@ -456,6 +457,11 @@ function updateScore(sc) {
   }
   $('score-num').style.color=col;
   $('score-label').textContent=sc.label||'—';
+  const mascot = document.getElementById('mascot');
+  if (mascot) {
+    mascot.style.display = num === 100 ? 'block' : 'none';
+    if (num === 100) mascot.src = isDark() ? '/mascot-dark.png' : '/mascot-light.png';
+  }
   const el=$('score-issues'); el.innerHTML='';
   if(!sc.issues||sc.issues.length===0){
     el.innerHTML='<span class="score-ok">✅ Aucun problème détecté</span>';
@@ -618,6 +624,10 @@ const DARK_KEY='vps_theme_dark';
 function applyTheme(dark) {
   document.body.classList.toggle('dark',dark);
   const btn=$('btn-theme'); if(btn){ const ic=$('theme-icon'); if(ic) ic.className=dark?'ph ph-sun':'ph ph-moon'; }
+  const mascot = document.getElementById('mascot');
+  if (mascot && mascot.style.display !== 'none') {
+    mascot.src = dark ? '/mascot-dark.png' : '/mascot-light.png';
+  }
   if(donutMem&&donutDisk&&donutCpu){
     updateDonuts({pct:parseInt($('sys-mem')?.textContent)||0},{pct:parseInt($('sys-disk')?.textContent)||0},{cores:parseInt($('sys-cpu-cores')?.textContent)||1,'1m':'0'});
   }

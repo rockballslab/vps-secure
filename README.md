@@ -76,6 +76,11 @@ Avant de commencer, tu as besoin de :
 
 ---
 
+ <p align="center">
+  <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">
+</p>
+
+---
 
 ## Installation
 

@@ -424,13 +424,13 @@ bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main
 
 
 <p align="center">
-  <img src="./dashboard/dashboard-preview.jpg" alt="VPS Secure Dashboard" width="100%">
+  <img src="./dashboard/dashboard-preview.png" alt="VPS Secure Dashboard" width="100%">
 </p>
 
 
 Le script te demande un domaine et un mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.
  
-> Prérequis : un enregistrement DNS A pointant sur l'IP de ton VPS · ports 80/443 déjà ouverts par `install.sh`
+> Prérequis : un enregistrement DNS A pointant sur l'IP de ton VPS ·
 
 > 💡 Pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`
 

@@ -416,6 +416,12 @@ ssh monvps
  
  Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
 
+
+ <p align="center">
+  <img src="./dashboard/dashboard-preview.png" alt="VPS Secure Dashboard" width="100%">
+</p>
+
+
 > Design system complet clair/sombre
 > 
 > 11 métriques temps réel avec score de santé
@@ -437,12 +443,6 @@ ssh monvps
 bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)
 ```
 > 🔐 **`install-dashboard-secure.sh`** vérifie la signature GPG de `install-dashboard.sh` avant de le lancer - garantit l'intégrité du script.
-
-
-
-<p align="center">
-  <img src="./dashboard/dashboard-preview.png" alt="VPS Secure Dashboard" width="100%">
-</p>
 
 
 Le script te demande un domaine et un mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.

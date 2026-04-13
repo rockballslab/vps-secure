@@ -190,7 +190,9 @@ Chaque composant retourne `[PASS]` ou `[FAIL]` avec la raison. Tout doit être P
   ✅ Installation 100% complète - tous les composants sont opérationnels.
 ```
 
-C'est tout. Le VPS est SÉCURISÉ. C'est officiellement une FORTERESSE.
+C'est TOUT. Ça a pris moins de 15mn en automatique.
+
+Ton VPS est SÉCURISÉ. C'est officiellement une FORTERESSE.
 
 ---
 

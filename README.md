@@ -170,6 +170,9 @@ Le script t'a affiché cette commande à la fin - lance-la maintenant :
 sudo vps-secure-verify
 ```
 
+Chaque composant retourne `[PASS]` ou `[FAIL]` avec la raison. Tout doit être PASS.
+
+
 ```
   [PASS] SSH          : port 2222 actif · root désactivé · PasswordAuth off · socket override OK
   [PASS] UFW          : actif · ports 2222/80/443 ouverts · règle NAT Docker présente · logging medium
@@ -186,8 +189,6 @@ sudo vps-secure-verify
 
   ✅ Installation 100% complète - tous les composants sont opérationnels.
 ```
-
-Chaque composant retourne `[PASS]` ou `[FAIL]` avec la raison. Tout doit être PASS.
 
 C'est tout. Le VPS est SÉCURISÉ. C'est officiellement une FORTERESSE.
 

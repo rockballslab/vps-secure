@@ -25,7 +25,7 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 
 **Choisis VPS-SECURE pour que ton serveur devienne une forteresse prête à accueillir tes services en toute sérennité.**
 
-> 🔒 Score Lynis 81/100. +50% vs un VPS Ubuntu standard. Vérifiable en 2 min après installation.
+> 🔒 Score Lynis **81/100**. +50% vs un VPS Ubuntu standard. Vérifiable en 2 min après installation.
 
 ---
 

@@ -20,6 +20,8 @@ curl -fsSL "$REPO/api/app.py"               -o "$DEST/api/app.py"
 curl -fsSL "$REPO/api/Dockerfile"           -o "$DEST/api/Dockerfile"
 curl -fsSL "$REPO/frontend/index.html"      -o "$DEST/frontend/index.html"
 curl -fsSL "$REPO/frontend/login.html"      -o "$DEST/frontend/login.html"
+curl -fsSL "$REPO/frontend/mascot-dark.png" -o "$DEST/frontend/mascot-dark.png" 2>/dev/null || true
+curl -fsSL "$REPO/frontend/mascot-light.png" -o "$DEST/frontend/mascot-light.png" 2>/dev/null || true
 curl -fsSL "$REPO/docker-compose.yml"       -o "$DEST/docker-compose.yml"
 curl -fsSL "$REPO/Caddyfile"                -o "$DEST/Caddyfile"
 

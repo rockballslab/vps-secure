@@ -42,7 +42,7 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 
 ## Exemple du Dashboard 24h aprés l'installation de VPS-SECURE sur un serveur vierge
 
-Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
+Inclus un dashboard web complet pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
 
 
  <p align="center">

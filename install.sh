@@ -484,6 +484,7 @@ if [[ -f /etc/crowdsec/acquis.yaml ]]; then
     if ! grep -q "/var/log/auth.log" /etc/crowdsec/acquis.yaml; then
         cat >> /etc/crowdsec/acquis.yaml << 'CSEOF'
 ---
+source: file
 filenames:
   - /var/log/auth.log
 labels:
@@ -495,13 +496,26 @@ CSEOF
     fi
 fi
 
+# Vérifier que auth.log existe — absent si rsyslog non installé (journald seul)
+# Sans auth.log, CrowdSec est silencieusement aveugle aux attaques SSH
+if [[ ! -f /var/log/auth.log ]]; then
+    log_warn "⚠️  /var/log/auth.log absent — rsyslog non installé ?"
+    log_warn "   CrowdSec ne peut pas détecter les attaques SSH sans ce fichier."
+    log_warn "   Correction : sudo apt-get install -y rsyslog && sudo systemctl enable --now rsyslog"
+    _wait_dpkg
+    apt-get install -y -qq rsyslog
+    systemctl enable --now rsyslog
+    log_success "rsyslog installé — /var/log/auth.log sera disponible."
+fi
+
 # ── Fix #28 : Enregistrer le bouncer CrowdSec (génération clé API) ──
 log_info "Enregistrement du bouncer CrowdSec (génération clé API)..."
 
 # Attendre que la LAPI CrowdSec soit prête avant de générer la clé
 _wait_crowdsec_lapi() {
     local max_wait=30 elapsed=0
-    while ! cscli version &>/dev/null; do
+    # cscli lapi status fait une vraie connexion HTTP à la LAPI — contrairement à cscli version qui est purement local
+    while ! cscli lapi status &>/dev/null; do
         sleep 2; elapsed=$((elapsed + 2))
         [[ $elapsed -ge $max_wait ]] && { log_warn "LAPI CrowdSec non prête après ${max_wait}s"; return 1; }
     done
@@ -556,9 +570,6 @@ deny_log: true
 deny_log_prefix: "crowdsec: "
 supported_decisions_types:
   - ban
-blacklists_ipv4: crowdsec-blacklists
-blacklists_ipv6: crowdsec6-blacklists
-ipset_size: 65536
 iptables_chains:
   - INPUT
   - FORWARD
@@ -588,6 +599,11 @@ _crowdsec_port_verify() {
 _crowdsec_port_verify /etc/crowdsec/config.yaml "config.yaml"
 _crowdsec_port_verify /etc/crowdsec/local_api_credentials.yaml "local_api_credentials.yaml"
 _crowdsec_port_verify /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml "crowdsec-firewall-bouncer.yaml"
+
+# Redémarrer CrowdSec pour qu'il écoute sur 8081 — OBLIGATOIRE avant le restart bouncer
+# Sans ce restart, la LAPI tourne encore sur 8080 et le bouncer échoue à se connecter
+systemctl restart crowdsec
+_wait_crowdsec_lapi || true  # optionnel : non bloquant — le bouncer tentera quand même
 
 systemctl enable crowdsec-firewall-bouncer
 systemctl restart crowdsec-firewall-bouncer 2>/dev/null || true  # optionnel : le bouncer peut échouer au 1er démarrage si CrowdSec n'est pas encore prêt — vérifié par sleep+is-active ci-dessous
@@ -1425,7 +1441,7 @@ fi
 # Commande pour obtenir le digest actuel :
 #   docker pull shizunge/endlessh-go && \
 #   docker inspect --format='{{index .RepoDigests 0}}' shizunge/endlessh-go
-# Puis remplacer le tag par : shizunge/endlessh-go@sha256:XXXX
+# Puis remplacer le tag par : shizunge/endlessh-go@sha256:NOUVEAU_DIGEST
 docker run -d \
     --name endlessh \
     --restart unless-stopped \
@@ -1500,6 +1516,10 @@ BOUNCER_KEY=$(cat "$BOUNCER_KEY_FILE" 2>/dev/null) || {
 # Gestion de la chaîne iptables NAT
 # ─────────────────────────────────────────────
 init_chain() {
+    # Note : PREROUTING NAT est évalué AVANT INPUT par iptables.
+    # Les IPs SSH bannies par CrowdSec (DROP en INPUT via firewall bouncer)
+    # sont redirigées vers Endlessh (REDIRECT en PREROUTING) — intentionnel :
+    # les bots sont piégés dans le honeypot plutôt que simplement bloqués.
     iptables -t nat -N "$REDIRECT_CHAIN" 2>/dev/null || true
     if ! iptables -t nat -C PREROUTING \
          -p tcp --dport "$SSH_REAL_PORT" -j "$REDIRECT_CHAIN" 2>/dev/null; then

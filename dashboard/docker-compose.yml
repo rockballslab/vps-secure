@@ -27,6 +27,8 @@ services:
       ENDLESSH_CONTAINER: "${ENDLESSH_CONTAINER:-endlessh}"
       CROWDSEC_CONTAINER: "${CROWDSEC_CONTAINER:-crowdsec}"
       HOSTFS:             "/"
+      DASHBOARD_USER:     "admin"
+      DASHBOARD_PASS:     "${DASHBOARD_PASS:-}"
     restart: unless-stopped
 
   caddy:

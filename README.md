@@ -1,4 +1,4 @@
-**⚡ 60 bots bloqués en 24h sur un VPS standard - le tien est-il protégé ?**
+**⚡ +60 bots bloqués en 24h sur un VPS standard - le tien est-il protégé ?**
 
 # 🔐 VPS-SECURE
 

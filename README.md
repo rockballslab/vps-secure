@@ -13,6 +13,8 @@
 
 ## 🛡️ Pourquoi utiliser ce script ?
 
+Un VPS nu est une cible. VPS-Secure le transforme en serveur durci, surveillé en continu et prêt pour la production, avec un niveau de finition rarement atteint dans un script public.
+
 <p align="center">
   <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
@@ -268,15 +270,17 @@ sudo ufw allow 8080/tcp comment 'Mon application'
 
 ## 🛡️ Niveau de sécurité
 
-VPS-Secure ne “garantit” pas une sécurité absolue — aucun outil sérieux ne peut le faire. En revanche, il automatise un durcissement avancé d’Ubuntu 24.04 LTS, en appliquant une grande partie des contrôles pertinents des référentiels **CIS Benchmark Level 1** et **DISA STIG**, tout en restant utilisable sur un VPS classique.
+Un VPS nu est une cible. VPS-Secure le transforme en serveur durci, surveillé et exploitable en production, avec un niveau de finition rarement proposé dans un script public.
+
+VPS-Secure ne “garantit” pas une sécurité absolue — aucun outil sérieux ne peut le faire. En revanche, il automatise un durcissement complet et avancé d’Ubuntu 24.04 LTS, en appliquant une grande partie des contrôles pertinents des référentiels **CIS Benchmark Level 1** et **DISA STIG**, tout en restant utilisable sur un VPS classique.
 
 
 | Standard | Ce que c'est |
 |---|---|
 | CIS Benchmark L1 | Base de durcissement reconnue pour des serveurs de production |
-| DISA STIG Ubuntu 24.04 | Référentiel plus strict, orienté sécurité forte |
-| OWASP Infrastructure | Contrôles utiles sur la supply chain, les secrets, empreintes vérifiées et la journalisation |
-| Lynis Audit | **81/100** sur une installation de référence |
+| DISA STIG Ubuntu 24.04 | Un niveau de sécurité plus exigeant, inspiré des environnements les plus contrôlés |
+| OWASP Infrastructure | Une attention particulière à la supply chain, aux secrets, à la traçabilité et à l’intégrité |
+| Lynis Audit | **81/100** sur une installation de référence, signe d’un durcissement déjà très avancé |
 
 **CIS Benchmark L1** - Le CIS Benchmark du Center for Internet Security est une référence reconnue pour sécuriser les systèmes Linux.
 Le niveau L1 vise un bon équilibre entre sécurité et compatibilité, ce qui en fait une base adaptée aux serveurs de production.
@@ -290,7 +294,7 @@ VPS-Secure reprend cette logique pour aller au-delà d’un durcissement “de b
 Il attribue un score de durcissement sur 100 et met en évidence les points faibles de la configuration.
 Sur une installation de référence, VPS-Secure atteint un Lynis hardening index de **81/100**, ce qui correspond à un niveau de durcissement élevé pour un VPS public.
 
-> Ce que cela couvre concrètement
+> ⚠️ Ce que cela couvre concrètement
 >
 > Le script met en place une base de sécurité cohérente : accès SSH durci, pare-feu, détection d’intrusion, journalisation, intégrité système, mises à jour automatiques et supervision.
 > L’objectif est de transformer un VPS vierge en serveur nettement plus robuste dès l’installation.

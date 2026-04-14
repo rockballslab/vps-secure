@@ -13,6 +13,10 @@
 
 ## 🛡️ Pourquoi utiliser ce script ?
 
+<p align="center">
+  <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
+</p>
+
 > **Le constat est simple :** les protections par défaut fournies par les hébergeurs (OVH, Hostinger, Hetzner, etc.) sont **insuffisantes** pour une mise en production vraiment sécurisée.
 
 | | |
@@ -31,11 +35,6 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 
 ---
 
-<p align="center">
-  <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
-</p>
-
----
 
 ## Ce que fait `install-secure.sh`
 

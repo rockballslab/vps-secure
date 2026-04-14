@@ -52,9 +52,9 @@ Ce n’est pas un simple script d’installation : c’est une fondation de séc
 ---
 
 
-## Ce que fait `install-secure.sh`
+## Ce que fait VPS-SECURE
 
-1 commande - 15 étapes automatiques - zéro compétence technique requise.
+1 commande `install-secure.sh` - 15 étapes automatiques - zéro compétence technique requise.
 
 | # | Quoi | Pourquoi |
 |---|---|---|

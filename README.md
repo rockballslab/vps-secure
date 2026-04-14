@@ -179,6 +179,8 @@ Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 
 Aide toi du guide interactif pour copier-coller facilement les valeurs demandées
 
+Ouvrir le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html) 
+
 
  <p align="left">
   <img src="./screenshots/install_helper.png" alt="Guide Installation" width="50%">

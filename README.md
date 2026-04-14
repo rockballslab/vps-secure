@@ -42,11 +42,16 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 
 ## Exemple du Dashboard 24h aprés l'installation de VPS-SECURE sur un serveur vierge
 
-Ce n’est pas un simple script d’installation : c’est une fondation de sécurité robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.
+Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
+
 
  <p align="center">
   <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">
 </p>
+
+
+Ce n’est pas un simple script d’installation : c’est une fondation de sécurité robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.
+
 
 ---
 
@@ -454,7 +459,7 @@ ssh monvps
 
 ## Dashboard de monitoring (optionnel)
  
- Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
+Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
 
  ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)

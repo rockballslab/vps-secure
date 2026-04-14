@@ -219,7 +219,7 @@
     <div class="header-left">
       <div class="logo-icon"><i class="ph-fill ph-shield-star" style="font-size:24px;"></i></div>
       <div>
-        <h1>VPS Cockpit Surveillance</h1>
+        <h1>COCKPIT VPS-SECURE</h1>
         <div class="header-sub" id="header-sub">Chargement…</div>
       </div>
     </div>
@@ -264,7 +264,7 @@
       </div>
       <div id="tg-toggles" style="display:flex;flex-direction:row;gap:24px;align-items:center;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
-          <span style="font-size:12px;font-weight:600;color:var(--text);">Rapport 07h00</span>
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Rapport 09h00</span>
           <label class="tg-toggle">
             <input type="checkbox" id="tg-report" onchange="toggleTelegram('report',this.checked)">
             <span class="tg-slider"></span>
@@ -401,6 +401,7 @@
       </div>
       <div class="card-value" id="val-updates"><span class="skel"></span></div>
       <div class="card-sub" id="sub-updates">paquets <b>disponibles</b></div>
+      <div class="card-sub" id="sub-updates-date" style="font-size:10px; opacity:0.7; margin-top:4px;"></div>
     </div>
     <div class="card" id="card-connections">
       <div class="card-header">
@@ -422,7 +423,9 @@
   <div class="footer-bar">
     <div class="footer-badge">
       <i class="ph ph-clock" style="font-size:13px;"></i> Dernière mise à jour : <b id="last-update">—</b>
-      &nbsp;·&nbsp; Rafraîchissement auto toutes les 30s
+      &nbsp;·&nbsp; Rafraîchissement auto toutes les 30s</b>
+      &nbsp;·&nbsp; VPS-SECURE 2026</b>
+      &nbsp;·&nbsp; Tous droits réservés
     </div>
   </div>
 
@@ -600,9 +603,11 @@ function updateCards(d) {
   const e=d.endlessh||{}, c=d.crowdsec||{}, u=d.ufw||{}, a=d.auditd||{};
   const rk=d.rkhunter||{}, ai=d.aide||{}, s=d.system||{};
   const mem=s.memory||{}, dsk=s.disk||{};
+  const upd = d.updates || {};
 
   updateScore(d.score);
-
+  
+  $('sub-updates-date').textContent = "Dernier check : " + (upd.last_check || "—");
   $('val-endlessh-total').textContent=fmt(e.total);
   $('sub-endlessh').innerHTML=`24h : <b>${fmt(e.last24h)}</b>`;
   $('sub-endlessh-duration').innerHTML=`Durée moy. : <b>${e.avg_duration_fmt||'—'}</b>`;
@@ -635,12 +640,26 @@ function updateCards(d) {
   $('sys-disk-total').textContent=dsk.total_gb?`${dsk.total_gb} GB`:'';
   updateDonuts(mem,dsk,s.load);
   setCard('card-system',(parseFloat(s.load?.['1m']||99)<1&&(mem.pct||99)<80&&(dsk.pct||99)<80)?'a-green':'a-teal');
-  $('header-sub').textContent=`Uptime ${s.uptime||'—'}`;
+  $('header-sub').textContent=`En ligne depuis ${s.uptime||'—'}`;
 
-  const updCount=d.updates?.count??null;
-  $('val-updates').textContent=fmt(updCount);
-  if(updCount===0){$('sub-updates').textContent='✅ Serveur à jour'; setCard('card-updates','a-green');}
-  else{$('sub-updates').innerHTML='paquets <b>disponibles</b>'; setCard('card-updates',updCount>0?'a-gold':'');}
+  const updCount = d.updates?.count ?? null;
+  const lastCheck = d.updates?.last_check ?? 'Inconnue';
+
+  $('val-updates').textContent = fmt(updCount);
+
+  if (updCount === 0) {
+      // On met tout sur UNE SEULE ligne
+      $('sub-updates').innerHTML = `✅ Serveur à jour <span style="font-size: 0.85em; opacity: 0.8;"></span>`;
+      setCard('card-updates', 'a-green');
+  } else {
+      $('sub-updates').innerHTML = `paquets <b>disponibles</b> <span style="font-size: 0.85em; opacity: 0.8;">(${lastCheck})</span>`;
+      setCard('card-updates', updCount > 0 ? 'a-gold' : '');
+  }
+
+  // SI TU AS UN AUTRE ÉLÉMENT QUI ÉCRIT LA DATE, VIDE-LE :
+  if ($('date-check-element')) { // Remplace par l'ID qui écrit la 2ème ligne si tu le connais
+      $('date-check-element').textContent = '';
+  }
 
   $('val-connections').textContent=fmt(d.connections?.established??'—');
   setCard('card-connections',(d.connections?.established||0)>500?'a-red':'a-green');

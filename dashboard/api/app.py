@@ -65,6 +65,14 @@ def push_history(metrics: dict) -> None:
         _history.pop(0)
     _save_history()
 
+def get_last_update_date():
+    try:
+        path = "/var/lib/apt/periodic/update-success-stamp"
+        if os.path.exists(path):
+            return datetime.fromtimestamp(os.path.getmtime(path)).strftime('%d/%m/%Y %H:%M')
+        return "Inconnue"
+    except:
+        return "Erreur"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def run(cmd: list[str], timeout: int = 10) -> str:
@@ -766,7 +774,10 @@ def collect() -> dict:
         "aide":        get_aide(),
         "system":      get_system(),
         "ssh_last":    get_ssh_last(),
-        "updates":     get_updates(),
+        "updates": {
+            "count": get_updates()["count"],
+            "last_check": get_last_update_date()
+        },
         "connections": get_connections(),
         "open_ports":  get_open_ports(),
         "collected_at": int(time.time()),

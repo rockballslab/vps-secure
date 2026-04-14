@@ -217,7 +217,7 @@ Ton VPS est SÉCURISÉ. C'est officiellement une FORTERESSE.
 
 À la fin de l'installation, le script te propose de configurer deux niveaux d'alertes :
 
-- **Rapport quotidien à 07h00** - état global du serveur (CrowdSec, rkhunter, auditd)
+- **Rapport quotidien à 09h00** - état global du serveur (CrowdSec, rkhunter, auditd)
 - **Alerte immédiate** - notification Telegram à chaque connexion SSH réussie (utilisateur + IP source)
 
 **Ce dont tu as besoin :**
@@ -407,7 +407,7 @@ sudo docker ps --format "table {{.Names}}\t{{.Ports}}"
 # Tester le rapport Telegram manuellement (si Telegram a été activé)
 sudo /usr/local/bin/vps-secure-check.sh
 
-# Changer l'heure du rapport Telegram quotidien (ex: 08h00 au lieu de 07h00)
+# Changer l'heure du rapport Telegram quotidien (ex: 08h00 au lieu de 09h00)
 sudo sed -i 's/^0 [0-9]* \* \* \*/0 8 * * */' /etc/cron.d/vps-secure
 sudo cat /etc/cron.d/vps-secure  # vérifier
 

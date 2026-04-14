@@ -123,7 +123,7 @@ ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_vps
 
 Appuie sur Entrée 3 fois (pas besoin de mot de passe).
 
-Récupère la clé publique - tu en auras besoin pendant le script :
+Récupère la clé publique en lançant cette commande - tu en auras besoin pendant le script :
 ```bash
 cat ~/.ssh/id_ed25519_vps.pub
 ```

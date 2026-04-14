@@ -141,6 +141,7 @@ Le serveur va te demander un mot de passe - c'est le mot de passe root fourni pa
 > 💡 C'est la seule fois où ce mot de passe est utilisé. Après l'installation, la connexion root par mot de passe est définitivement désactivée.
 
 
+
 💡 Pour info: si tu as déjà utilisé cette IP (rebuild VPS précédent), supprime l'ancienne clé connue :
 ```bash
 ssh-keygen -R IP_DU_VPS

@@ -10,6 +10,7 @@ services:
     container_name: vps-monitor-api
     network_mode: host
     volumes:
+      - /var/lib/apt/periodic:/var/lib/apt/periodic:ro
       - /var/log:/var/log:ro
       - /var/log/vps-monitor-history.json:/var/log/vps-monitor-history.json
       - /var/run/docker.sock:/var/run/docker.sock:ro

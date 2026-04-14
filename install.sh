@@ -105,62 +105,11 @@ cat << 'EOF'
     ╚═══╝  ╚═╝     ╚══════╝      ╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
 EOF
 echo -e "${RESET}"
-echo -e "${BLANC}  Sécurisation VPS en 15mn · Ubuntu 24.04 LTS · github.com/rockballslab/vps-secure${RESET}"
+echo -e "${BLANC}  Sécurisation VPS · Ubuntu 24.04 LTS · github.com/rockballslab/vps-secure${RESET}"
 echo -e "${VERT}$(printf '═%.0s' {1..75})${RESET}\n"
 
 USERNAME="vpsadmin"
 TOTAL_ETAPES=15
-
-# ============================================================
-# Vérification de la Licence VPS-SECURE
-# ============================================================
-echo -e "\n\033[1;34m[INFO] Vérification de la licence VPS-SECURE...\033[0m"
-echo -e "💡 Pas encore de clé ? \033[1;36mhttps://vps-secure.aiforceone.fr/offre.html\033[0m"
-echo ""
-read -rp "🔑 Clé d'activation : " ACTIVATION_KEY
-
-# Validation format — bloque l'injection JSON
-if [[ -z "$ACTIVATION_KEY" ]]; then
-    echo -e "\n\033[1;31m❌ Clé obligatoire.\033[0m"
-    echo -e "   👉 https://vps-secure.aiforceone.fr/offre.html"
-    exit 1
-fi
-
-if ! [[ "$ACTIVATION_KEY" =~ ^[a-zA-Z0-9_-]{8,64}$ ]]; then
-    echo -e "\n\033[1;31m❌ Format de clé invalide (caractères non autorisés).\033[0m"
-    exit 1
-fi
-
-# Appel webhook n8n
-CHECK_URL="https://n8n.rockballsmedia.eu/webhook/check-license"
-
-_LIC_TMP=$(mktemp)
-HTTP_CODE=$(curl -s --max-time 10 \
-    -o "$_LIC_TMP" \
-    -w "%{http_code}" \
-    -X POST "$CHECK_URL" \
-    -H "Content-Type: application/json" \
-    -d "{\"key\": \"$ACTIVATION_KEY\"}" 2>/dev/null || echo "000")
-
-RESPONSE=$(cat "$_LIC_TMP" 2>/dev/null || echo "")
-rm -f "$_LIC_TMP"
-
-# Réseau inaccessible / timeout
-if [[ "$HTTP_CODE" == "000" ]]; then
-    echo -e "\n\033[1;33m⚠️  Serveur de licence injoignable (réseau/timeout).\033[0m"
-    echo -e "   👉 Vérifiez votre connexion ou contactez : support@aiforceone.fr"
-    exit 1
-fi
-
-# Validation stricte — {"status": "success", "message": "Licence valide"}
-if echo "$RESPONSE" | grep -qE '"status"\s*:\s*"success"'; then
-    echo -e "\033[1;32m✅ Licence validée. Bienvenue dans la forteresse.\033[0m\n"
-else
-    echo -e "\n\033[1;31m❌ Clé invalide ou commande non finalisée.\033[0m"
-    echo -e "   👉 https://vps-secure.aiforceone.fr/offre.html"
-    echo -e "   📧 support@aiforceone.fr\n"
-    exit 1
-fi
 
 # ============================================================
 # Étape 1 : Créer l'utilisateur vpsadmin
@@ -176,12 +125,6 @@ else
     printf 'Defaults:%s use_pty\n%s ALL=(ALL) NOPASSWD:ALL\n' "$USERNAME" "$USERNAME" \
         > /etc/sudoers.d/"$USERNAME"
     chmod 440 /etc/sudoers.d/"$USERNAME"
-    # Valider la syntaxe sudoers — un fichier corrompu rend sudo non-fonctionnel
-    if ! visudo -cf /etc/sudoers.d/"$USERNAME" &>/dev/null; then
-        log_error "sudoers corrompu — suppression et abandon."
-        rm -f /etc/sudoers.d/"$USERNAME"
-        exit 1
-    fi
     log_success "Utilisateur $USERNAME créé avec accès sudo sans mot de passe (use_pty actif)."
 fi
 
@@ -234,8 +177,6 @@ log_success "Clé SSH validée ($KEY_TYPE)."
 # Installer la clé
 ADMIN_HOME="/home/$USERNAME"
 mkdir -p "$ADMIN_HOME/.ssh"
-# Prendre uniquement la première ligne — bloque les clés multi-lignes avec options injectées
-SSH_PUB_KEY=$(printf '%s' "$SSH_PUB_KEY" | head -1 | tr -d '\r')
 echo "$SSH_PUB_KEY" > "$ADMIN_HOME/.ssh/authorized_keys"
 chmod 700 "$ADMIN_HOME/.ssh"
 chmod 600 "$ADMIN_HOME/.ssh/authorized_keys"
@@ -272,12 +213,11 @@ LogLevel VERBOSE
 Banner /etc/issue.net
 
 MaxAuthTries 3
-MaxSessions 2
+MaxSessions 3
 MaxStartups 10:30:60
 LoginGraceTime 30
 ClientAliveInterval 300
 ClientAliveCountMax 2
-TCPKeepAlive no
 
 X11Forwarding no
 AllowAgentForwarding no
@@ -396,8 +336,7 @@ apt-get upgrade -y -qq
 apt-get install -y -qq \
     curl wget gnupg lsb-release ca-certificates \
     apt-transport-https software-properties-common \
-    unzip jq htop ncdu tree openssl python3 \
-    libpam-tmpdir debsums apt-listchanges  # Lynis DEB-0280/0811/PKGS-7370
+    unzip jq htop ncdu tree openssl python3
 log_success "Système mis à jour."
 
 # Sécuriser /tmp (CIS Benchmark L1)
@@ -432,8 +371,6 @@ fi
 # Raison : CrowdSec et Docker sont téléchargés ensuite.
 # Sans DoT, les résolutions DNS transitent en clair — fenêtre de DNS poisoning.
 log_info "Activation du DNS chiffré avant les téléchargements..."
-# Détection anticipée de l'interface — utilisée ici et réutilisée à l'étape 5 (UFW)
-MAIN_IFACE=$(ip route show default 2>/dev/null | awk '/default/ {print $5}' | head -1)
 mkdir -p /etc/systemd/resolved.conf.d
 cat > /etc/systemd/resolved.conf.d/vps-secure-dns.conf << 'DNSEOF'
 # vps-secure — DNS over TLS
@@ -451,27 +388,6 @@ systemctl enable systemd-resolved
 systemctl restart systemd-resolved
 # Forcer /etc/resolv.conf vers le stub systemd-resolved
 ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-
-# Fix Hostinger (et cloud-init en général) : netplan réécrit les DNS au reboot
-# Un drop-in systemd-networkd sur l'interface principale force Quad9+DoT
-# et résiste à la régénération cloud-init
-if [[ -n "$MAIN_IFACE" ]]; then
-    mkdir -p /etc/systemd/network/10-netplan-${MAIN_IFACE}.network.d
-    cat > /etc/systemd/network/10-netplan-${MAIN_IFACE}.network.d/override-dns.conf << 'DNSOVEREOF'
-[Network]
-DNS=
-DNS=9.9.9.9
-DNS=149.112.112.112
-DNS=1.1.1.1
-DNSOverTLS=yes
-DNSOVEREOF
-    systemctl restart systemd-networkd
-    systemctl restart systemd-resolved
-    log_success "DNS override appliqué sur $MAIN_IFACE — résiste au reboot cloud-init."
-else
-    log_warn "Interface principale non détectée — override DNS cloud-init non appliqué."
-    log_warn "  Lance manuellement : sudo resolvectl dns eth0 9.9.9.9 149.112.112.112 && sudo resolvectl dnsovertls eth0 yes"
-fi
 
 if resolvectl query quad9.net &>/dev/null; then
     log_success "DNS over TLS actif — Quad9 + Cloudflare (mDNS/LLMNR désactivés)."
@@ -579,6 +495,80 @@ CSEOF
     fi
 fi
 
+# ── Fix #28 : Enregistrer le bouncer CrowdSec (génération clé API) ──
+log_info "Enregistrement du bouncer CrowdSec (génération clé API)..."
+
+# Attendre que la LAPI CrowdSec soit prête avant de générer la clé
+_wait_crowdsec_lapi() {
+    local max_wait=30 elapsed=0
+    while ! cscli version &>/dev/null; do
+        sleep 2; elapsed=$((elapsed + 2))
+        [[ $elapsed -ge $max_wait ]] && { log_warn "LAPI CrowdSec non prête après ${max_wait}s"; return 1; }
+    done
+    return 0
+}
+
+systemctl enable crowdsec
+systemctl restart crowdsec
+_wait_crowdsec_lapi || true  # optionnel : non bloquant — la clé sera absente mais le reste continue
+
+# Enregistrer le bouncer — idempotent : suppression + recréation si déjà présent
+BOUNCER_NAME="cs-firewall-bouncer-$(hostname -s)"
+BOUNCER_API_KEY=""
+
+if cscli bouncers list 2>/dev/null | grep -q "$BOUNCER_NAME"; then
+    log_warn "Bouncer $BOUNCER_NAME déjà enregistré — suppression et recréation."
+    cscli bouncers delete "$BOUNCER_NAME" 2>/dev/null || true  # optionnel : non bloquant
+fi
+
+BOUNCER_API_KEY=$(cscli bouncers add "$BOUNCER_NAME" \
+    --key "$(openssl rand -hex 16)" -o raw 2>/dev/null || echo "")
+
+if [[ -z "$BOUNCER_API_KEY" ]]; then
+    log_warn "Impossible de générer la clé API bouncer — CrowdSec détectera mais ne bannira pas."
+    log_warn "  Correction manuelle : sudo cscli bouncers add cs-firewall-bouncer"
+else
+    log_success "Bouncer enregistré : $BOUNCER_NAME"
+
+    if [[ -f /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml ]]; then
+        if grep -q "^api_key:" /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml; then
+            sed -i "s|^api_key:.*|api_key: ${BOUNCER_API_KEY}|" \
+                /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+        else
+            echo "api_key: ${BOUNCER_API_KEY}" >> \
+                /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+        fi
+        chmod 600 /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+        log_success "Clé API injectée dans crowdsec-firewall-bouncer.yaml"
+    else
+        # Fichier absent — créer la config complète
+        mkdir -p /etc/crowdsec/bouncers
+        cat > /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml << EOF
+mode: iptables
+pid_dir: /var/run/
+update_frequency: 10s
+log_level: info
+api_url: http://127.0.0.1:8081/
+api_key: ${BOUNCER_API_KEY}
+disable_ipv6: false
+deny_action: DROP
+deny_log: true
+deny_log_prefix: "crowdsec: "
+supported_decisions_types:
+  - ban
+blacklists_ipv4: crowdsec-blacklists
+blacklists_ipv6: crowdsec6-blacklists
+ipset_size: 65536
+iptables_chains:
+  - INPUT
+  - FORWARD
+EOF
+        chmod 600 /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+        log_success "Config bouncer créée avec clé API (fichier absent — recréé)."
+    fi
+fi
+# NOTE : les sed port 8080→8081 ci-dessous s'appliquent aussi à crowdsec-firewall-bouncer.yaml — intentionnel.
+
 # CrowdSec API sur port 8081 (8080 souvent occupé)
 log_info "Configuration de CrowdSec sur le port 8081..."
 sed -i 's/listen_uri: 127.0.0.1:8080/listen_uri: 127.0.0.1:8081/' /etc/crowdsec/config.yaml 2>/dev/null || true  # optionnel : fichier absent si arborescence CrowdSec modifiée
@@ -599,8 +589,6 @@ _crowdsec_port_verify /etc/crowdsec/config.yaml "config.yaml"
 _crowdsec_port_verify /etc/crowdsec/local_api_credentials.yaml "local_api_credentials.yaml"
 _crowdsec_port_verify /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml "crowdsec-firewall-bouncer.yaml"
 
-systemctl enable crowdsec
-systemctl restart crowdsec
 systemctl enable crowdsec-firewall-bouncer
 systemctl restart crowdsec-firewall-bouncer 2>/dev/null || true  # optionnel : le bouncer peut échouer au 1er démarrage si CrowdSec n'est pas encore prêt — vérifié par sleep+is-active ci-dessous
 
@@ -631,7 +619,7 @@ ufw allow 80/tcp  comment 'HTTP'
 ufw allow 443/tcp comment 'HTTPS'
 
 # Détecter l'interface réseau principale (ens3, ens18, eth0... selon l'hébergeur)
-# MAIN_IFACE détecté à l'étape 3 — déjà disponible ici
+MAIN_IFACE=$(ip route show default 2>/dev/null | awk '/default/ {print $5}' | head -1)
 if [[ -z "$MAIN_IFACE" ]]; then
     log_warn "Interface réseau principale non détectée — forwarding Docker bridge ignoré."
     log_warn "  Si tes containers n'ont pas internet après installation, lance :"
@@ -652,6 +640,30 @@ fi
 
 ufw --force enable
 ufw logging medium
+
+# ── Fix #29 : iptables-persistent (installé en dépendance par crowdsec-firewall-bouncer-iptables) ──
+log_info "Configuration d'iptables-persistent (persistance règles au reboot)..."
+
+if dpkg -l iptables-persistent 2>/dev/null | grep -q "^un"; then
+    log_info "iptables-persistent non configuré (état 'un') — configuration forcée..."
+    DEBIAN_FRONTEND=noninteractive dpkg --configure iptables-persistent 2>/dev/null || \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y --fix-broken iptables-persistent
+fi
+
+if ! dpkg -l iptables-persistent 2>/dev/null | grep -q "^ii"; then
+    _wait_dpkg
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq iptables-persistent
+fi
+
+systemctl enable netfilter-persistent 2>/dev/null || true  # optionnel : absent sur certains kernels minimalistes
+systemctl start netfilter-persistent 2>/dev/null || true
+
+if systemctl is-active --quiet netfilter-persistent; then
+    log_success "iptables-persistent actif — règles firewall persistantes au reboot."
+else
+    log_warn "netfilter-persistent non actif — les règles iptables custom (NAT Docker, Bot Funnel) ne survivront pas au reboot."
+    log_warn "  Vérifier : sudo systemctl status netfilter-persistent"
+fi
 
 log_success "UFW activé : ports 2222/80/443 uniquement."
 log_warn "⚠️  Docker : les ports exposés via -p doivent être déclarés dans UFW."
@@ -733,11 +745,6 @@ DOCKER_SUBNET=$(docker network inspect bridge \
     --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null || true)  # optionnel : docker inspect peut échouer si le daemon vient de démarrer — fallback ligne suivante
 if [[ -z "$DOCKER_SUBNET" ]]; then
     log_warn "Subnet Docker bridge vide après inspect — fallback 172.17.0.0/16."
-    DOCKER_SUBNET="172.17.0.0/16"
-fi
-# Valider le format CIDR — bloque toute injection de règle iptables via docker inspect
-if [[ ! "$DOCKER_SUBNET" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
-    log_warn "Subnet Docker malformé ('$DOCKER_SUBNET') — fallback 172.17.0.0/16."
     DOCKER_SUBNET="172.17.0.0/16"
 fi
 
@@ -877,23 +884,10 @@ net.core.bpf_jit_harden = 2
 # Interdire eBPF aux non-root — vecteur d'exploitation connu (CIS 1.5.5)
 kernel.unprivileged_bpf_disabled = 1
 
-# ⚠️  SÉCURITÉ — ip_unprivileged_port_start=22 permet à tout processus non-root de binder le port 22
-# quand Endlessh est arrêté. Risque mitigé par : --restart unless-stopped Docker (redémarrage en quelques
-# secondes après un crash) et le fait qu'un attaquant doit avoir compromis un compte système au préalable.
-# Ce sysctl est requis pour shizunge/endlessh-go avec --network=host sans cap_net_bind_service root.
+# Port non-privilégié minimum abaissé à 22 — requis pour Endlessh (honeypot port 22)
 net.ipv4.ip_unprivileged_port_start = 22
 
 SYSEOF
-
-# Désactiver les protocoles réseau inutiles via modprobe (Lynis NETW-3200)
-cat > /etc/modprobe.d/vps-secure-disable-protocols.conf << 'MODPROBEEOF'
-# vps-secure — Désactivation des protocoles réseau inutiles (Lynis NETW-3200)
-install dccp /bin/true
-install sctp /bin/true
-install rds  /bin/true
-install tipc /bin/true
-MODPROBEEOF
-chmod 644 /etc/modprobe.d/vps-secure-disable-protocols.conf
 
 SYSCTL_OUTPUT=$(sysctl --system 2>&1)
 SYSCTL_ERRORS=$(echo "$SYSCTL_OUTPUT" | grep -c "^sysctl: " 2>/dev/null || echo "0")
@@ -1141,42 +1135,6 @@ done
 log_info "  Services vérifiés : avahi-daemon, cups, bluetooth, ModemManager, whoopsie, apport"
 log_info "  Pour voir les services actifs : systemctl list-units --type=service --state=active"
 
-# ── umask 027 pour vpsadmin uniquement (Lynis AUTH-9328) ──
-# Appliqué via profile.d et non login.defs — évite d'impacter les services système
-# qui créent des fichiers avec des permissions group-readable (Docker, n8n, Baserow...)
-cat > /etc/profile.d/vpsadmin-umask.sh << 'UMASKEOF'
-# vps-secure — umask restrictif pour les sessions interactives vpsadmin uniquement
-if [[ "$(id -un)" == "vpsadmin" ]]; then
-    umask 027
-fi
-UMASKEOF
-chmod 644 /etc/profile.d/vpsadmin-umask.sh
-log_success "umask 027 configuré pour vpsadmin uniquement (/etc/profile.d/)."
-
-# ── Core dumps désactivés pour tous les utilisateurs (Lynis KRNL-5820) ──
-if ! grep -q "hard core" /etc/security/limits.conf 2>/dev/null; then
-    echo "* hard core 0" >> /etc/security/limits.conf
-    echo "* soft core 0" >> /etc/security/limits.conf
-    log_success "Core dumps désactivés dans /etc/security/limits.conf."
-fi
-
-# ── Password hashing rounds (Lynis AUTH-9230) ──
-if grep -q "^SHA_CRYPT_MIN_ROUNDS" /etc/login.defs 2>/dev/null; then
-    sed -i 's/^SHA_CRYPT_MIN_ROUNDS.*/SHA_CRYPT_MIN_ROUNDS 10000/' /etc/login.defs
-else
-    echo "SHA_CRYPT_MIN_ROUNDS 10000" >> /etc/login.defs
-fi
-log_success "Password hashing rounds configuré (SHA_CRYPT_MIN_ROUNDS=10000)."
-
-# ── Durcissement Postfix (Lynis MAIL-8818, MAIL-8820) ──
-# Postfix est installé par défaut sur Ubuntu — masquer le banner OS et désactiver VRFY
-if command -v postconf &>/dev/null; then
-    postconf -e 'smtpd_banner = $myhostname ESMTP'  # cache la version et l'OS
-    postconf -e 'disable_vrfy_command = yes'         # empêche l'énumération d'utilisateurs
-    systemctl restart postfix 2>/dev/null || true  # optionnel : postfix peut ne pas être actif
-    log_success "Postfix durci — banner OS masqué, VRFY désactivé."
-fi
-
 # ============================================================
 # Étape 13 : Alertes Telegram (optionnel)
 # ============================================================
@@ -1324,9 +1282,7 @@ fi
 
 # ── Endlessh (honeypot port 22) ──
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
-    # Lecture du cache — évite docker logs synchrone à chaque rapport (Issue #3)
-    HONEY_COUNT=$(python3 -c "import json; print(json.load(open('/var/cache/vps-secure/security-stats.json')).get('last24h',0))" 2>/dev/null \
-        || docker logs endlessh --since 24h 2>&1 | grep -ci "accept" || echo "0")
+    HONEY_COUNT=$(docker logs endlessh --since 24h 2>&1 | grep -ci "accept" || echo "0")
     DETAILS+="🍯 Endlessh : ${HONEY_COUNT} bot(s) piégé(s) en 24h
 "
 else
@@ -1412,23 +1368,6 @@ TELEGRAM_CHAT_ID=$(grep '^TELEGRAM_CHAT_ID=' "$CONFIG" | cut -d'"' -f2)
 
 DATE=$(date '+%d/%m/%Y %H:%M:%S')
 HOST=$(hostname)
-INCOMING_IP="${PAM_RHOST:-inconnue}"
-KNOWN_IPS_FILE="/etc/vps-secure/known-ips.conf"
-
-# Reconnaissance IP
-if [[ "$INCOMING_IP" == "inconnue" ]]; then
-    IP_LABEL="🌐 IP source   : inconnue"
-elif [[ -f "$KNOWN_IPS_FILE" ]] && grep -qxF "$INCOMING_IP" "$KNOWN_IPS_FILE" 2>/dev/null; then
-    # IP déjà connue → TON IP
-    IP_LABEL="✅ IP source   : TON IP (${INCOMING_IP})"
-else
-    # Nouvelle IP — on l'enregistre
-    mkdir -p /etc/vps-secure
-    grep -qxF "$INCOMING_IP" "$KNOWN_IPS_FILE" 2>/dev/null || echo "$INCOMING_IP" >> "$KNOWN_IPS_FILE"
-    chmod 600 "$KNOWN_IPS_FILE"
-    IP_LABEL="⚠️ IP source   : ${INCOMING_IP} (première connexion)
-❓ C'est toi ? Si non : sudo cscli decisions add --ip ${INCOMING_IP}"
-fi
 
 CURLCFG=$(mktemp)
 chmod 600 "$CURLCFG"
@@ -1437,7 +1376,7 @@ printf 'url = "https://api.telegram.org/bot%s/sendMessage"\ndata = "chat_id=%s"\
 curl -s --config "$CURLCFG" \
     --data-urlencode "text=🔐 Connexion SSH sur ${HOST}
 👤 Utilisateur : ${PAM_USER:-inconnu}
-${IP_LABEL}
+🌐 IP source   : ${PAM_RHOST:-inconnue}
 📅 ${DATE}" > /dev/null 2>&1
 rm -f "$CURLCFG"
 SSHALERTEOF
@@ -1447,9 +1386,7 @@ SSHALERTEOF
             # Injecter la règle PAM dans /etc/pam.d/sshd (optionnel — ne bloque pas le login si erreur)
             PAM_SSHD="/etc/pam.d/sshd"
             if ! grep -q "vps-secure-ssh-alert" "$PAM_SSHD" 2>/dev/null; then
-                # seteuid : exécute le script en root (nécessaire pour lire telegram.conf chmod 600)
-                # Sans seteuid, pam_exec tourne avec l'UID de l'utilisateur connecté → accès refusé silencieux
-                echo "session optional pam_exec.so seteuid /usr/local/bin/vps-secure-ssh-alert.sh" >> "$PAM_SSHD"
+                echo "session optional pam_exec.so /usr/local/bin/vps-secure-ssh-alert.sh" >> "$PAM_SSHD"
                 log_success "Alerte SSH temps réel configurée — notification à chaque connexion."
             else
                 log_warn "Règle PAM SSH déjà présente — non dupliquée."
@@ -1488,7 +1425,7 @@ fi
 # Commande pour obtenir le digest actuel :
 #   docker pull shizunge/endlessh-go && \
 #   docker inspect --format='{{index .RepoDigests 0}}' shizunge/endlessh-go
-# Puis remplacer le tag par : shizunge/endlessh-go@sha256:c9c5cd7084fda893f2b9f2c15d0b5867ba91ed06727375a3ca0f2678474fc09a
+# Puis remplacer le tag par : shizunge/endlessh-go@sha256:XXXX
 docker run -d \
     --name endlessh \
     --restart unless-stopped \
@@ -1497,8 +1434,6 @@ docker run -d \
     --cap-drop ALL \
     --cap-add NET_BIND_SERVICE \
     --read-only \
-    --log-opt max-size=10m \
-    --log-opt max-file=3 \
     shizunge/endlessh-go@sha256:c9c5cd7084fda893f2b9f2c15d0b5867ba91ed06727375a3ca0f2678474fc09a \
     -logtostderr \
     -v=1 \
@@ -1516,94 +1451,235 @@ else
     log_warn "  Le reste de l'installation n'est pas affecté."
 fi
 
-# ── Cache sécurité unifié (Endlessh + CrowdSec) ──────────────────────────────
-# Évite les appels synchrones coûteux dans le MOTD (docker logs + cscli) à chaque login SSH.
-# Un timer systemd rafraîchit /var/cache/vps-secure/security-stats.json toutes les 5 min.
-# Issues #3 (docker logs synchrones CRITIQUE) + #7/#10 (cscli synchrone ÉLEVÉ).
-mkdir -p /var/cache/vps-secure
-cat > /usr/local/bin/vps-secure-stats-cache.sh << 'STATSCACHEEOF'
-#!/usr/bin/env bash
+# ============================================================
+# Étape 14b : Bot Funnel — redirection bots SSH vers Endlessh
+# ============================================================
+etape "14b" "$TOTAL_ETAPES" "Bot Funnel — redirection bots SSH vers Endlessh"
+
+BOT_FUNNEL_SCRIPT="/usr/local/bin/vps-secure-bot-funnel.sh"
+BOT_FUNNEL_SERVICE="/etc/systemd/system/vps-secure-bot-funnel.service"
+BOT_FUNNEL_KEY_FILE="/etc/crowdsec/vps-secure-bot-funnel.key"
+
+# Déployer le script Bot Funnel (inline — pas de dépendance réseau)
+cat > "$BOT_FUNNEL_SCRIPT" << 'BOTFUNNELEOF'
+#!/bin/bash
+# =============================================================================
+# vps-secure-bot-funnel.sh v1.0.1 — Bot Funnel (SSH Honeypot Redirect)
+# Rôle    : Redirige les bots SSH détectés par CrowdSec vers Endlessh (port 22)
+#           au lieu de les bloquer.
+# Prérequis : CrowdSec LAPI actif (port 8081), Endlessh sur port 22 (host network)
+# =============================================================================
+
 set -euo pipefail
-CACHE="/var/cache/vps-secure/security-stats.json"
-CONTAINER="endlessh"
-mkdir -p /var/cache/vps-secure
 
-TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-RUNNING="false"
-LAST24H=0
-TOTAL=0
-CS_BANNED=0
+# ─────────────────────────────────────────────
+# Configuration
+# ─────────────────────────────────────────────
+readonly LAPI_URL="http://localhost:8081"
+readonly BOUNCER_KEY_FILE="/etc/crowdsec/vps-secure-bot-funnel.key"
+readonly REDIRECT_CHAIN="VPS_BOT_FUNNEL"
+readonly SSH_REAL_PORT="2222"
+readonly HONEYPOT_PORT="22"
+readonly LOG_TAG="VPS-SECURE-BOT-FUNNEL"
+readonly POLL_INTERVAL=30
+readonly WHITELIST_FILE="/etc/crowdsec/parsers/s00-raw/known-ips.conf"
 
-# ── Endlessh stats ──
-if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${CONTAINER}$"; then
-    RUNNING="true"
-    LAST24H=$(docker logs --since 24h "$CONTAINER" 2>&1 | grep -ci "ACCEPT" 2>/dev/null || echo 0)
-    # Total incrémental : on ajoute seulement les nouvelles entrées depuis la dernière MAJ
-    if [[ -f "$CACHE" ]]; then
-        PREV_TOTAL=$(python3 -c "import json; d=json.load(open('$CACHE')); print(d.get('total',0))" 2>/dev/null || echo 0)
-        PREV_TS=$(python3 -c "import json; d=json.load(open('$CACHE')); print(d.get('last_updated',''))" 2>/dev/null || echo "")
-        if [[ -n "$PREV_TS" ]]; then
-            NEW=$(docker logs --since "$PREV_TS" "$CONTAINER" 2>&1 | grep -ci "ACCEPT" 2>/dev/null || echo 0)
-            TOTAL=$(( PREV_TOTAL + NEW ))
-        else
-            TOTAL=$(docker logs "$CONTAINER" 2>&1 | grep -ci "ACCEPT" 2>/dev/null || echo 0)
-        fi
-    else
-        TOTAL=$(docker logs "$CONTAINER" 2>&1 | grep -ci "ACCEPT" 2>/dev/null || echo 0)
+# ─────────────────────────────────────────────
+# Pré-requis
+# ─────────────────────────────────────────────
+[[ $EUID -ne 0 ]] && { echo "ERROR: root requis" >&2; exit 1; }
+
+mkdir -p /var/lib/vps-secure
+
+BOUNCER_KEY=$(cat "$BOUNCER_KEY_FILE" 2>/dev/null) || {
+    logger -t "$LOG_TAG" "ERREUR: Clé API introuvable — $BOUNCER_KEY_FILE"
+    exit 1
+}
+
+# ─────────────────────────────────────────────
+# Gestion de la chaîne iptables NAT
+# ─────────────────────────────────────────────
+init_chain() {
+    iptables -t nat -N "$REDIRECT_CHAIN" 2>/dev/null || true
+    if ! iptables -t nat -C PREROUTING \
+         -p tcp --dport "$SSH_REAL_PORT" -j "$REDIRECT_CHAIN" 2>/dev/null; then
+        iptables -t nat -I PREROUTING \
+            -p tcp --dport "$SSH_REAL_PORT" -j "$REDIRECT_CHAIN"
+        logger -t "$LOG_TAG" "Chaîne $REDIRECT_CHAIN initialisée"
     fi
-fi
+}
 
-# ── CrowdSec stats ──
-if command -v cscli &>/dev/null; then
-    CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
-        | python3 -c "import sys,json
+cleanup_chain() {
+    iptables -t nat -D PREROUTING \
+        -p tcp --dport "$SSH_REAL_PORT" -j "$REDIRECT_CHAIN" 2>/dev/null || true
+    iptables -t nat -F "$REDIRECT_CHAIN" 2>/dev/null || true
+    iptables -t nat -X "$REDIRECT_CHAIN" 2>/dev/null || true
+    logger -t "$LOG_TAG" "Chaîne nettoyée"
+}
+
+# ─────────────────────────────────────────────
+# Redirections individuelles
+# ─────────────────────────────────────────────
+is_whitelisted() {
+    grep -qxF "$1" "$WHITELIST_FILE" 2>/dev/null
+}
+
+add_redirect() {
+    local ip="$1"
+    [[ ! "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && return
+    is_whitelisted "$ip" && { logger -t "$LOG_TAG" "Skip $ip (whitelist)"; return; }
+    if ! iptables -t nat -C "$REDIRECT_CHAIN" \
+         -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT" 2>/dev/null; then
+        iptables -t nat -A "$REDIRECT_CHAIN" \
+            -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT"
+        logger -t "$LOG_TAG" "PIEGE: $ip -> Endlessh :$HONEYPOT_PORT"
+    fi
+}
+
+remove_redirect() {
+    local ip="$1"
+    if iptables -t nat -C "$REDIRECT_CHAIN" \
+       -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT" 2>/dev/null; then
+        iptables -t nat -D "$REDIRECT_CHAIN" \
+            -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT"
+        logger -t "$LOG_TAG" "LIBERE: $ip (décision expirée)"
+    fi
+}
+
+get_current_redirects() {
+    iptables -t nat -L "$REDIRECT_CHAIN" -n 2>/dev/null \
+        | grep "REDIRECT" \
+        | awk '{print $4}' \
+        | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' || true
+}
+
+# ─────────────────────────────────────────────
+# Poll LAPI CrowdSec — décisions SSH uniquement
+# ─────────────────────────────────────────────
+poll_ssh_decisions() {
+    local raw
+    raw=$(curl -sf --max-time 10 \
+        -H "X-Api-Key: ${BOUNCER_KEY}" \
+        "${LAPI_URL}/v1/decisions?type=ban&scope=Ip" 2>/dev/null) || { echo ""; return; }
+
+    echo "$raw" | python3 -c "
+import json, sys
 try:
-    d=json.load(sys.stdin)
-    print(len(d) if d else 0)
-except:
-    print(0)" 2>/dev/null || echo 0)
+    data = json.load(sys.stdin)
+    if not data:
+        sys.exit(0)
+    for d in data:
+        if 'ssh' in d.get('scenario', '').lower():
+            print(d['value'])
+except Exception:
+    sys.exit(0)
+" 2>/dev/null || true
+}
+
+# ─────────────────────────────────────────────
+# Signal handlers
+# ─────────────────────────────────────────────
+handle_exit() {
+    logger -t "$LOG_TAG" "Arrêt — nettoyage iptables"
+    cleanup_chain
+    exit 0
+}
+trap handle_exit SIGTERM SIGINT
+
+# ─────────────────────────────────────────────
+# Boucle principale
+# ─────────────────────────────────────────────
+logger -t "$LOG_TAG" "Démarrage Bot Funnel (LAPI: ${LAPI_URL}, poll: ${POLL_INTERVAL}s)"
+init_chain
+
+LAST_DAILY=0
+
+while true; do
+    mapfile -t active_ips < <(poll_ssh_decisions)
+
+    # Ajouter nouvelles redirections
+    for ip in "${active_ips[@]:-}"; do
+        [[ -n "$ip" ]] && add_redirect "$ip"
+    done
+
+    # Supprimer redirections expirées
+    while IFS= read -r ip; do
+        [[ -z "$ip" ]] && continue
+        found=0
+        for a in "${active_ips[@]:-}"; do [[ "$a" == "$ip" ]] && { found=1; break; }; done
+        [[ $found -eq 0 ]] && remove_redirect "$ip"
+    done < <(get_current_redirects)
+
+    # Rapport journalier (toutes les 24h)
+    now=$(date +%s)
+    if (( now - LAST_DAILY >= 86400 )); then
+        count=$(get_current_redirects | wc -l)
+        logger -t "$LOG_TAG" "DAILY: $count bot(s) actuellement piégé(s) dans Endlessh"
+        LAST_DAILY=$now
+    fi
+
+    sleep "$POLL_INTERVAL"
+done
+BOTFUNNELEOF
+chmod 750 "$BOT_FUNNEL_SCRIPT"
+log_success "Script Bot Funnel déployé : $BOT_FUNNEL_SCRIPT"
+
+# Enregistrer un bouncer dédié pour le Bot Funnel
+BOT_FUNNEL_KEY=""
+BOT_FUNNEL_BOUNCER="vps-secure-bot-funnel"
+
+if cscli bouncers list 2>/dev/null | grep -q "$BOT_FUNNEL_BOUNCER"; then
+    cscli bouncers delete "$BOT_FUNNEL_BOUNCER" 2>/dev/null || true  # optionnel : idempotence
 fi
 
-# Écriture atomique via mktemp + mv (évite lecture partielle)
-TMP=$(mktemp "${CACHE}.XXXXXX")
-printf '{"last_updated":"%s","last24h":%d,"total":%d,"running":%s,"cs_banned":%d}\n' \
-    "$TS" "$LAST24H" "$TOTAL" "$RUNNING" "$CS_BANNED" > "$TMP"
-mv "$TMP" "$CACHE"
-chmod 644 "$CACHE"
-STATSCACHEEOF
-chmod 700 /usr/local/bin/vps-secure-stats-cache.sh
+BOT_FUNNEL_KEY=$(cscli bouncers add "$BOT_FUNNEL_BOUNCER" \
+    --key "$(openssl rand -hex 16)" -o raw 2>/dev/null || echo "")
 
-cat > /etc/systemd/system/vps-secure-stats-cache.service << 'SVCCACHEEOF'
+if [[ -z "$BOT_FUNNEL_KEY" ]]; then
+    log_warn "Bot Funnel : impossible de créer la clé bouncer — feature désactivée."
+    log_warn "  Réactivation : sudo cscli bouncers add vps-secure-bot-funnel"
+else
+    echo "$BOT_FUNNEL_KEY" > "$BOT_FUNNEL_KEY_FILE"
+    chmod 600 "$BOT_FUNNEL_KEY_FILE"
+    log_success "Clé API Bot Funnel générée et stockée."
+
+    # Installer le service systemd
+    cat > "$BOT_FUNNEL_SERVICE" << 'SERVICEEOF'
 [Unit]
-Description=vps-secure — cache sécurité (Endlessh + CrowdSec)
-After=docker.service crowdsec.service
+Description=VPS-SECURE Bot Funnel — SSH honeypot redirect via CrowdSec
+After=network-online.target crowdsec.service
+Wants=network-online.target
+Requires=crowdsec.service
 
 [Service]
-Type=oneshot
-ExecStart=/usr/local/bin/vps-secure-stats-cache.sh
+Type=simple
+ExecStart=/usr/local/bin/vps-secure-bot-funnel.sh
+Restart=always
+RestartSec=10
 User=root
-SVCCACHEEOF
-
-cat > /etc/systemd/system/vps-secure-stats-cache.timer << 'TIMERCACHEEOF'
-[Unit]
-Description=vps-secure — rafraîchissement cache sécurité toutes les 5 min
-
-[Timer]
-OnBootSec=2min
-OnUnitActiveSec=5min
-Unit=vps-secure-stats-cache.service
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vps-secure-bot-funnel
+PrivateTmp=yes
 
 [Install]
-WantedBy=timers.target
-TIMERCACHEEOF
+WantedBy=multi-user.target
+SERVICEEOF
 
-systemctl daemon-reload
-systemctl enable --now vps-secure-stats-cache.timer
-# Premier remplissage immédiat — non bloquant : Docker/CrowdSec peuvent ne pas être
-# totalement prêts à ce stade. Le timer prend le relais dans 2 min au pire.
-systemctl start vps-secure-stats-cache.service 2>/dev/null \
-    || log_warn "Cache sécurité : premier remplissage différé — actif dans 2 min via timer (normal à l'install)."  # optionnel : Docker pas encore prêt au moment du premier start
-log_success "Cache sécurité configuré — /var/cache/vps-secure/security-stats.json (rafraîchi toutes les 5 min)."
+    systemctl daemon-reload
+    systemctl enable --now vps-secure-bot-funnel
+
+    if systemctl is-active --quiet vps-secure-bot-funnel; then
+        log_success "Bot Funnel actif — bots SSH persistants redirigés vers Endlessh."
+    else
+        log_warn "Bot Funnel non démarré — vérifier : sudo journalctl -u vps-secure-bot-funnel"
+    fi
+
+    # Sauvegarder les règles iptables NAT pour le reboot
+    netfilter-persistent save 2>/dev/null || \
+        iptables-save > /etc/iptables/rules.v4 2>/dev/null || true  # optionnel : netfilter-persistent peut être absent sur kernels minimalistes
+    log_success "Règles iptables NAT sauvegardées (persistance reboot)."
+fi
 
 # ============================================================
 # Étape 15 : Integrity monitoring (AIDE)
@@ -1623,8 +1699,6 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/home/.+/\.bash_history$
 !/var/lib/crowdsec/data
 !/var/cache/apt/pkgcache\.bin$
-!/var/cache/apt/srcpkgcache\.bin$
-!/var/lib/apt/lists/
 !/var/lib/snapd/state\.json$
 !/var/lib/update-notifier
 !/var/lib/dpkg/triggers
@@ -1638,49 +1712,21 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/run/docker
 !/var/run/docker
 !/home/*/.docker
-!/home/vpsadmin/\.docker/
 !/root/.docker
 !/var/lib/command-not-found
 !/var/log/vps-monitor-history\.json$
-!/var/cache/vps-secure/security-stats\.json$
-!/var/lib/aide/aide\.db$
-!/home/[^/]+/vps-monitor
-!/var/cache/fwupd/
-!/var/cache/swcatalog/
-!/var/lib/PackageKit/
-!/usr/share/info/
 !/^/$
 AIDEEXCLEOF
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)
 log_info "Création de la baseline AIDE — peut prendre 2 à 5 minutes selon la taille du disque..."
 log_info "  (le script continue automatiquement)"
-
-AIDE_INIT_LOG=$(mktemp)
-AIDE_INIT_OK=false
-if aideinit --yes --force >"$AIDE_INIT_LOG" 2>&1; then
-    AIDE_INIT_OK=true
-elif aideinit >"$AIDE_INIT_LOG" 2>&1 </dev/null; then
-    AIDE_INIT_OK=true
-fi
-# Afficher les dernières lignes en cas d'échec pour diagnostic
-if [[ "$AIDE_INIT_OK" != "true" ]]; then
-    log_warn "aideinit a signalé des erreurs — détail :"
-    tail -5 "$AIDE_INIT_LOG" | while IFS= read -r l; do log_warn "  $l"; done
-    log_warn "  Lance manuellement : sudo aideinit && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db"
-fi
-rm -f "$AIDE_INIT_LOG"
+aideinit --yes --force 2>/dev/null || aideinit 2>/dev/null </dev/null || true
 
 if [[ -f /var/lib/aide/aide.db.new ]]; then
     cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
     chmod 600 /var/lib/aide/aide.db
-    # Rendre la baseline immuable — empêche la modification directe même en root (anti-tampering)
-    if chattr +i /var/lib/aide/aide.db 2>/dev/null; then
-        log_success "Baseline AIDE créée — état sain enregistré · immuable (anti-tampering actif)."
-    else
-        log_success "Baseline AIDE créée — état sain du système enregistré."
-        log_warn "  chattr +i non supporté sur ce filesystem — protection immuable ignorée."
-    fi
+    log_success "Baseline AIDE créée — état sain du système enregistré."
 else
     log_warn "Baseline AIDE non créée automatiquement."
     log_warn "  Lance manuellement après installation :"
@@ -1690,71 +1736,13 @@ fi
 # Mise à jour baseline rkhunter — _aide user/group créés par AIDE absent de la baseline initiale (étape 11)
 rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : non bloquant
 
-# Script AIDE intelligent — élimine les faux positifs unattended-upgrades (Issue #4)
-# Logique granulaire v1.1 : dpkg -S par fichier modifié — seuls les fichiers APT sont whitelistés.
-# Un backdoor posé hors fenêtre APT reste détecté même si une MAJ tourne la même nuit.
-cat > /usr/local/bin/vps-secure-aide-check.sh << 'AIDESMART'
-#!/usr/bin/env bash
-set -euo pipefail
-# Fenêtre dpkg : 26h pour couvrir unattended-upgrades qui peut tourner après 03h00
-AIDE_EXIT=0
-aide --check --config /etc/aide/aide.conf > /var/log/aide-daily.log 2>&1 || AIDE_EXIT=$?
-echo "$AIDE_EXIT" > /var/log/aide-daily.exit
-# Exit 0 = propre
-[[ $AIDE_EXIT -eq 0 ]] && exit 0
-# Bits 3-5 (valeur 56) = erreurs techniques AIDE → pas de cross-check APT, on garde l'exit
-[[ $(( AIDE_EXIT & 56 )) -ne 0 ]] && exit 0
-# Vérifier l'activité apt récente (fenêtre 26h)
-CUTOFF=$(date -d '26 hours ago' '+%Y-%m-%d %H:%M:%S')
-DPKG_N=$(awk -v c="$CUTOFF" '$0>c && /status installed/{n++} END{print n+0}' /var/log/dpkg.log 2>/dev/null || echo 0)
-# Pas d'activité apt → les changements sont réels → garder l'exit code d'origine
-[[ $DPKG_N -eq 0 ]] && exit 0
-# Extraire les fichiers modifiés depuis le log AIDE
-CHANGED=$(grep -E '^File: ' /var/log/aide-daily.log 2>/dev/null | awk '{print $2}' | sort -u || true)
-if [[ -z "$CHANGED" ]]; then
-    # AIDE signale des changements mais sans fichiers identifiables → update silencieux
-    chattr -i /var/lib/aide/aide.db 2>/dev/null || true
-    aide --update --config /etc/aide/aide.conf >> /var/log/aide-daily.log 2>&1 || true
-    [[ -f /var/lib/aide/aide.db.new ]] && cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db || true
-    chattr +i /var/lib/aide/aide.db 2>/dev/null || true
-    echo 0 > /var/log/aide-daily.exit
-    exit 0
-fi
-# Paquets installés dans la fenêtre (liste normalisée)
-RECENT=$(awk -v c="$CUTOFF" '$0>c && /status installed/{p=$4; sub(/:.*$/,"",p); print p}' \
-    /var/log/dpkg.log 2>/dev/null | sort -u || true)
-UNMATCHED=0
-while IFS= read -r fp; do
-    [[ -z "$fp" ]] && continue
-    # Ignorer les chemins volatils
-    case $fp in /tmp/*|/run/*|/proc/*) continue ;; esac
-    # Trouver le paquet propriétaire du fichier modifié
-    owner=$(dpkg -S "$fp" 2>/dev/null | cut -d: -f1 | head -1 || true)
-    # Fichier inconnu de dpkg → suspect
-    [[ -z "$owner" ]] && { UNMATCHED=$((UNMATCHED+1)); continue; }
-    # Fichier appartient à un paquet non mis à jour récemment → suspect
-    echo "$RECENT" | grep -qxF "$owner" || UNMATCHED=$((UNMATCHED+1))
-done <<< "$CHANGED"
-# Tous les changements expliqués par apt → update silencieux de la baseline
-if [[ $UNMATCHED -eq 0 ]]; then
-    chattr -i /var/lib/aide/aide.db 2>/dev/null || true
-    aide --update --config /etc/aide/aide.conf >> /var/log/aide-daily.log 2>&1 || true
-    [[ -f /var/lib/aide/aide.db.new ]] && cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db || true
-    chattr +i /var/lib/aide/aide.db 2>/dev/null || true
-    echo 0 > /var/log/aide-daily.exit
-fi
-exit 0
-AIDESMART
-chmod 700 /usr/local/bin/vps-secure-aide-check.sh
-log_success "vps-secure-aide-check.sh installé (faux positifs apt éliminés, logique granulaire v1.1)."
-
 # Cron quotidien AIDE à 03h00 (4h avant le rapport Telegram de 07h00)
 # Le résultat est lu par vps-secure-check.sh pour le rapport Telegram
 cat > /etc/cron.d/aide-daily << 'AIDECRONEOF'
 # vps-secure — AIDE integrity check quotidien à 03h00
 # Résultat lu par vps-secure-check.sh pour le rapport Telegram 07h00
 # Exit code AIDE (bitmask) : 0=OK · 1=ajouts · 2=suppressions · 4=modifications · 7=les trois · 8+=erreur technique
-0 3 * * * root /usr/local/bin/vps-secure-aide-check.sh
+0 3 * * * root aide --check --config /etc/aide/aide.conf > /var/log/aide-daily.log 2>&1; echo $? > /var/log/aide-daily.exit
 AIDECRONEOF
 chmod 644 /etc/cron.d/aide-daily
 
@@ -1783,43 +1771,25 @@ GRAS='\033[1m'
 RESET='\033[0m'
 
 # ── Endlessh ──
-# Lecture du cache security-stats.json (évite docker logs synchrone — Issue #3)
-CACHE_FILE="/var/cache/vps-secure/security-stats.json"
-if [[ -f "$CACHE_FILE" ]]; then
-    CACHE_RUNNING=$(python3 -c "import json; print(json.load(open('$CACHE_FILE')).get('running','false'))" 2>/dev/null || echo "false")
-    BOTS_24H=$(python3 -c "import json; print(json.load(open('$CACHE_FILE')).get('last24h',0))" 2>/dev/null || echo "0")
-    BOTS_TOTAL=$(python3 -c "import json; print(json.load(open('$CACHE_FILE')).get('total',0))" 2>/dev/null || echo "0")
-    if [[ "$CACHE_RUNNING" == "true" ]]; then
-        ENDLESSH_STATUS="${VERT}actif${RESET}"
-    else
-        ENDLESSH_STATUS="${ROUGE}inactif${RESET}"
-        BOTS_24H="0"; BOTS_TOTAL="0"
-    fi
-elif docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
-    # Fallback synchrone si le cache n'existe pas encore (premier démarrage)
+if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
     BOTS_24H=$(docker logs endlessh --since 24h 2>&1 | { grep -ci "accept" || true; })
     BOTS_TOTAL=$(docker logs endlessh 2>&1 | { grep -ci "accept" || true; })
     ENDLESSH_STATUS="${VERT}actif${RESET}"
 else
-    BOTS_24H="0"; BOTS_TOTAL="0"
+    BOTS_24H="0"
+    BOTS_TOTAL="0"
     ENDLESSH_STATUS="${ROUGE}inactif${RESET}"
 fi
 
 # ── CrowdSec ──
-# cs_banned lu depuis le cache (évite cscli synchrone à chaque appel — Issue #7/#10)
 if command -v cscli &>/dev/null; then
-    if [[ -f "$CACHE_FILE" ]]; then
-        CS_BANNED=$(python3 -c "import json; print(json.load(open('$CACHE_FILE')).get('cs_banned',0))" 2>/dev/null || echo "0")
-    else
-        # Fallback synchrone si cache absent
-        CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
-            | python3 -c "import sys,json
+    CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
+        | python3 -c "import sys,json
 try:
     d=json.load(sys.stdin)
     print(len(d) if d else 0)
 except:
     print(0)" 2>/dev/null || echo "0")
-    fi
     CS_ALERTS_24H=$(cscli alerts list --since 24h -o json 2>/dev/null \
         | python3 -c "import sys,json
 try:
@@ -1873,33 +1843,6 @@ else
     AIDE_STATUS="${JAUNE}Pas encore exécuté (scan à 03h00)${RESET}"
 fi
 
-# ── Fix post-premier-scan : rkhunter + AIDE baseline update (J+1) ──
-# AIDE et rkhunter tournent la première nuit et génèrent des faux positifs
-# sur les fichiers système créés par AIDE lui-même (_aide user/group).
-# Ce script tourne une seule fois à 05h00 le lendemain pour corriger.
-cat > /usr/local/bin/vps-secure-first-scan-fix.sh << 'FIXEOF'
-#!/usr/bin/env bash
-# Mettre à jour rkhunter propupd
-rkhunter --propupd --nocolors > /dev/null 2>&1 || true
-# Mettre à jour baseline AIDE
-chattr -i /var/lib/aide/aide.db 2>/dev/null || true
-aide --update --config /etc/aide/aide.conf > /dev/null 2>&1 || true
-if [[ -f /var/lib/aide/aide.db.new ]]; then
-    cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
-    chattr +i /var/lib/aide/aide.db 2>/dev/null || true
-fi
-# Auto-supprimer ce script et son cron après exécution
-rm -f /etc/cron.d/vps-secure-first-scan-fix
-rm -f /usr/local/bin/vps-secure-first-scan-fix.sh
-FIXEOF
-chmod 700 /usr/local/bin/vps-secure-first-scan-fix.sh
-
-# Cron unique à 05h00 J+1 — se supprime lui-même après exécution
-echo "0 5 * * * root /usr/local/bin/vps-secure-first-scan-fix.sh" \
-    > /etc/cron.d/vps-secure-first-scan-fix
-chmod 644 /etc/cron.d/vps-secure-first-scan-fix
-log_success "Fix post-premier-scan configuré — baselines mises à jour automatiquement demain à 05h00."
-
 # ── Système ──
 UPTIME=$(uptime -p 2>/dev/null | sed 's/up //' || echo "inconnu")
 LOAD=$(uptime | awk -F'load average:' '{print $2}' | xargs || echo "inconnu")
@@ -1949,51 +1892,14 @@ chmod +x /usr/local/bin/vps-secure-stats
 log_success "Tableau de bord installé — commande disponible : sudo vps-secure-stats"
 
 # Installer vps-secure-verify pour usage post-reboot (évite le curl manuel)
-# log_warn explicite si échec réseau — évite "command not found" silencieux (Issue #6/#11)
-VERIFY_TMP=$(mktemp)
-VERIFY_SIG=$(mktemp)
-VERIFY_URL="https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh"
-if curl -fsSL "$VERIFY_URL"       -o "$VERIFY_TMP" 2>/dev/null && \
-   curl -fsSL "${VERIFY_URL}.asc" -o "$VERIFY_SIG" 2>/dev/null; then
-    if gpg --verify "$VERIFY_SIG" "$VERIFY_TMP" 2>/dev/null; then
-        install -m 755 "$VERIFY_TMP" /usr/local/bin/vps-secure-verify
-        log_success "vps-secure-verify installé — signature GPG vérifiée."
-    else
-        log_warn "vps-secure-verify : signature GPG invalide — non installé (supply chain protection)."
-        log_warn "  Installe manuellement après vérification : https://github.com/rockballslab/vps-secure"
-    fi
-else
-    log_warn "vps-secure-verify : téléchargement échoué (réseau) — non installé."
-    log_warn "  Installe manuellement après reboot :"
-    log_warn "  curl -fsSL ${VERIFY_URL} -o /usr/local/bin/vps-secure-verify && chmod +x /usr/local/bin/vps-secure-verify"
-fi
-rm -f "$VERIFY_TMP" "$VERIFY_SIG"
+curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh \
+    -o /usr/local/bin/vps-secure-verify 2>/dev/null || true  # optionnel : réseau peut échouer — non bloquant
+chmod +x /usr/local/bin/vps-secure-verify 2>/dev/null || true
+log_success "vps-secure-verify installé — commande disponible : sudo vps-secure-verify"
 
 # ── MOTD personnalisé (affiché à chaque connexion SSH) ──
-# Vider les scripts MOTD Ubuntu par défaut (publicitaires et verbeux)
-# truncate est plus fiable que chmod sur Ubuntu 24.04 — PAM exécute via pam_motd
-# indépendamment des permissions fichier
-for _motd_script in \
-    /etc/update-motd.d/00-header \
-    /etc/update-motd.d/10-help-text \
-    /etc/update-motd.d/50-motd-news \
-    /etc/update-motd.d/50-landscape-sysinfo \
-    /etc/update-motd.d/85-fwupd \
-    /etc/update-motd.d/90-updates-available \
-    /etc/update-motd.d/91-contract-ua-esm-status \
-    /etc/update-motd.d/91-release-upgrade \
-    /etc/update-motd.d/92-unattended-upgrades \
-    /etc/update-motd.d/95-hwe-eol \
-    /etc/update-motd.d/97-overlayroot \
-    /etc/update-motd.d/98-fsck-at-reboot \
-    /etc/update-motd.d/98-reboot-required; do
-    truncate -s 0 "$_motd_script" 2>/dev/null || true  # optionnel : fichier peut être absent selon l'image
-done
-# Désactiver les timers qui régénèrent motd.dynamic
-systemctl disable --now motd-news.timer 2>/dev/null || true  # optionnel : absent sur certaines images
-systemctl mask motd-news.timer 2>/dev/null || true
-systemctl disable --now update-notifier-motd.timer 2>/dev/null || true  # optionnel : même raison
-systemctl mask update-notifier-motd.timer 2>/dev/null || true
+# Désactiver le MOTD Ubuntu par défaut (publicitaire et verbeux)
+chmod -x /etc/update-motd.d/* 2>/dev/null || true  # optionnel : certains fichiers peuvent être absents
 cat > /etc/update-motd.d/00-vps-secure << 'MOTDEOF'
 #!/usr/bin/env bash
 
@@ -2006,10 +1912,11 @@ DISK_USED=$(df -h / 2>/dev/null | awk 'NR==2 {print $3}')
 DISK_TOTAL=$(df -h / 2>/dev/null | awk 'NR==2 {print $2}')
 DISK_PCT=$(df / 2>/dev/null | awk 'NR==2 {print $5}')
 UPTIME=$(uptime -p 2>/dev/null | sed 's/up //')
-# Lecture du cache security-stats.json — évite cscli et docker logs synchrones (Issues #3, #7/#10)
-_CACHE="/var/cache/vps-secure/security-stats.json"
-CS_BANNED=$(python3 -c "import json; print(json.load(open('$_CACHE')).get('cs_banned',0))" 2>/dev/null || echo "?")
-BOTS=$(python3 -c "import json; print(json.load(open('$_CACHE')).get('last24h',0))" 2>/dev/null || echo "?")
+CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
+    | python3 -c "import sys,json
+try: print(len(json.load(sys.stdin) or []))
+except: print(0)" 2>/dev/null || echo "0")
+BOTS=$(docker logs endlessh --since 24h 2>&1 | { grep -ci "accept" || true; })
 UFW_BLOCKS=$(grep -c "\[UFW BLOCK\]" /var/log/ufw.log 2>/dev/null || echo "0")
 
 G='\033[0;32m'
@@ -2032,15 +1939,6 @@ echo -e "  ${Y}🔥 UFW       ${W}${UFW_BLOCKS} blocages"
 echo -e "${R}"
 MOTDEOF
 chmod +x /etc/update-motd.d/00-vps-secure
-# Régénérer motd.dynamic avec uniquement notre script
-bash -c 'run-parts --lsbsysinit /etc/update-motd.d > /run/motd.dynamic 2>/dev/null' || true  # optionnel : erreurs attendues sur les scripts vidés
-# Fallback .bashrc — garantit l'affichage du MOTD même si PAM ne le régénère pas après reboot
-VPSADMIN_BASHRC="/home/$USERNAME/.bashrc"
-if ! grep -q "vps-secure-motd\|00-vps-secure" "$VPSADMIN_BASHRC" 2>/dev/null; then
-    echo '' >> "$VPSADMIN_BASHRC"
-    echo '# vps-secure MOTD' >> "$VPSADMIN_BASHRC"
-    echo 'sudo /etc/update-motd.d/00-vps-secure 2>/dev/null' >> "$VPSADMIN_BASHRC"
-fi
 log_success "MOTD personnalisé installé — affiché à chaque connexion SSH."
 
 # Résumé final

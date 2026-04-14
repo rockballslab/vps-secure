@@ -268,6 +268,70 @@ Si une anomalie est détectée dans le rapport quotidien, le message inclut le d
 
 ---
 
+## Optionnel mais pratique
+
+## Connexion rapide
+
+Ajoute ceci sur **ton ordinateur** dans `~/.ssh/config` :
+```
+Host monvps
+    HostName IP_DU_VPS
+    User vpsadmin
+    Port 2222
+    IdentityFile ~/.ssh/id_ed25519_vps
+```
+
+Ensuite tu te connectes avec juste :
+```bash
+ssh monvps
+```
+
+
+## Dashboard de monitoring (optionnel)
+ 
+Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
+
+ ```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)
+```
+> 🔐 **`install-dashboard-secure.sh`** vérifie la signature GPG de `install-dashboard.sh` avant de le lancer - garantit l'intégrité du script.
+
+
+ <p align="center">
+  <img src="./dashboard/dashboard-preview.png" alt="VPS Secure Dashboard" width="100%">
+</p>
+
+
+ <p align="center">
+  <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">
+</p>
+
+
+> Design system complet clair/sombre
+> 
+> 11 métriques temps réel avec score de santé
+> 
+> Timeline d'événements sécurité
+> 
+> Toggles Telegram interactifs
+> 
+> Icônes Phosphor, animations, hover effects
+> 
+> Backend Python stdlib zero-dependency
+> 
+> Auth Caddy + bcrypt
+> 
+> Responsive
+
+ 
+Le script te demande un domaine et un mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.
+ 
+> Prérequis :
+> un enregistrement DNS A pointant sur l'IP de ton VPS · Explications complémentaires dans le guide.
+> un mot de passe *(pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`)*
+
+---
+
 ## ⚠️ Docker & Firewall : Sécurité Garantie
 
 Par défaut, Docker ignore les règles de votre pare-feu (UFW) et expose vos ports directement sur Internet. Ce script corrige cette faille critique.
@@ -436,72 +500,6 @@ sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 # Cache sécurité (Endlessh + CrowdSec) - mis à jour toutes les 5 min
 cat /var/cache/vps-secure/security-stats.json
 ```
-
----
-
-## Optionnel mais pratique
-
-## Connexion rapide
-
-Ajoute ceci sur **ton ordinateur** dans `~/.ssh/config` :
-```
-Host monvps
-    HostName IP_DU_VPS
-    User vpsadmin
-    Port 2222
-    IdentityFile ~/.ssh/id_ed25519_vps
-```
-
-Ensuite tu te connectes avec juste :
-```bash
-ssh monvps
-```
-
-
-## Dashboard de monitoring (optionnel)
- 
-Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
-
- ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)
-```
-> 🔐 **`install-dashboard-secure.sh`** vérifie la signature GPG de `install-dashboard.sh` avant de le lancer - garantit l'intégrité du script.
-
-
- <p align="center">
-  <img src="./dashboard/dashboard-preview.png" alt="VPS Secure Dashboard" width="100%">
-</p>
-
-
- <p align="center">
-  <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">
-</p>
-
-
-> Design system complet clair/sombre
-> 
-> 11 métriques temps réel avec score de santé
-> 
-> Timeline d'événements sécurité
-> 
-> Toggles Telegram interactifs
-> 
-> Icônes Phosphor, animations, hover effects
-> 
-> Backend Python stdlib zero-dependency
-> 
-> Auth Caddy + bcrypt
-> 
-> Responsive
-
- 
-
-
-Le script te demande un domaine et un mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.
- 
-> Prérequis :
-> un enregistrement DNS A pointant sur l'IP de ton VPS · Explications complémentaires dans le guide.
-> un mot de passe *(pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`)*
 
 ---
 

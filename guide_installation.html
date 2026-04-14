@@ -839,37 +839,46 @@
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 18px;
-      padding: 36px 32px;
+      padding: 20px 24px;
       max-width: 560px;
       width: 100%;
       box-shadow: var(--shadow-lg);
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
     }
 
     .modal-icon {
-      font-size: 44px;
-      margin-bottom: 14px;
+      font-size: 26px;
+      margin-bottom: 0;
+      display: inline;
+      margin-right: 6px;
     }
 
     .modal h2 {
-      font-size: 22px;
+      font-size: 19px;
       font-weight: 800;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       color: var(--text);
+      display: inline;
+    }
+
+    .modal-header {
+      margin-bottom: 4px;
     }
 
     .modal p {
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 20px;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 10px;
     }
 
     .cmd-block {
       background: #0f172a;
       border: 1px solid #1e293b;
       border-radius: 10px;
-      padding: 14px 16px;
-      margin-bottom: 12px;
+      padding: 9px 12px;
+      margin-bottom: 8px;
       cursor: pointer;
       transition: border-color .2s;
     }
@@ -897,19 +906,19 @@
 
     .cmd-code {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
+      font-size: 12px;
       color: #6ee7b7;
-      line-height: 1.8;
+      line-height: 1.5;
     }
 
     .modal-note {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
       background: var(--bg3);
       border-radius: 8px;
-      padding: 12px 14px;
-      margin-bottom: 20px;
-      line-height: 1.7;
+      padding: 7px 10px;
+      margin-bottom: 10px;
+      line-height: 1.5;
       border: 1px solid var(--border);
     }
 
@@ -929,10 +938,14 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 7px 0;
+      padding: 5px 0;
       border-bottom: 1px solid #f1f5f9;
     }
-    .modal-val-row:last-child { border-bottom: none; }
+
+    .modal-val-row:last-child {
+      border-bottom: none;
+    }
+
     .modal-val-label {
       font-size: 11px;
       font-weight: 700;
@@ -940,6 +953,7 @@
       min-width: 130px;
       flex-shrink: 0;
     }
+
     .modal-val-value {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
@@ -949,7 +963,13 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .modal-val-value.secret { letter-spacing: 3px; color: #94a3b8; font-size: 10px; }
+
+    .modal-val-value.secret {
+      letter-spacing: 3px;
+      color: #94a3b8;
+      font-size: 10px;
+    }
+
     .modal-val-copy {
       background: #f1f5f9;
       border: 1px solid #e2e8f0;
@@ -962,8 +982,19 @@
       flex-shrink: 0;
       transition: all .15s;
     }
-    .modal-val-copy:hover { background: #e0f2fe; border-color: #7dd3fc; color: #0369a1; }
-    .modal-val-copy.copied { background: #dcfce7; border-color: #86efac; color: #15803d; }
+
+    .modal-val-copy:hover {
+      background: #e0f2fe;
+      border-color: #7dd3fc;
+      color: #0369a1;
+    }
+
+    .modal-val-copy.copied {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #15803d;
+    }
+
     .modal-dashboard-btn {
       display: flex;
       align-items: center;
@@ -979,7 +1010,11 @@
       text-decoration: none;
       transition: all .2s;
     }
-    .modal-dashboard-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+
+    .modal-dashboard-btn:hover {
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
 
     .btn-close {
       padding: 10px 24px;
@@ -1064,8 +1099,8 @@
     <div class="header-content">
       <div class="tag">Checklist · v2.0 · 100% Offline</div>
       <h1>🔐 <em>vps-secure</em></h1>
-      <p class="header-tagline">Sécurise ton VPS Ubuntu 24.04 en une commande</p>
-      <p class="header-sub">Le seul repo GitHub français qui sécurise vraiment ton serveur</p>
+      <p class="header-tagline">Sécurise ton serveur en moins de 15 min</p>
+      <p class="header-sub">Le guide complet étape par étape SIMPLISSIME</p>
       <div class="header-stats">
         <div class="header-stat">🛡️ <strong>1 commande</div>
         <div class="header-stat">⏱️ <strong>moins de 15 min</div>
@@ -1084,7 +1119,7 @@
     <div class="protections-inner">
       <div class="section-label">
         <div class="section-label-line"></div>
-        <span>ce qu'install.sh fait</span>
+        <span>ce qu'install-secure.sh fait</span>
         <div class="section-label-line"></div>
       </div>
       <div class="section-title">15 étapes automatiques</div>
@@ -1206,319 +1241,353 @@
 
   <div class="overlay" id="modal" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-icon">🚀</div>
-      <h2>C'est parti !</h2>
+      <div class="modal-header"><span class="modal-icon">🚀</span>
+        <h2>C'est parti !</h2>
+      </div>
       <p>Tu as tout ce qu'il faut. Lance le script depuis ton terminal.</p>
       <div class="modal-note" style="margin-bottom:12px;">
         💻 <strong>Ouvrir un terminal :</strong><br>
-        Mac → Terminal.app ou iTerm2&nbsp;&nbsp;·&nbsp;&nbsp;Windows → Windows Terminal ou
-        PuTTY&nbsp;&nbsp;·&nbsp;&nbsp;Linux → Ctrl+Alt+T
+        Mac → Terminal.app ou iTerm2&nbsp;&nbsp;·&nbsp;&nbsp;Windows → Windows Terminal&nbsp;&nbsp;·&nbsp;&nbsp;
       </div>
-      <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:16px;">
+      <!-- Section 1 : Connexion Root -->
+      <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:6px;">
         <div class="cmd-label">
-          <span>Connexion root — 1 seule fois</span>
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span
+              style="background:#2563eb;color:#fff;font-size:12px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">1</span>
+            Connexion root — 1 seule fois
+          </span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
         <div class="cmd-code">ssh root@<span id="modal-ip">IP_DU_VPS</span></div>
       </div>
-      <div class="cmd-block" onclick="copyBlock(this)">
+      <div id="modal-values-block-pwd"
+        style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px;margin-bottom:10px;">
+        <div
+          style="font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px;">
+          📋 Valeur demandée par le script</div>
+        <div id="modal-val-vps_pwd" class="modal-val-row"></div>
+      </div>
+      <!-- Section 2 : install-secure.sh -->
+      <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:6px;">
         <div class="cmd-label">
           <span style="display:flex;align-items:center;gap:8px;">
             <span
-              style="background:#2563eb;color:#fff;font-size:13px;font-weight:800;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">1</span>
-            install.sh — en root (~10-15 min)
+              style="background:#ea580c;color:#fff;font-size:12px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">2</span>
+            install-secure.sh — en root (~10-15 min)
           </span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
-        <div class="cmd-code">curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh && chmod +x install-secure.sh && sudo ./install-secure.sh</div>
-      </div>
-      <div id="modal-values-block" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:10px;">📋 Valeurs demandées par le script</div>
-        <div id="modal-val-vps_pwd" class="modal-val-row"></div>
-        <div id="modal-val-ssh_pub" class="modal-val-row"></div>
-        <div id="modal-val-tg_token" class="modal-val-row"></div>
-        <div id="modal-val-tg_chatid" class="modal-val-row"></div>
-      </div>
-      <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:16px;">
-        <div class="cmd-label">
-          <span style="display:flex;align-items:center;gap:8px;">
-            <span style="background:#059669;color:#fff;font-size:13px;font-weight:800;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">2</span>
-            Connexion après installation — en vpsadmin
-          </span>
-          <span class="cmd-hint">clic pour copier</span>
+        <div class="cmd-code">bash <(curl -fsSL
+            https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh)</div>
         </div>
-        <div class="cmd-code" id="modal-reconnect-cmd">ssh vpsadmin@<span id="modal-ip2">IP_DU_VPS</span> -p 2222 -i ~/.ssh/id_ed25519_vps</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
-        <div id="modal-dashboard-link" style="display:none;flex:1;"></div>
-        <button class="btn-close" onclick="closeModal();resetAll()" style="flex-shrink:0;">Fermer</button>
+        <div id="modal-values-block"
+          style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px;margin-bottom:10px;">
+          <div
+            style="font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px;">
+            📋 Valeurs demandées par le script</div>
+          <div id="modal-val-ssh_pub" class="modal-val-row"></div>
+          <div
+            style="font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-top:6px;margin-bottom:4px;">
+            Optionnel mais recommandé</div>
+          <div id="modal-val-tg_token" class="modal-val-row"></div>
+          <div id="modal-val-tg_chatid" class="modal-val-row"></div>
+        </div>
+        <!-- Section 3 : Connexion après installation -->
+        <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:6px;">
+          <div class="cmd-label">
+            <span style="display:flex;align-items:center;gap:8px;">
+              <span
+                style="background:#059669;color:#fff;font-size:12px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">3</span>
+              Connexion après installation — en vpsadmin
+            </span>
+            <span class="cmd-hint">clic pour copier</span>
+          </div>
+          <div class="cmd-code" id="modal-reconnect-cmd">ssh vpsadmin@<span id="modal-ip2">IP_DU_VPS</span> -p 2222 -i
+            ~/.ssh/id_ed25519_vps</div>
+        </div>
+        <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:12px;">
+          <div class="cmd-label">
+            <span>Après reconnexion — vérification</span>
+            <span class="cmd-hint">clic pour copier</span>
+          </div>
+          <div class="cmd-code">sudo vps-secure-verify</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div id="modal-dashboard-link" style="display:none;flex:1;"></div>
+          <button class="btn-close" onclick="closeModal();resetAll()" style="flex-shrink:0;">Fermer</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <footer>vps-secure · github.com/rockballslab/vps-secure · Fichier local — aucune connexion réseau</footer>
+    <footer>vps-secure · github.com/rockballslab/vps-secure · Fichier local — aucune connexion réseau</footer>
 
-  <script>
-    const REFERRAL = "https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1";
-    const STEPS = [
-      { id: 0, color: "#2563eb", bg: "linear-gradient(135deg,#2563eb,#4f46e5)", label: "Avant de lancer install.sh", sub: "À préparer sur ton ordinateur" },
-      { id: 1, color: "#ea580c", bg: "linear-gradient(135deg,#ea580c,#f97316)", label: "Pendant install.sh", sub: "Obligatoires : mot de passe root + clé SSH — Telegram est optionnel" },
-      { id: 2, color: "#059669", bg: "linear-gradient(135deg,#059669,#10b981)", label: "Après install.sh", sub: "Optionnel : Stockage des accès dashboard" },
-    ];
-    const LINKS = {
-      vps_cmd: [{ label: "🛒 Commander sur Hostinger (-20%)", url: REFERRAL, style: "orange" }],
-      ssh_pub: [{ label: "📖 Générer une clé SSH (guide)", url: "https://docs.github.com/fr/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent", style: "blue" }],
-      tg_token: [{ label: "💬 Ouvrir @BotFather", url: "https://t.me/BotFather", style: "blue" }],
-      tg_chatid: [{ label: "💬 Ouvrir @userinfobot", url: "https://t.me/userinfobot", style: "blue" }],
-    };
-    const LINK_STYLES = {
-      blue: { bg: "#eff6ff", border: "#93c5fd", color: "#1d4ed8" },
-      orange: { bg: "#fff7ed", border: "#fdba74", color: "#c2410c" },
-      purple: { bg: "#f5f3ff", border: "#c4b5fd", color: "#6d28d9" },
-      muted: { bg: "#f8fafc", border: "#cbd5e1", color: "#475569" },
-      green: { bg: "#f0fdf4", border: "#86efac", color: "#15803d" },
-    };
-    const PREREQS = [
-      { id: "vps_cmd", step: 0, req: true, secret: false, name: "VPS commandé (Ubuntu 24.04 LTS)", cat: "VPS", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "ex: Hostinger KVM2 commandé le 04/04/2026", hint: "OS obligatoire : Ubuntu 24.04 LTS\nRécupère l'IP et le mot de passe root dans le dashboard Hostinger après provisioning." },
-      { id: "vps_ip", step: 0, req: true, secret: false, name: "IP du VPS", cat: "VPS", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "ex: 95.123.45.67", hint: "Dashboard de ton hébergeur → IP publique du VPS\nNote-la ici — elle sera affichée dans la commande de connexion." },
-      { id: "vps_pwd", step: 1, req: true, secret: true, name: "Mot de passe root VPS", cat: "VPS", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "mot de passe root fourni par l'hébergeur", hint: "Fourni par email ou dans le dashboard après provisioning.\nUtilisé une seule fois pour : ssh root@IP_DU_VPS\nAprès install.sh, la connexion root par mot de passe est désactivée." },
-      { id: "ssh_pub", step: 1, req: true, secret: false, name: "Clé SSH publique (.pub)", cat: "SSH", catBg: "#f0fdf4", catBorder: "#86efac", catColor: "#15803d", ph: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5...", hint: "Générer sur ton ordinateur (Mac/Linux/Windows) :\n  ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_vps\n\nRécupérer la clé PUBLIQUE (avec .pub) :\n  cat ~/.ssh/id_ed25519_vps.pub\n\nNe JAMAIS coller la clé privée (sans .pub) !" },
-      { id: "tg_token", step: 1, req: false, secret: true, name: "Token bot Telegram", cat: "Telegram", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "123456789:AAFxxxxxxxxxxxxxxxxx", hint: "Pour recevoir un rapport de sécurité quotidien + alerte SSH.\n@BotFather → /newbot → copie le token.\nOptional — le script fonctionne parfaitement sans." },
-      { id: "tg_chatid", step: 1, req: false, secret: false, name: "Chat ID Telegram", cat: "Telegram", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "987654321", hint: "Ton identifiant Telegram personnel.\n@userinfobot → /start → copie le champ 'Id'." },
-      { id: "dash_url", step: 2, req: false, secret: false, name: "Adresse du Dashboard", cat: "Admin", catBg: "#f5f3ff", catBorder: "#c4b5fd", catColor: "#6d28d9", ph: "ex: https://dashboard.mon-domaine.com", hint: "L'URL que vous utiliserez pour accéder à votre interface d'administration après configuration.\nPrérequis : un enregistrement DNS A pointant sur l'IP de ton VPS" },
-      { id: "dash_pwd", step: 2, req: false, secret: true, name: "Mot de passe du dashboard", cat: "Admin", catBg: "#f5f3ff", catBorder: "#c4b5fd", catColor: "#6d28d9", ph: "mot de passe ultra-sécurisé", hint: "Générer en un clic :<br><br>💻 Windows (PowerShell) :<div class='cmd-block' style='margin:5px 0' onclick='copyBlock(this)'><div class='cmd-code'>[Convert]::ToBase64String((1..24 | % { [byte](Get-Random -Min 0 -Max 256) }))</div></div>🍎 Mac / Linux / Git Bash :<div class='cmd-block' style='margin:5px 0' onclick='copyBlock(this)'><div class='cmd-code'>openssl rand -base64 32</div></div>" },
-    ];
+    <script>
+      const REFERRAL = "https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1";
+      const STEPS = [
+        { id: 0, color: "#2563eb", bg: "linear-gradient(135deg,#2563eb,#4f46e5)", label: "Avant de lancer install-secure.sh", sub: "À préparer sur ton ordinateur" },
+        { id: 1, color: "#ea580c", bg: "linear-gradient(135deg,#ea580c,#f97316)", label: "Pendant install-secure.sh", sub: "Obligatoires : mot de passe root + clé SSH — Telegram est optionnel" },
+        { id: 2, color: "#059669", bg: "linear-gradient(135deg,#059669,#10b981)", label: "Après install-secure.sh", sub: "Optionnel : Stockage des accès dashboard" },
+      ];
+      const LINKS = {
+        vps_cmd: [],
+        ssh_pub: [{ label: "📖 Générer une clé SSH (guide)", url: "https://docs.github.com/fr/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent", style: "blue" }],
+        tg_token: [{ label: "💬 Ouvrir @BotFather", url: "https://t.me/BotFather", style: "blue" }],
+        tg_chatid: [{ label: "💬 Ouvrir @userinfobot", url: "https://t.me/userinfobot", style: "blue" }],
+      };
+      const LINK_STYLES = {
+        blue: { bg: "#eff6ff", border: "#93c5fd", color: "#1d4ed8" },
+        orange: { bg: "#fff7ed", border: "#fdba74", color: "#c2410c" },
+        purple: { bg: "#f5f3ff", border: "#c4b5fd", color: "#6d28d9" },
+        muted: { bg: "#f8fafc", border: "#cbd5e1", color: "#475569" },
+        green: { bg: "#f0fdf4", border: "#86efac", color: "#15803d" },
+      };
+      const PREREQS = [
+        { id: "vps_cmd", step: 0, req: true, secret: false, name: "VPS commandé (Ubuntu 24.04 LTS)", cat: "VPS", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "ex: Hostinger KVM2 commandé le 04/04/2026", hint: "OS obligatoire : Ubuntu 24.04 LTS\nRécupère l'IP et le mot de passe root dans le dashboard Hostinger après provisioning." },
+        { id: "vps_ip", step: 0, req: true, secret: false, name: "IP du VPS", cat: "VPS", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "ex: 95.123.45.67", hint: "Dashboard de ton hébergeur → IP publique du VPS\nNote-la ici — elle sera affichée dans la commande de connexion." },
+        { id: "vps_pwd", step: 1, req: true, secret: true, name: "Mot de passe root VPS", cat: "VPS", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "mot de passe root fourni par l'hébergeur", hint: "Fourni par email ou dans le dashboard après provisioning.\nUtilisé une seule fois pour : ssh root@IP_DU_VPS\nAprès install-secure.sh, la connexion root par mot de passe est désactivée." },
+        { id: "ssh_pub", step: 1, req: true, secret: false, name: "Clé SSH publique (.pub)", cat: "SSH", catBg: "#f0fdf4", catBorder: "#86efac", catColor: "#15803d", ph: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5...", hint: "Générer sur ton ordinateur (Mac/Linux/Windows) :\n  ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_vps\n\nRécupérer la clé PUBLIQUE (avec .pub) :\n  cat ~/.ssh/id_ed25519_vps.pub\n\nNe JAMAIS coller la clé privée (sans .pub) !" },
+        { id: "tg_token", step: 1, req: false, secret: true, name: "Token bot Telegram", cat: "Telegram", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "123456789:AAFxxxxxxxxxxxxxxxxx", hint: "Pour recevoir un rapport de sécurité quotidien + alerte SSH.\n@BotFather → /newbot → copie le token.\nOptional — le script fonctionne parfaitement sans." },
+        { id: "tg_chatid", step: 1, req: false, secret: false, name: "Chat ID Telegram", cat: "Telegram", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "987654321", hint: "Ton identifiant Telegram personnel.\n@userinfobot → /start → copie le champ 'Id'." },
+        { id: "dash_url", step: 2, req: false, secret: false, name: "Adresse du Dashboard", cat: "Admin", catBg: "#f5f3ff", catBorder: "#c4b5fd", catColor: "#6d28d9", ph: "ex: https://dashboard.mon-domaine.com", hint: "L'URL que vous utiliserez pour accéder à votre interface d'administration après configuration.\nPrérequis : un enregistrement DNS A pointant sur l'IP de ton VPS" },
+        { id: "dash_pwd", step: 2, req: false, secret: true, name: "Mot de passe du dashboard", cat: "Admin", catBg: "#f5f3ff", catBorder: "#c4b5fd", catColor: "#6d28d9", ph: "mot de passe ultra-sécurisé", hint: "Générer en un clic :<br><br>💻 Windows (PowerShell) :<div class='cmd-block' style='margin:5px 0' onclick='copyBlock(this)'><div class='cmd-code'>[Convert]::ToBase64String((1..24 | % { [byte](Get-Random -Min 0 -Max 256) }))</div></div>🍎 Mac / Linux / Git Bash :<div class='cmd-block' style='margin:5px 0' onclick='copyBlock(this)'><div class='cmd-code'>openssl rand -base64 32</div></div>" },
+      ];
 
-    let vals = {}, showSecret = {};
-    const save = () => { try { localStorage.setItem("vps_secure_v1", JSON.stringify(vals)); } catch (e) { } };
-    const isOk = id => (vals[id] || "").trim().length > 0;
-    const esc = s => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      let vals = {}, showSecret = {};
+      const save = () => { try { localStorage.setItem("vps_secure_v1", JSON.stringify(vals)); } catch (e) { } };
+      const isOk = id => (vals[id] || "").trim().length > 0;
+      const esc = s => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-    function makeLinkHTML(id) {
-      const links = LINKS[id]; if (!links || !links.length) return "";
-      const items = links.map(l => { const s = LINK_STYLES[l.style] || LINK_STYLES.blue; return `<a class="card-link" href="${l.url}" target="_blank" rel="noopener" style="background:${s.bg};border-color:${s.border};color:${s.color}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${l.label}</a>`; }).join("");
-      return `<div class="card-link-row">${items}</div>`;
-    }
+      function makeLinkHTML(id) {
+        const links = LINKS[id]; if (!links || !links.length) return "";
+        const items = links.map(l => { const s = LINK_STYLES[l.style] || LINK_STYLES.blue; return `<a class="card-link" href="${l.url}" target="_blank" rel="noopener" style="background:${s.bg};border-color:${s.border};color:${s.color}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${l.label}</a>`; }).join("");
+        return `<div class="card-link-row">${items}</div>`;
+      }
 
-    function buildUI() {
-      try { vals = JSON.parse(localStorage.getItem("vps_secure_v1") || "{}"); } catch (e) { }
-      const main = document.getElementById("main"); main.innerHTML = "";
-      STEPS.forEach((step, si) => {
-        const ps = PREREQS.filter(p => p.step === step.id);
-        const mandInStep = ps.filter(p => p.req);
-        const okMandN = mandInStep.filter(p => isOk(p.id)).length;
-        const done = mandInStep.length > 0 && okMandN === mandInStep.length;
-        const sec = document.createElement("div"); sec.className = "step-section";
-        sec.innerHTML = `<div class="step-header"><div class="step-bubble" style="background:${step.bg}"><span style="color:#fff">${si + 1}</span></div><div class="step-text"><div class="step-title" style="color:${step.color}">${step.label}</div><div class="step-sub">${step.sub}</div></div><div class="step-badge ${done ? "step-done" : ""}" id="sc-${step.id}">${okMandN} / ${mandInStep.length}</div></div>`;
-        ps.forEach(p => {
-          const ok = isOk(p.id); const masked = p.secret && !showSecret[p.id];
-          const reqBadge = p.req ? `<span class="badge badge-req">obligatoire</span>` : `<span class="badge badge-opt">optionnel</span>`;
-          const referralHTML = p.id === "vps_cmd" ? `<div class="referral-banner"><div class="referral-icon">🎁</div><div class="referral-left"><div class="referral-title">20% de réduction sur Hostinger</div><div class="referral-sub">Via le lien partenaire · Code : <strong>WP7SERVERWR1</strong></div></div><button class="btn-referral" id="btn-ref" onclick="openHostinger()">🔗 Commander avec -20%</button></div>` : "";
-          const card = document.createElement("div"); card.className = "prereq-card" + (ok ? " ok" : ""); card.id = "card-" + p.id;
-          card.innerHTML = `<div class="card-top"><div class="card-icon" id="icon-${p.id}">${ok ? "✅" : "⚪"}</div><div class="card-name">${p.name}</div><div class="card-badges"><span class="badge" style="background:${p.catBg};border:1px solid ${p.catBorder};color:${p.catColor}">${p.cat}</span>${reqBadge}</div></div>${referralHTML}<details class="card-hint-details"><summary>ℹ️ Comment faire ?</summary><div class="card-hint">${p.hint}</div></details>${makeLinkHTML(p.id)}<div class="field-wrap"><input class="field-input${ok ? " ok" : ""}" id="input-${p.id}" type="${masked ? "password" : "text"}" placeholder="${esc(p.ph)}" value="${esc(vals[p.id] || "")}" oninput="onInput('${p.id}',this.value)" autocomplete="off" spellcheck="false"/>${p.secret ? `<button class="btn-eye" id="eye-${p.id}" onclick="toggleEye('${p.id}')" title="Afficher/masquer">👁</button>` : ""}<button class="btn-copy" id="copy-${p.id}" onclick="copyOne('${p.id}')" title="Copier">📋</button></div>`;
-          sec.appendChild(card);
+      function buildUI() {
+        try { vals = JSON.parse(localStorage.getItem("vps_secure_v1") || "{}"); } catch (e) { }
+        const main = document.getElementById("main"); main.innerHTML = "";
+        STEPS.forEach((step, si) => {
+          const ps = PREREQS.filter(p => p.step === step.id);
+          const mandInStep = ps.filter(p => p.req);
+          const okMandN = mandInStep.filter(p => isOk(p.id)).length;
+          const done = mandInStep.length > 0 && okMandN === mandInStep.length;
+          const sec = document.createElement("div"); sec.className = "step-section";
+          sec.innerHTML = `<div class="step-header"><div class="step-bubble" style="background:${step.bg}"><span style="color:#fff">${si + 1}</span></div><div class="step-text"><div class="step-title" style="color:${step.color}">${step.label}</div><div class="step-sub">${step.sub}</div></div><div class="step-badge ${done ? "step-done" : ""}" id="sc-${step.id}">${okMandN} / ${mandInStep.length}</div></div>`;
+          ps.forEach(p => {
+            const ok = isOk(p.id); const masked = p.secret && !showSecret[p.id];
+            const reqBadge = p.req ? `<span class="badge badge-req">obligatoire</span>` : `<span class="badge badge-opt">optionnel</span>`;
+            const referralHTML = p.id === "vps_cmd" ? `<div class="referral-banner"><div class="referral-icon">🎁</div><div class="referral-left"><div class="referral-title">20% de réduction sur Hostinger</div><div class="referral-sub">Via le lien partenaire · Code : <strong>WP7SERVERWR1</strong></div></div><button class="btn-referral" id="btn-ref" onclick="openHostinger()">🔗 Commander avec -20%</button></div>` : "";
+            const card = document.createElement("div"); card.className = "prereq-card" + (ok ? " ok" : ""); card.id = "card-" + p.id;
+            card.innerHTML = `<div class="card-top"><div class="card-icon" id="icon-${p.id}">${ok ? "✅" : "⚪"}</div><div class="card-name">${p.name}</div><div class="card-badges"><span class="badge" style="background:${p.catBg};border:1px solid ${p.catBorder};color:${p.catColor}">${p.cat}</span>${reqBadge}</div></div>${referralHTML}<details class="card-hint-details"><summary>ℹ️ Comment faire ?</summary><div class="card-hint">${p.hint}</div></details>${makeLinkHTML(p.id)}<div class="field-wrap"><input class="field-input${ok ? " ok" : ""}" id="input-${p.id}" type="${masked ? "password" : "text"}" placeholder="${esc(p.ph)}" value="${esc(vals[p.id] || "")}" oninput="onInput('${p.id}',this.value)" autocomplete="off" spellcheck="false"/>${p.secret ? `<button class="btn-eye" id="eye-${p.id}" onclick="toggleEye('${p.id}')" title="Afficher/masquer">👁</button>` : ""}<button class="btn-copy" id="copy-${p.id}" onclick="copyOne('${p.id}')" title="Copier">📋</button></div>`;
+            sec.appendChild(card);
+          });
+          main.appendChild(sec);
         });
-        main.appendChild(sec);
-      });
-      updateScore();
-    }
-
-    function openHostinger() {
-      window.open(REFERRAL, "_blank");
-      const btn = document.getElementById("btn-ref");
-      if (btn) { btn.textContent = "✅ Lien ouvert !"; btn.className = "btn-referral copied"; setTimeout(() => { btn.textContent = "🔗 Commander avec -20%"; btn.className = "btn-referral"; }, 2500); }
-    }
-
-    function onInput(id, val) {
-      vals[id] = val; save(); const ok = isOk(id);
-      document.getElementById("card-" + id).className = "prereq-card" + (ok ? " ok" : "");
-      document.getElementById("icon-" + id).textContent = ok ? "✅" : "⚪";
-      const inp = document.getElementById("input-" + id); if (inp) inp.className = "field-input" + (ok ? " ok" : "");
-      if (id === "vps_ip" && val.trim()) { const ip = val.trim();["modal-ip", "modal-ip2"].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = ip; }); }
-      updateScore();
-    }
-
-    function toggleEye(id) {
-      showSecret[id] = !showSecret[id];
-      const inp = document.getElementById("input-" + id); const btn = document.getElementById("eye-" + id);
-      if (inp) inp.type = showSecret[id] ? "text" : "password";
-      if (btn) btn.textContent = showSecret[id] ? "🙈" : "👁";
-    }
-
-    function copyOne(id) {
-      const val = (vals[id] || "").trim();
-      if (!val) { flashCopy("copy-" + id, "❌", false); return; }
-      navigator.clipboard.writeText(val).then(() => flashCopy("copy-" + id, "✅", true));
-    }
-
-    function flashCopy(btnId, icon, ok) {
-      const btn = document.getElementById(btnId); if (!btn) return;
-      const orig = btn.textContent; btn.textContent = icon; btn.className = "btn-copy" + (ok ? " copied" : "");
-      setTimeout(() => { btn.textContent = orig; btn.className = "btn-copy"; }, 1500);
-    }
-
-    function updateScore() {
-      const mand = PREREQS.filter(p => p.req);
-      const okCnt = mand.filter(p => isOk(p.id)).length;
-      const score = Math.round(okCnt / mand.length * 100);
-      const color = score === 100 ? "#059669" : score >= 50 ? "#d97706" : "#dc2626";
-      document.getElementById("score-pct").textContent = score + "%";
-      document.getElementById("score-pct").style.color = color;
-      document.getElementById("score-count").textContent = okCnt + " / " + mand.length + " prérequis";
-      document.getElementById("bar").style.width = score + "%";
-      document.getElementById("bar").style.background = color;
-      const msg = document.getElementById("score-msg");
-      if (score === 100) { msg.textContent = "🎉 Prêt !"; msg.style.color = "#059669"; }
-      else { const r = mand.length - okCnt; msg.textContent = r + " restant" + (r > 1 ? "s" : ""); msg.style.color = "#64748b"; }
-      const btn = document.getElementById("btn-launch");
-      if (score === 100) { btn.className = "btn-launch unlocked"; btn.disabled = false; btn.textContent = "🚀   Lancer install.sh"; }
-      else { btn.className = "btn-launch locked"; btn.disabled = true; const r = mand.length - okCnt; btn.textContent = "🔒   " + r + " prérequis restant" + (r > 1 ? "s" : ""); }
-      const btnBottom = document.getElementById("btn-launch-bottom");
-      if (btnBottom) { btnBottom.className = btn.className; btnBottom.disabled = btn.disabled; btnBottom.textContent = btn.textContent; }
-      STEPS.forEach(s => {
-        const el = document.getElementById("sc-" + s.id); if (!el) return;
-        const sp = PREREQS.filter(p => p.step === s.id && p.req);
-        const dn = sp.filter(p => isOk(p.id)).length;
-        el.textContent = dn + " / " + sp.length; el.className = "step-badge" + (sp.length > 0 && dn === sp.length ? " step-done" : "");
-      });
-      const ip = (vals["vps_ip"] || "").trim();
-      if (ip) { ["modal-ip", "modal-ip2"].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = ip; }); }
-    }
-
-    const MODAL_VALS = [
-      { id: "vps_pwd",   label: "Mot de passe root",  secret: true },
-      { id: "ssh_pub",   label: "Clé SSH publique",    secret: false },
-      { id: "tg_token",  label: "Token Telegram",      secret: true },
-      { id: "tg_chatid", label: "Chat ID Telegram",    secret: false },
-    ];
-
-    function copyModalVal(id) {
-      const val = (vals[id] || "").trim();
-      if (!val) return;
-      navigator.clipboard.writeText(val).then(() => {
-        const btn = document.getElementById("mvcopy-" + id);
-        if (!btn) return;
-        btn.textContent = "✅ Copié"; btn.className = "modal-val-copy copied";
-        setTimeout(() => { btn.textContent = "📋 Copier"; btn.className = "modal-val-copy"; }, 1800);
-      });
-    }
-
-    function openModal() {
-      const mand = PREREQS.filter(p => p.req);
-      if (mand.filter(p => isOk(p.id)).length < mand.length) return;
-
-      // Populate copyable values
-      MODAL_VALS.forEach(mv => {
-        const row = document.getElementById("modal-val-" + mv.id);
-        if (!row) return;
-        const val = (vals[mv.id] || "").trim();
-        if (!val) { row.style.display = "none"; return; }
-        row.style.display = "flex";
-        const display = mv.secret ? "••••••••••••" : (val.length > 38 ? val.slice(0, 36) + "…" : val);
-        row.innerHTML = `<span class="modal-val-label">${mv.label}</span><span class="modal-val-value${mv.secret ? " secret" : ""}" title="${mv.secret ? "" : esc(val)}">${esc(display)}</span><button class="modal-val-copy" id="mvcopy-${mv.id}" onclick="copyModalVal('${mv.id}')">📋 Copier</button>`;
-      });
-
-      // Conditional dashboard link
-      const dashUrl = (vals["dash_url"] || "").trim();
-      const dashBlock = document.getElementById("modal-dashboard-link");
-      if (dashUrl) {
-        dashBlock.style.display = "flex";
-        dashBlock.innerHTML = `<button class="modal-dashboard-btn" onclick="openDashConfirm('${esc(dashUrl)}')">🖥️ Ouvrir mon dashboard <span style="font-size:11px;font-weight:400;margin-left:auto;opacity:.7">${esc(dashUrl)}</span></button>`;
-      } else {
-        dashBlock.style.display = "none";
+        updateScore();
       }
 
-      document.getElementById("modal").className = "overlay open";
-    }
-    function closeModal() { document.getElementById("modal").className = "overlay"; }
-
-    function copyBlock(el) {
-      const txt = el.querySelector(".cmd-code").innerText;
-      navigator.clipboard.writeText(txt).then(() => {
-        const hint = el.querySelector(".cmd-hint"); const orig = el.style.borderColor;
-        el.style.borderColor = "#059669";
-        if (hint) { hint.textContent = "✅ Copié !"; hint.style.color = "#6ee7b7"; }
-        setTimeout(() => { el.style.borderColor = orig; if (hint) { hint.textContent = "clic pour copier"; hint.style.color = ""; } }, 1800);
-      });
-    }
-
-    function resetAll() { document.getElementById("overlay-reset").classList.add("open"); }
-    function cancelReset() { document.getElementById("overlay-reset").classList.remove("open"); }
-    function confirmReset() { document.getElementById("overlay-reset").classList.remove("open"); vals = {}; showSecret = {}; try { localStorage.removeItem("vps_secure_v1"); } catch (e) { } buildUI(); }
-
-    function exportTxt() {
-      const ip = (vals["vps_ip"] || "").trim() || "À renseigner";
-      const pub = (vals["ssh_pub"] || "").trim() || "À renseigner";
-      const dashUrl = (vals["dash_url"] || "").trim() || "Non renseigné";
-      const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
-      const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      const lines = ["vps-secure — Configuration VPS", "================================", `Date         : ${date}`, "", `IP du VPS    : ${ip}`, `Clé SSH pub  : ${pub}`, "", "================================", "Accès Dashboard :", `URL          : ${dashUrl}`, `Mot de passe : ${dashPwd}`, "", "================================", "⚠️  Mot de passe root VPS non exporté (sécurité).", "", "================================", "Connexion root (1 seule fois) :", `  ssh root@${ip}`, "", "Lancer l'installation :", "  curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh", "  chmod +x install-secure.sh && sudo ./install-secure.sh", "", "Connexion après installation :", `  ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps`, "", "================================", "github.com/rockballslab/vps-secure"];
-      const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
-      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `vps-secure-config-${date.replace(/\//g, "-")}.txt`; a.click(); URL.revokeObjectURL(a.href);
-    }
-
-    function exportPdf() {
-      const ip = (vals["vps_ip"] || "").trim() || "À renseigner";
-      const pub = (vals["ssh_pub"] || "").trim() || "À renseigner";
-      const dashUrl = (vals["dash_url"] || "").trim() || "Non renseigné";
-      const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
-      const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      const win = window.open("", "_blank");
-      win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>vps-secure — Config ${date}</title><style>body{font-family:'Courier New',monospace;font-size:13px;color:#0f172a;padding:40px;max-width:680px;margin:0 auto}h1{font-size:20px;font-weight:800;margin-bottom:4px}.sub{color:#64748b;font-size:12px;margin-bottom:24px}table{width:100%;border-collapse:collapse;margin-bottom:24px}td{padding:8px 12px;border:1px solid #e2e8f0;vertical-align:top}td:first-child{font-weight:700;width:140px;background:#f8fafc;white-space:nowrap}.cmd{background:#0f172a;color:#6ee7b7;border-radius:8px;padding:14px 16px;margin-bottom:12px;font-size:12px;line-height:1.8}.label{font-weight:700;font-size:11px;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}.warn{background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:24px}footer{margin-top:32px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style></head><body><h1>🔐 vps-secure — Configuration VPS</h1><div class="sub">Généré le ${date} · github.com/rockballslab/vps-secure</div><div class="label">Informations VPS</div><table><tr><td>IP du VPS</td><td>${ip}</td></tr><tr><td>Clé SSH publique</td><td style="word-break:break-all;font-size:11px;">${pub}</td></tr><tr><td>Utilisateur créé</td><td>vpsadmin</td></tr><tr><td>Port SSH</td><td>2222</td></tr></table><div class="label">Accès Dashboard (Optionnel)</div><table><tr><td>URL Dashboard</td><td>${dashUrl}</td></tr><tr><td>Mot de passe</td><td>${dashPwd}</td></tr></table><div class="warn">⚠️ Mot de passe root VPS non exporté pour des raisons de sécurité.</div><div class="label">Commandes</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">① INSTALLATION — en root</div>ssh root@${ip}<br>curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh<br>chmod +x install-secure.sh &amp;&amp; sudo ./install-secure.sh</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">② CONNEXION APRÈS INSTALLATION — en vpsadmin</div>ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps</div><footer>vps-secure · github.com/rockballslab/vps-secure</footer></body></html>`);
-      win.document.close(); win.focus(); setTimeout(() => { win.print(); }, 400);
-    }
-
-    let _pendingDashUrl = "";
-    function openDashConfirm(url) {
-      _pendingDashUrl = url;
-      const pwd = (vals["dash_pwd"] || "").trim();
-      const pwdRow = document.getElementById("dash-pwd-row");
-      if (pwd) {
-        pwdRow.style.display = "flex";
-        pwdRow.innerHTML = `<span class="modal-val-label">Mot de passe</span><span class="modal-val-value secret" title="">••••••••••••</span><button class="modal-val-copy" id="mvcopy-dash_pwd" onclick="copyModalVal('dash_pwd')">📋 Copier</button>`;
-      } else {
-        pwdRow.style.display = "none";
+      function openHostinger() {
+        window.open(REFERRAL, "_blank");
+        const btn = document.getElementById("btn-ref");
+        if (btn) { btn.textContent = "✅ Lien ouvert !"; btn.className = "btn-referral copied"; setTimeout(() => { btn.textContent = "🔗 Commander avec -20%"; btn.className = "btn-referral"; }, 2500); }
       }
-      document.getElementById("overlay-dash-confirm").classList.add("open");
-    }
-    function closeDashConfirm() { document.getElementById("overlay-dash-confirm").classList.remove("open"); }
-    function confirmDashOpen() {
-      closeDashConfirm();
-      if (_pendingDashUrl) window.open(_pendingDashUrl, "_blank");
-    }
 
-    buildUI();
-  </script>
-  <div class="overlay" id="overlay-reset" onclick="if(event.target===this)cancelReset()">
-    <div class="modal" style="max-width:420px;text-align:center;">
-      <div class="modal-icon">🗑️</div>
-      <h2>Tout effacer ?</h2>
-      <p>Toutes les valeurs saisies seront supprimées localement. Cette action est irréversible.</p>
-      <div style="display:flex;gap:10px;justify-content:center;">
-        <button class="btn-close" onclick="cancelReset()">Annuler</button>
-        <button class="btn-danger" onclick="confirmReset()">Oui, tout effacer</button>
-      </div>
-    </div>
-  </div>
-  <div class="overlay" id="overlay-dash-confirm" onclick="if(event.target===this)closeDashConfirm()">
-    <div class="modal" style="max-width:500px;">
-      <div class="modal-icon">🖥️</div>
-      <h2>Dashboard installé ?</h2>
-      <p style="margin-bottom:16px;">Avant d'ouvrir ton dashboard, assure-toi d'avoir lancé le script d'installation.</p>
-      <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:16px;">
-        <div class="cmd-label">
-          <span>install-dashboard.sh — en vpsadmin</span>
-          <span class="cmd-hint">clic pour copier</span>
+      function onInput(id, val) {
+        vals[id] = val; save(); const ok = isOk(id);
+        document.getElementById("card-" + id).className = "prereq-card" + (ok ? " ok" : "");
+        document.getElementById("icon-" + id).textContent = ok ? "✅" : "⚪";
+        const inp = document.getElementById("input-" + id); if (inp) inp.className = "field-input" + (ok ? " ok" : "");
+        if (id === "vps_ip" && val.trim()) { const ip = val.trim();["modal-ip", "modal-ip2"].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = ip; }); }
+        updateScore();
+      }
+
+      function toggleEye(id) {
+        showSecret[id] = !showSecret[id];
+        const inp = document.getElementById("input-" + id); const btn = document.getElementById("eye-" + id);
+        if (inp) inp.type = showSecret[id] ? "text" : "password";
+        if (btn) btn.textContent = showSecret[id] ? "🙈" : "👁";
+      }
+
+      function copyOne(id) {
+        const val = (vals[id] || "").trim();
+        if (!val) { flashCopy("copy-" + id, "❌", false); return; }
+        navigator.clipboard.writeText(val).then(() => flashCopy("copy-" + id, "✅", true));
+      }
+
+      function flashCopy(btnId, icon, ok) {
+        const btn = document.getElementById(btnId); if (!btn) return;
+        const orig = btn.textContent; btn.textContent = icon; btn.className = "btn-copy" + (ok ? " copied" : "");
+        setTimeout(() => { btn.textContent = orig; btn.className = "btn-copy"; }, 1500);
+      }
+
+      function updateScore() {
+        const mand = PREREQS.filter(p => p.req);
+        const okCnt = mand.filter(p => isOk(p.id)).length;
+        const score = Math.round(okCnt / mand.length * 100);
+        const color = score === 100 ? "#059669" : score >= 50 ? "#d97706" : "#dc2626";
+        document.getElementById("score-pct").textContent = score + "%";
+        document.getElementById("score-pct").style.color = color;
+        document.getElementById("score-count").textContent = okCnt + " / " + mand.length + " prérequis";
+        document.getElementById("bar").style.width = score + "%";
+        document.getElementById("bar").style.background = color;
+        const msg = document.getElementById("score-msg");
+        if (score === 100) { msg.textContent = "🎉 Prêt !"; msg.style.color = "#059669"; }
+        else { const r = mand.length - okCnt; msg.textContent = r + " restant" + (r > 1 ? "s" : ""); msg.style.color = "#64748b"; }
+        const btn = document.getElementById("btn-launch");
+        if (score === 100) { btn.className = "btn-launch unlocked"; btn.disabled = false; btn.textContent = "🚀   Lancer install-secure.sh"; }
+        else { btn.className = "btn-launch locked"; btn.disabled = true; const r = mand.length - okCnt; btn.textContent = "🔒   " + r + " prérequis restant" + (r > 1 ? "s" : ""); }
+        const btnBottom = document.getElementById("btn-launch-bottom");
+        if (btnBottom) { btnBottom.className = btn.className; btnBottom.disabled = btn.disabled; btnBottom.textContent = btn.textContent; }
+        STEPS.forEach(s => {
+          const el = document.getElementById("sc-" + s.id); if (!el) return;
+          const sp = PREREQS.filter(p => p.step === s.id && p.req);
+          const dn = sp.filter(p => isOk(p.id)).length;
+          el.textContent = dn + " / " + sp.length; el.className = "step-badge" + (sp.length > 0 && dn === sp.length ? " step-done" : "");
+        });
+        const ip = (vals["vps_ip"] || "").trim();
+        if (ip) { ["modal-ip", "modal-ip2"].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = ip; }); }
+      }
+
+      const MODAL_VALS = [
+        { id: "vps_pwd", label: "Mot de passe root", secret: true },
+        { id: "ssh_pub", label: "Clé SSH publique", secret: false },
+        { id: "tg_token", label: "Token Telegram", secret: true },
+        { id: "tg_chatid", label: "Chat ID Telegram", secret: false },
+      ];
+
+      function copyModalVal(id) {
+        const val = (vals[id] || "").trim();
+        if (!val) return;
+        navigator.clipboard.writeText(val).then(() => {
+          const btn = document.getElementById("mvcopy-" + id);
+          if (!btn) return;
+          btn.textContent = "✅ Copié"; btn.className = "modal-val-copy copied";
+          setTimeout(() => { btn.textContent = "📋 Copier"; btn.className = "modal-val-copy"; }, 1800);
+        });
+      }
+
+      function openModal() {
+        const mand = PREREQS.filter(p => p.req);
+        if (mand.filter(p => isOk(p.id)).length < mand.length) return;
+
+        // Populate copyable values
+        MODAL_VALS.forEach(mv => {
+          const row = document.getElementById("modal-val-" + mv.id);
+          if (!row) return;
+          const val = (vals[mv.id] || "").trim();
+          if (!val) { row.style.display = "none"; return; }
+          row.style.display = "flex";
+          const display = mv.secret ? "••••••••••••" : (val.length > 38 ? val.slice(0, 36) + "…" : val);
+          row.innerHTML = `<span class="modal-val-label">${mv.label}</span><span class="modal-val-value${mv.secret ? " secret" : ""}" title="${mv.secret ? "" : esc(val)}">${esc(display)}</span><button class="modal-val-copy" id="mvcopy-${mv.id}" onclick="copyModalVal('${mv.id}')">📋 Copier</button>`;
+        });
+
+        // Conditional dashboard link
+        const dashUrl = (vals["dash_url"] || "").trim();
+        const dashBlock = document.getElementById("modal-dashboard-link");
+        if (dashUrl) {
+          dashBlock.style.display = "flex";
+          dashBlock.innerHTML = `<button class="modal-dashboard-btn" onclick="openDashConfirm('${esc(dashUrl)}')">🖥️ Ouvrir mon dashboard <span style="font-size:11px;font-weight:400;margin-left:auto;opacity:.7">${esc(dashUrl)}</span></button>`;
+        } else {
+          dashBlock.style.display = "none";
+        }
+
+        document.getElementById("modal").className = "overlay open";
+      }
+      function closeModal() { document.getElementById("modal").className = "overlay"; }
+
+      function copyBlock(el) {
+        const txt = el.querySelector(".cmd-code").innerText;
+        navigator.clipboard.writeText(txt).then(() => {
+          const hint = el.querySelector(".cmd-hint"); const orig = el.style.borderColor;
+          el.style.borderColor = "#059669";
+          if (hint) { hint.textContent = "✅ Copié !"; hint.style.color = "#6ee7b7"; }
+          setTimeout(() => { el.style.borderColor = orig; if (hint) { hint.textContent = "clic pour copier"; hint.style.color = ""; } }, 1800);
+        });
+      }
+
+      function resetAll() { document.getElementById("overlay-reset").classList.add("open"); }
+      function cancelReset() { document.getElementById("overlay-reset").classList.remove("open"); }
+      function confirmReset() { document.getElementById("overlay-reset").classList.remove("open"); vals = {}; showSecret = {}; try { localStorage.removeItem("vps_secure_v1"); } catch (e) { } buildUI(); }
+
+      function exportTxt() {
+        const ip = (vals["vps_ip"] || "").trim() || "À renseigner";
+        const pub = (vals["ssh_pub"] || "").trim() || "À renseigner";
+        const dashUrl = (vals["dash_url"] || "").trim() || "Non renseigné";
+        const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
+        const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+        const lines = ["vps-secure — Configuration VPS", "================================", `Date         : ${date}`, "", `IP du VPS    : ${ip}`, `Clé SSH pub  : ${pub}`, "", "================================", "Accès Dashboard :", `URL          : ${dashUrl}`, `Mot de passe : ${dashPwd}`, "", "================================", "⚠️  Mot de passe root VPS non exporté (sécurité).", "", "================================", "Connexion root (1 seule fois) :", `  ssh root@${ip}`, "", "Lancer l'installation :", "  curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh", "  chmod +x install-secure.sh && sudo ./install-secure.sh", "", "Connexion après installation :", `  ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps`, "", "================================", "github.com/rockballslab/vps-secure"];
+        const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `vps-secure-config-${date.replace(/\//g, "-")}.txt`; a.click(); URL.revokeObjectURL(a.href);
+      }
+
+      function exportPdf() {
+        const ip = (vals["vps_ip"] || "").trim() || "À renseigner";
+        const pub = (vals["ssh_pub"] || "").trim() || "À renseigner";
+        const dashUrl = (vals["dash_url"] || "").trim() || "Non renseigné";
+        const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
+        const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+        const win = window.open("", "_blank");
+        win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>vps-secure — Config ${date}</title><style>body{font-family:'Courier New',monospace;font-size:13px;color:#0f172a;padding:40px;max-width:680px;margin:0 auto}h1{font-size:20px;font-weight:800;margin-bottom:4px}.sub{color:#64748b;font-size:12px;margin-bottom:24px}table{width:100%;border-collapse:collapse;margin-bottom:24px}td{padding:8px 12px;border:1px solid #e2e8f0;vertical-align:top}td:first-child{font-weight:700;width:140px;background:#f8fafc;white-space:nowrap}.cmd{background:#0f172a;color:#6ee7b7;border-radius:8px;padding:14px 16px;margin-bottom:12px;font-size:12px;line-height:1.8}.label{font-weight:700;font-size:11px;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}.warn{background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:24px}footer{margin-top:32px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style></head><body><h1>🔐 vps-secure — Configuration VPS</h1><div class="sub">Généré le ${date} · github.com/rockballslab/vps-secure</div><div class="label">Informations VPS</div><table><tr><td>IP du VPS</td><td>${ip}</td></tr><tr><td>Clé SSH publique</td><td style="word-break:break-all;font-size:11px;">${pub}</td></tr><tr><td>Utilisateur créé</td><td>vpsadmin</td></tr><tr><td>Port SSH</td><td>2222</td></tr></table><div class="label">Accès Dashboard (Optionnel)</div><table><tr><td>URL Dashboard</td><td>${dashUrl}</td></tr><tr><td>Mot de passe</td><td>${dashPwd}</td></tr></table><div class="warn">⚠️ Mot de passe root VPS non exporté pour des raisons de sécurité.</div><div class="label">Commandes</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">① INSTALLATION — en root</div>ssh root@${ip}<br>curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh<br>chmod +x install-secure.sh &amp;&amp; sudo ./install-secure.sh</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">② CONNEXION APRÈS INSTALLATION — en vpsadmin</div>ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps</div><footer>vps-secure · github.com/rockballslab/vps-secure</footer></body></html>`);
+        win.document.close(); win.focus(); setTimeout(() => { win.print(); }, 400);
+      }
+
+      let _pendingDashUrl = "";
+      function openDashConfirm(url) {
+        _pendingDashUrl = url;
+        const pwd = (vals["dash_pwd"] || "").trim();
+        const pwdRow = document.getElementById("dash-pwd-row");
+        if (pwd) {
+          pwdRow.style.display = "flex";
+          pwdRow.innerHTML = `<span class="modal-val-label">Mot de passe</span><span class="modal-val-value secret" title="">••••••••••••</span><button class="modal-val-copy" id="mvcopy-dash_pwd" onclick="copyModalVal('dash_pwd')">📋 Copier</button>`;
+        } else {
+          pwdRow.style.display = "none";
+        }
+        document.getElementById("overlay-dash-confirm").classList.add("open");
+      }
+      function closeDashConfirm() { document.getElementById("overlay-dash-confirm").classList.remove("open"); }
+      function confirmDashOpen() {
+        closeDashConfirm();
+        if (_pendingDashUrl) window.open(_pendingDashUrl, "_blank");
+      }
+
+      buildUI();
+    </script>
+    <div class="overlay" id="overlay-reset" onclick="if(event.target===this)cancelReset()">
+      <div class="modal" style="max-width:420px;text-align:center;">
+        <div class="modal-icon">🗑️</div>
+        <h2>Tout effacer ?</h2>
+        <p>Toutes les valeurs saisies seront supprimées localement. Cette action est irréversible.</p>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <button class="btn-close" onclick="cancelReset()">Annuler</button>
+          <button class="btn-danger" onclick="confirmReset()">Oui, tout effacer</button>
         </div>
-        <div class="cmd-code">curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard.sh && chmod +x install-dashboard.sh && ./install-dashboard.sh</div>
-      </div>
-      <div id="dash-pwd-row" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:16px;"></div>
-      <div style="display:flex;gap:10px;">
-        <button class="btn-close" onclick="closeDashConfirm()" style="flex:1;">Non, pas encore</button>
-        <button class="btn-launch unlocked" onclick="confirmDashOpen()" style="flex:1;padding:10px 16px;font-size:14px;animation:none;">Oui, ouvrir →</button>
       </div>
     </div>
-  </div>
+    <div class="overlay" id="overlay-dash-confirm" onclick="if(event.target===this)closeDashConfirm()">
+      <div class="modal" style="max-width:500px;">
+        <div class="modal-icon">🖥️</div>
+        <h2>Dashboard installé ?</h2>
+        <p style="margin-bottom:16px;">Avant d'ouvrir ton dashboard, assure-toi d'avoir lancé le script d'installation.
+        </p>
+        <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:16px;">
+          <div class="cmd-label">
+            <span>install-dashboard.sh — en vpsadmin</span>
+            <span class="cmd-hint">clic pour copier</span>
+          </div>
+          <div class="cmd-code">bash <(curl -fsSL
+              https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)</div>
+          </div>
+          <div id="dash-pwd-row"
+            style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:16px;">
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-close" onclick="closeDashConfirm()" style="flex:1;">Non, pas encore</button>
+            <button class="btn-launch unlocked" onclick="confirmDashOpen()"
+              style="flex:1;padding:10px 16px;font-size:14px;animation:none;">Oui, ouvrir →</button>
+          </div>
+        </div>
+      </div>
 </body>
 
 </html>

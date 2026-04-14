@@ -35,7 +35,7 @@ Les protections par défaut fournies par les hébergeurs (OVH, Hostinger, Hetzne
 
 Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est précisément la configuration que j'utilise pour sécuriser mes nouveaux serveurs de production ou tester les dernières nouveautés sans risque.
 
-> **"J'ai créé VPS-SECURE pour que mon serveur devienne une forteresse prête à accueillir mes services en toute sérennité."**
+> *"J'ai créé VPS-SECURE pour que mon serveur devienne une forteresse prête à accueillir mes services en toute sérennité."*
 
 
 ---

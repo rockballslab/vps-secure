@@ -22,7 +22,8 @@ Un VPS nu ou configuré par défaut est une cible facile, visible et attaquable 
   <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
 
-> **Le constat est simple :** les protections par défaut fournies par les hébergeurs (OVH, Hostinger, Hetzner, etc.) sont **insuffisantes** pour une mise en production vraiment sécurisée.
+
+**Le constat est simple :** les protections par défaut fournies par les hébergeurs (OVH, Hostinger, Hetzner, etc.) sont **insuffisantes** pour une mise en production vraiment sécurisée.
 
 | | |
 |---|---|

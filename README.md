@@ -13,7 +13,7 @@
 
 ## 🛡️ Pourquoi utiliser ce script ?
 
-Un VPS nu est une cible. VPS-Secure le transforme en serveur durci, surveillé en continu et prêt pour la production, avec un niveau de finition rarement atteint dans un script public.
+Un VPS nu est une cible. VPS-Secure le transforme en serveur durci, surveillé en continu et prêt à accueillir vos services en production, avec un niveau de sécurité rarement atteint dans un script public.
 
 <p align="center">
   <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
@@ -80,6 +80,8 @@ Avant de commencer, tu as besoin de :
 ---
 
 ## Exemple du Dashboard 24h aprés l'installation de VPS-SECURE
+
+Ce n’est pas un simple script d’installation : c’est une base de sécurité, un gain de temps opérationnel et un vrai cockpit de pilotage pour votre VPS.
 
  <p align="center">
   <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">

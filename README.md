@@ -142,7 +142,7 @@ Le serveur va te demander un mot de passe - c'est le mot de passe root fourni pa
 
 
 
-💡 Pour info: si tu as déjà utilisé cette IP (rebuild VPS précédent), supprime l'ancienne clé connue :
+💡 *Pour info: si tu as déjà utilisé cette IP (rebuild VPS précédent), supprime l'ancienne clé connue :*
 ```bash
 ssh-keygen -R IP_DU_VPS
 ```

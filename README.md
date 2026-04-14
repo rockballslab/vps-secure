@@ -178,6 +178,10 @@ Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 
 > ⚠️ À la toute fin, le script affiche la commande pour te reconnecter et la commande de vérification - puis attend que tu appuies sur Entrée avant de redémarrer. Prends le temps de les noter.
 
+ <p align="center">
+  <img src="./screenshots/install_helper.png" alt="Guide Installation" width="100%">
+</p>
+
 
 ---
 

@@ -108,6 +108,7 @@ Avant de commencer, ouvre le [Guide d'installation interactif](https://vps-secur
 
 Ce guide te permet de noter ton IP et toutes les infos qui te seront demandées pendant l'installation en UN SEUL ENDROIT localement
 
+---
 
 ### Étape 1 - Génère ta clé SSH (sur ton ordinateur)
 
@@ -128,6 +129,8 @@ cat ~/.ssh/id_ed25519_vps.pub
 ```
 
 Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`) et colle-la dans le guide interactif.
+
+---
 
 ### Étape 2 - Connecte-toi en root
 
@@ -151,6 +154,8 @@ Puis
 ```bash
 ssh root@IP_DU_VPS
 ```
+
+---
 
 ### Étape 3 - Lance le script
 
@@ -177,6 +182,8 @@ Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 > ⚠️ **Ne ferme pas cette session root avant que le script te le demande.**
 > Il vérifie lui-même que tu peux te reconnecter avant de désactiver root.
 
+---
+
 ### Étape 4 - Reconnecte-toi en vpsadmin (après le redémarrage)
 
 ```bash
@@ -185,6 +192,7 @@ ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/id_ed25519_vps
 
 Ton VPS est déjà PRÊT. Y'a plus qu'à vérifier !
 
+---
 
 ### Étape 5 - Vérifie l'installation
 

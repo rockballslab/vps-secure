@@ -224,11 +224,11 @@ Ton VPS est SÉCURISÉ. C'est officiellement une FORTERESSE.
 1. Crée un bot → ouvre [@BotFather](https://t.me/BotFather) → `/newbot` → copie le token
 2. Récupère ton chat ID → ouvre [@userinfobot](https://t.me/userinfobot) → `/start` → copie l'`id`
 
-**Ce que tu reçois chaque matin à 07h00 :**
+**Ce que tu reçois chaque matin à 09h00 :**
 
 ```
 🔐 vps-secure - Rapport quotidien
-📅 05/04/2026 · monvps
+📅 13/04/2026 · monvps
 
 ✅ Tout va bien sur ton VPS
 
@@ -247,7 +247,7 @@ Aucune action requise.
 🔐 Connexion SSH sur monvps
 👤 Utilisateur : vpsadmin
 🌐 IP source   : 92.184.x.x
-📅 05/04/2026 14:32:17
+📅 13/04/2026 14:32:17
 ```
 
 Si une anomalie est détectée dans le rapport quotidien, le message inclut le détail et la commande exacte pour réparer.

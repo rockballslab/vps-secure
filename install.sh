@@ -1623,6 +1623,8 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/home/.+/\.bash_history$
 !/var/lib/crowdsec/data
 !/var/cache/apt/pkgcache\.bin$
+!/var/cache/apt/srcpkgcache\.bin$
+!/var/lib/apt/lists/
 !/var/lib/snapd/state\.json$
 !/var/lib/update-notifier
 !/var/lib/dpkg/triggers
@@ -1636,13 +1638,18 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/run/docker
 !/var/run/docker
 !/home/*/.docker
+!/home/vpsadmin/\.docker/
 !/root/.docker
 !/var/lib/command-not-found
 !/var/log/vps-monitor-history\.json$
-!/^/$
 !/var/cache/vps-secure/security-stats\.json$
 !/var/lib/aide/aide\.db$
 !/home/[^/]+/vps-monitor
+!/var/cache/fwupd/
+!/var/cache/swcatalog/
+!/var/lib/PackageKit/
+!/usr/share/info/
+!/^/$
 AIDEEXCLEOF
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)

@@ -83,15 +83,13 @@ Avant de commencer, tu as besoin de :
 - ✅ L'**IP** et le **mot de passe root** fournis par ton hébergeur
 - ✅ Une **clé SSH** générée sur ton ordinateur
 
-> 💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd) - recommandé : CPX21 (4 GB RAM · 9,99€/mois) ou CPX32 (8 GB RAM · 14,49€/mois)
-
-
-
 
 > 🔑 Ce script nécessite une licence - [disponible ici](https://buy.stripe.com/14AeVdbcW4550WQaXWeUU01) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
 >
 > 👨‍💻 Développeur ? Contacte-moi pour un accès: [free4dev@aiforceone.fr](mailto:free4dev@aiforceone.fr)
 
+
+> 💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd) - recommandé : CPX21 (4 GB RAM · 9,99€/mois) ou CPX32 (8 GB RAM · 14,49€/mois)
 
 ---
 

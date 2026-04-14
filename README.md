@@ -118,7 +118,6 @@ Ce guide te permet de :
 Ouvre un terminal sur ton ordinateur :
 - **Mac** → Spotlight (`Cmd+Espace`) → tape `Terminal` → Entrée
 - **Windows** → touche `Windows` → tape `Windows Terminal` ou `PowerShell` → Entrée
-- **Linux** → `Ctrl+Alt+T`
 
 Puis lance cette commande :
 ```bash
@@ -324,11 +323,12 @@ bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main
 > Responsive
 
  
-Le script te demande un domaine et un mot de passe, configure tout et lance automatiquement. Ton mot de passe est sauvegardé dans `~/vps-monitor/.env`.
+Le script te demande un domaine et un mot de passe que tu dois créer. Ton mot de passe sera sauvegardé dans `~/vps-monitor/.env`.
  
 > Prérequis :
+> 
 > un enregistrement DNS A pointant sur l'IP de ton VPS · Explications complémentaires dans le guide.
-> un mot de passe *(pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`)*
+> pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`)
 
 ---
 
@@ -514,7 +514,7 @@ Testé et vérifié le 14 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, 
 
 VPS-SECURE COMMERCIAL LICENSE
 Copyright (c) 2026 AIFORCEONE
-https://vps-secure.netlify.app/
+[https://vps-secure.netlify.app/](https://vps-secure.aiforceone.fr/offre.html)
 
 ---
 

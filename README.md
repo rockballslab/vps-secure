@@ -177,6 +177,9 @@ Le script est interactif. Il te pose **2 questions obligatoires** :
 Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 
 
+Aide toi du guide interactif pour copier-coller facilement les valeurs demandées
+
+
  <p align="left">
   <img src="./screenshots/install_helper.png" alt="Guide Installation" width="50%">
 </p>

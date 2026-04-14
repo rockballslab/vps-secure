@@ -273,7 +273,7 @@ Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% 
 
 | Standard | Couverture |
 |---|---|
-| CIS Benchmark L1 | ~87% |
+| CIS Benchmark L1 | ~80-85% |
 | DISA STIG Ubuntu 24.04 | ~77% |
 | OWASP Infrastructure | Supply chain (GPG + empreinte vérifiée), secrets, logging |
 | Lynis Audit | 81/100 | +50% vs un VPS Ubuntu standard (54/100) - vérifiable en 2 min après installation |

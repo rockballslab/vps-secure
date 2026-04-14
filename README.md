@@ -221,7 +221,7 @@ Chaque composant retourne `[PASS]` ou `[FAIL]` avec la raison. Tout doit être P
 
 C'est TOUT. Ça a pris moins de 15mn en automatique.
 
-Ton VPS est SÉCURISÉ. C'est officiellement une FORTERESSE.
+Ton VPS est maintenant **SÉCURISÉ**. C'est officiellement une **FORTERESSE**.
 
 ---
 

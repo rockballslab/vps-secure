@@ -81,7 +81,7 @@ Avant de commencer, tu as besoin de :
 
 ## Exemple du Dashboard 24h aprés l'installation de VPS-SECURE
 
-Ce n’est pas un simple script d’installation : c’est une base de sécurité, un gain de temps opérationnel et un vrai cockpit de pilotage pour votre VPS.
+Ce n’est pas un simple script d’installation : c’est une fondation de sécurité robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.
 
  <p align="center">
   <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">

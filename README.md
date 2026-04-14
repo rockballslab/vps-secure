@@ -167,7 +167,6 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 > 🔐 **`install-secure.sh`** vérifie la signature GPG de `install.sh` avant de le lancer.
 > C'est la commande recommandée - elle garantit que le script n'a pas été altéré.
-> `install.sh` seul reste disponible pour les environnements sans GPG.
 
 
 Le script est interactif. Il te pose **2 questions obligatoires** :

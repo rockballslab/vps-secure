@@ -130,11 +130,6 @@ Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`) et colle-la dans 
 
 ### Étape 2 - Connecte-toi en root
 
-> 💡 Si tu as déjà utilisé cette IP (rebuild VPS), supprime l'ancienne clé connue :
-> ```bash
-> ssh-keygen -R IP_DU_VPS
-> ```
-Puis
 ```bash
 ssh root@IP_DU_VPS
 ```
@@ -144,6 +139,15 @@ Remplace `IP_DU_VPS` par l'IP que tu as notée dans le guide interactif.
 Le serveur va te demander un mot de passe - c'est le mot de passe root fourni par ton hébergeur par email après provisioning.
 
 > 💡 C'est la seule fois où ce mot de passe est utilisé. Après l'installation, la connexion root par mot de passe est définitivement désactivée.
+
+> 💡 Si tu as déjà utilisé cette IP (rebuild VPS), supprime l'ancienne clé connue :
+> ```bash
+> ssh-keygen -R IP_DU_VPS
+> ```
+Puis
+```bash
+ssh root@IP_DU_VPS
+```
 
 ### Étape 3 - Lance le script
 

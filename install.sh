@@ -1552,6 +1552,8 @@ add_redirect() {
          -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT" 2>/dev/null; then
         iptables -t nat -A "$REDIRECT_CHAIN" \
             -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT"
+        iptables -I INPUT \
+            -s "$ip" -p tcp --dport "$HONEYPOT_PORT" -j ACCEPT
         logger -t "$LOG_TAG" "PIEGE: $ip -> Endlessh :$HONEYPOT_PORT"
     fi
 }
@@ -1562,6 +1564,8 @@ remove_redirect() {
        -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT" 2>/dev/null; then
         iptables -t nat -D "$REDIRECT_CHAIN" \
             -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT"
+        iptables -D INPUT \
+            -s "$ip" -p tcp --dport "$HONEYPOT_PORT" -j ACCEPT 2>/dev/null
         logger -t "$LOG_TAG" "LIBERE: $ip (décision expirée)"
     fi
 }

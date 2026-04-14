@@ -13,7 +13,8 @@
 
 ## 🛡️ Pourquoi utiliser ce script ?
 
-Un VPS nu ou configuré par défaut est une cible. 
+Un VPS nu ou configuré par défaut est une cible.
+
 VPS-Secure le transforme en serveur durci, surveillé en continu et prêt à accueillir vos services en production, avec un niveau de sécurité rarement atteint dans un script public.
 
 <p align="center">

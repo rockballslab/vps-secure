@@ -522,7 +522,7 @@ Testé et vérifié le 14 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, 
 
 VPS-SECURE COMMERCIAL LICENSE
 Copyright (c) 2026 AIFORCEONE
-[https://vps-secure.netlify.app/](https://vps-secure.aiforceone.fr/offre.html)
+[https://vps-secure.aiforceone.fr/offre.html](https://vps-secure.aiforceone.fr/offre.html)
 
 ---
 

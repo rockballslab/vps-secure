@@ -111,7 +111,7 @@ Ce guide te permet de :
 - Exporter ta config en `.txt` ou `.pdf`
 - Déverrouiller la commande de lancement quand tout est prêt
 
-> 💡 Ouvre le [guide d'installation]([https://vps-secure.aiforceone.fr/guide.html](https://vps-secure.aiforceone.fr/guide.html))) depuis ton navigateur.
+> 💡 Ouvre le [guide d'installation]([https://vps-secure.aiforceone.fr/guide.html](https://vps-secure.aiforceone.fr/guide.html)) depuis ton navigateur.
 
 ### Étape 1 - Génère ta clé SSH (sur ton ordinateur)
 

@@ -38,6 +38,17 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 >
 > jusqu'à +50% vs un VPS Ubuntu standard. Vérifiable en 2 min après installation.
 
+
+---
+
+## Exemple du Dashboard 24h aprés l'installation de VPS-SECURE sur un serveur vierge
+
+Ce n’est pas un simple script d’installation : c’est une fondation de sécurité robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.
+
+ <p align="center">
+  <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">
+</p>
+
 ---
 
 
@@ -80,17 +91,9 @@ Avant de commencer, tu as besoin de :
 >
 > 👨‍💻 Développeur ? Contacte-moi pour un accès: [free4dev@aiforceone.fr](mailto:free4dev@aiforceone.fr)
 
----
-
-## Exemple du Dashboard 24h aprés l'installation de VPS-SECURE
-
-Ce n’est pas un simple script d’installation : c’est une fondation de sécurité robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.
-
- <p align="center">
-  <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">
-</p>
 
 ---
+
 
 # Installation
 

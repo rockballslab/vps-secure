@@ -56,6 +56,12 @@ fi
 
 # Afficher la sortie GPG pour info
 cat "${TMPDIR_VPS}/gpg.err"
+# Optionnel : expliquer le warning "not certified" normal dans GPG
+if grep -q "not certified" "${TMPDIR_VPS}/gpg.err"; then
+    echo -e "${YELLOW}  ℹ️  Note : ce warning est normal. Il signifie que la clé VPS-SECURE${NC}"
+    echo -e "${YELLOW}     n'est pas dans ton réseau de confiance GPG personnel.${NC}"
+    echo -e "${YELLOW}     La signature est valide — le fichier est intact et authentique.${NC}"
+fi
 
 # Extraire le fingerprint — compatible macOS (grep -E) et Linux
 SIGNER_FP=$(grep -oE '[0-9A-Fa-f]{40}' "${TMPDIR_VPS}/gpg.err" | head -1 | tr '[:lower:]' '[:upper:]')

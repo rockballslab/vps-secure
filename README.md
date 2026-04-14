@@ -84,7 +84,7 @@ Avant de commencer, tu as besoin de :
 - ✅ Une **clé SSH** générée sur ton ordinateur
 
 
-> 🔑 Ce script nécessite une licence - [disponible ici](https://buy.stripe.com/14AeVdbcW4550WQaXWeUU01) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
+> 🔑 Ce script nécessite une licence - [disponible ici](https://buy.stripe.com/14AeVdbcW4550WQaXWeUU01) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50** (Licence à vie)
 >
 > 👨‍💻 Développeur ? Contacte-moi pour un accès: [free4dev@aiforceone.fr](mailto:free4dev@aiforceone.fr)
 

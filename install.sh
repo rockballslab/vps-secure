@@ -105,7 +105,7 @@ cat << 'EOF'
     ╚═══╝  ╚═╝     ╚══════╝      ╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
 EOF
 echo -e "${RESET}"
-echo -e "${BLANC}  Sécurisation VPS · Ubuntu 24.04 LTS · github.com/rockballslab/vps-secure${RESET}"
+echo -e "${BLANC}  Sécurisation VPS en 15mn · Ubuntu 24.04 LTS · github.com/rockballslab/vps-secure${RESET}"
 echo -e "${VERT}$(printf '═%.0s' {1..75})${RESET}\n"
 
 USERNAME="vpsadmin"
@@ -115,14 +115,14 @@ TOTAL_ETAPES=15
 # Vérification de la Licence VPS-SECURE
 # ============================================================
 echo -e "\n\033[1;34m[INFO] Vérification de la licence VPS-SECURE...\033[0m"
-echo -e "💡 Pas encore de clé ? \033[1;36mhttps://vps-secure.netlify.app/\033[0m"
+echo -e "💡 Pas encore de clé ? \033[1;36mhttps://vps-secure.aiforceone.fr/offre.html\033[0m"
 echo ""
 read -rp "🔑 Clé d'activation : " ACTIVATION_KEY
 
 # Validation format — bloque l'injection JSON
 if [[ -z "$ACTIVATION_KEY" ]]; then
     echo -e "\n\033[1;31m❌ Clé obligatoire.\033[0m"
-    echo -e "   👉 https://vps-secure.netlify.app/"
+    echo -e "   👉 https://vps-secure.aiforceone.fr/offre.html"
     exit 1
 fi
 
@@ -157,7 +157,7 @@ if echo "$RESPONSE" | grep -qE '"status"\s*:\s*"success"'; then
     echo -e "\033[1;32m✅ Licence validée. Bienvenue dans la forteresse.\033[0m\n"
 else
     echo -e "\n\033[1;31m❌ Clé invalide ou commande non finalisée.\033[0m"
-    echo -e "   👉 https://vps-secure.netlify.app/"
+    echo -e "   👉 https://vps-secure.aiforceone.fr/offre.html"
     echo -e "   📧 support@aiforceone.fr\n"
     exit 1
 fi

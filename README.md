@@ -501,7 +501,7 @@ Le script te demande un domaine et un mot de passe, configure tout et lance auto
 
 ## Compatibilité
 
-Testé et vérifié le 12 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 12 min · 100% fonctionnel
+Testé et vérifié le 14 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 12 min · 100% fonctionnel
 
 
 ---

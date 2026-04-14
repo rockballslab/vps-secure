@@ -142,7 +142,7 @@ Le serveur va te demander un mot de passe - c'est le mot de passe root fourni pa
 
 > 💡 C'est la seule fois où ce mot de passe est utilisé. Après l'installation, la connexion root par mot de passe est définitivement désactivée.
 
-### Étape 3 - **Lance le script**
+## Étape 3 - Lance le script
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \

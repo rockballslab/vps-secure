@@ -104,14 +104,10 @@ Avant de commencer, tu as besoin de :
 
 ### Étape 0 - Utilise le guide interactif (recommandé)
 
-Avant de commencer, ouvre le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html) et suit les indications pas à pas sans avoir besoin de revenir ici.
+Avant de commencer, ouvre le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html) et suit les indications pas à pas.
 
-Ce guide te permet de :
-- Noter ton IP et toutes les infos qui te seront demandées pendant l'installation en UN SEUL ENDROIT localement
-- Exporter ta config en `.txt` ou `.pdf`
-- Déverrouiller la commande de lancement quand tout est prêt
+Ce guide te permet de noter ton IP et toutes les infos qui te seront demandées pendant l'installation en UN SEUL ENDROIT localement
 
-> 💡 Ouvre le [guide d'installation](https://vps-secure.aiforceone.fr/guide.html) depuis ton navigateur.
 
 ### Étape 1 - Génère ta clé SSH (sur ton ordinateur)
 

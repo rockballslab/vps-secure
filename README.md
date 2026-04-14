@@ -15,7 +15,7 @@
 
 Un VPS nu ou configuré par défaut est une cible.
 
-VPS-Secure le transforme en serveur durci, surveillé en continu et prêt à accueillir vos services en production, avec un niveau de sécurité rarement atteint dans un script public.
+VPS-Secure le transforme en serveur durci, surveillé en continu et prêt à accueillir vos services en production, avec un niveau de sécurité robuste rarement atteint dans un script public.
 
 <p align="center">
   <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">

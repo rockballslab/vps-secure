@@ -3,9 +3,9 @@
 # install-n8n.sh — n8n + n8n-MCP sur VPS sécurisé vps-secure
 #
 # Ce script installe :
-#   1. n8n          → https://n8n.aiforceone.fr
-#   2. n8n-MCP      → https://mcpn8n.aiforceone.fr
-#   3. Caddy        → HTTPS automatique pour les deux domaines
+#   1. n8n          
+#   2. n8n-MCP      
+#   3. Caddy        
 #
 # Prérequis :
 #   - vps-secure installé (Docker, UFW, Caddy en place)

@@ -297,6 +297,14 @@ bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main
 > 🔐 **`install-dashboard-secure.sh`** vérifie la signature GPG de `install-dashboard.sh` avant de le lancer - garantit l'intégrité du script.
 
 
+Le script te demande un domaine et un mot de passe que tu dois créer. Ton mot de passe sera sauvegardé dans `~/vps-monitor/.env`.
+ 
+> Prérequis :
+> 
+> un enregistrement DNS A pointant sur l'IP de ton VPS · Explications complémentaires dans le guide.
+> pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`)
+
+
  <p align="center">
   <img src="./dashboard/dashboard-preview.png" alt="VPS Secure Dashboard" width="100%">
 </p>
@@ -323,13 +331,6 @@ bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main
 > 
 > Responsive
 
- 
-Le script te demande un domaine et un mot de passe que tu dois créer. Ton mot de passe sera sauvegardé dans `~/vps-monitor/.env`.
- 
-> Prérequis :
-> 
-> un enregistrement DNS A pointant sur l'IP de ton VPS · Explications complémentaires dans le guide.
-> pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`)
 
 ---
 

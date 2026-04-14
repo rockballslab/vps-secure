@@ -55,7 +55,7 @@ Inclus un dashboard web complet pour visualiser en temps réel l'état de ton se
 
 ## Ce que fait VPS-SECURE
 
-1 commande `install-secure.sh` - 15 étapes automatiques - zéro compétence technique requise.
+1 commande - 15 étapes automatiques - zéro compétence technique requise.
 
 | # | Quoi | Pourquoi |
 |---|---|---|

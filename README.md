@@ -90,7 +90,7 @@ Avant de commencer, tu as besoin de :
 - ✅ Une **clé SSH** générée sur ton ordinateur
 
 
-> 🔑 Ce script nécessite une licence - [disponible ici](https://vps-secure.aiforceone.fr/Activation_Key.html) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
+> 🔑 Ce script nécessite une licence - [disponible ici]([https://vps-secure.aiforceone.fr/offre.html](https://vps-secure.aiforceone.fr/offre.html))) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
 >
 > 👨‍💻 Développeur, Bêta-Testeur, Journaliste, Curieux ? Contacte-moi pour un accès: [freedemo@aiforceone.fr](mailto:freedemo@aiforceone.fr) - ta clé unique sera envoyée en quelques minutes après acceptation de ta demande.
 
@@ -104,14 +104,14 @@ Avant de commencer, tu as besoin de :
 
 ### Étape 0 - Utilise le guide interactif (recommandé)
 
-Avant de commencer, ouvre le [Guide d'installation interactif]([https://vps-secure.aiforceone.fr/guide_installation.html](https://vps-secure.aiforceone.fr/guide_installation.html)) et suit les indications pas à pas sans avoir besoin de revenir ici.
+Avant de commencer, ouvre le [Guide d'installation interactif]([https://vps-secure.aiforceone.fr/guide.html](https://vps-secure.aiforceone.fr/guide.html)) et suit les indications pas à pas sans avoir besoin de revenir ici.
 
 Ce guide te permet de :
 - Noter ton IP et toutes les infos qui te seront demandées pendant l'installation en UN SEUL ENDROIT localement
 - Exporter ta config en `.txt` ou `.pdf`
 - Déverrouiller la commande de lancement quand tout est prêt
 
-> 💡 Ouvre le [guide d'installation]([https://vps-secure.aiforceone.fr/guide_installation.html](https://vps-secure.aiforceone.fr/guide_installation.html)) depuis ton navigateur.
+> 💡 Ouvre le [guide d'installation]([https://vps-secure.aiforceone.fr/guide.html](https://vps-secure.aiforceone.fr/guide.html))) depuis ton navigateur.
 
 ### Étape 1 - Génère ta clé SSH (sur ton ordinateur)
 

@@ -35,7 +35,7 @@ Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et c'est pr
 
 > **🔒 Score Lynis** **81/100**.
 >
-> +50% vs un VPS Ubuntu standard. Vérifiable en 2 min après installation.
+> jusqu'à +50% vs un VPS Ubuntu standard *(54 à 65/100)*. Vérifiable en 2 min après installation.
 
 ---
 

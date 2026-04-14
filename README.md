@@ -268,35 +268,50 @@ sudo ufw allow 8080/tcp comment 'Mon application'
 
 ## 🛡️ Niveau de sécurité
 
-Ce script couvre environ **80% du CIS Benchmark Ubuntu 24.04 Level 1** et **70% du DISA STIG Ubuntu 24.04** - largement au-dessus de n'importe quel script public comparable.
+VPS-Secure ne “garantit” pas une sécurité absolue — aucun outil sérieux ne peut le faire. En revanche, il automatise un durcissement avancé d’Ubuntu 24.04 LTS, en appliquant une grande partie des contrôles pertinents des référentiels **CIS Benchmark Level 1** et **DISA STIG**, tout en restant utilisable sur un VPS classique.
 
 
-| Standard | Couverture |
+| Standard | Ce que c'est |
 |---|---|
-| CIS Benchmark L1 | ~80-85% |
-| DISA STIG Ubuntu 24.04 | ~77% |
-| OWASP Infrastructure | Supply chain (GPG + empreinte vérifiée), secrets, logging |
-| Lynis Audit | 81/100 | +50% vs un VPS Ubuntu standard (54/100) - vérifiable en 2 min après installation |
+| CIS Benchmark L1 | Base de durcissement reconnue pour des serveurs de production |
+| DISA STIG Ubuntu 24.04 | Référentiel plus strict, orienté sécurité forte |
+| OWASP Infrastructure | Contrôles utiles sur la supply chain, les secrets, empreintes vérifiées et la journalisation |
+| Lynis Audit | **81/100** sur une installation de référence |
 
-**CIS Benchmark** - CIS = Center for Internet Security, organisation américaine à but non lucratif qui publie des guides de configuration sécurisée pour tous les OS majeurs. Le Level 1 cible une sécurité raisonnable sans impact sur les fonctionnalités - c'est le standard utilisé par les entreprises pour leurs serveurs en production. 87% CIS L1 signifie 4 contrôles sur 5 couverts. Les 20% restants sont des contrôles non applicables sur VPS (partitions dédiées `/var`, `/home`) ou volontairement exclus pour garder le script accessible.
+**CIS Benchmark L1** - Le CIS Benchmark du Center for Internet Security est une référence reconnue pour sécuriser les systèmes Linux.
+Le niveau L1 vise un bon équilibre entre sécurité et compatibilité, ce qui en fait une base adaptée aux serveurs de production.
+VPS-Secure automatise une large partie des contrôles applicables à un VPS Ubuntu 24.04, sans imposer une configuration trop lourde ou trop restrictive.
 
-**DISA STIG** - DISA = Defense Information Systems Agency, l'agence IT du Département de la Défense américain. Les STIGs sont leurs guides de configuration, plus stricts que CIS, obligatoires pour tous les systèmes du gouvernement US. 77% DISA STIG est très bon pour un script public - les 23% restants concernent des contrôles militaires sans sens pour un VPS perso (accès physique, smartcard auth) ou nécessitant une infrastructure d'entreprise (LDAP, SIEM centralisé).
+**DISA STIG** - Le DISA STIG est un référentiel de durcissement plus exigeant, utilisé dans des contextes à fortes contraintes de sécurité.
+Tous ses contrôles ne s’appliquent pas à un VPS classique, mais sa logique générale reste pertinente pour renforcer un serveur exposé à Internet.
+VPS-Secure reprend cette logique pour aller au-delà d’un durcissement “de base”, tout en restant déployable sans infrastructure d’entreprise.
 
-**Lynis** - outil d'audit de sécurité Linux open-source = Il scanne la configuration du serveur et donne un score sur 100. Référence industrie, utilisé par les sysadmins professionnels.
+**Lynis** - Lynis est un outil d’audit de sécurité Linux largement utilisé par les administrateurs système.
+Il attribue un score de durcissement sur 100 et met en évidence les points faibles de la configuration.
+Sur une installation de référence, VPS-Secure atteint un Lynis hardening index de **81/100**, ce qui correspond à un niveau de durcissement élevé pour un VPS public.
+
+> Ce que cela couvre concrètement
+>
+> Le script met en place une base de sécurité cohérente : accès SSH durci, pare-feu, détection d’intrusion, journalisation, intégrité système, mises à jour automatiques et supervision.
+> L’objectif est de transformer un VPS vierge en serveur nettement plus robuste dès l’installation.
+> Ce n’est pas un simple script de confort : c’est une base de sécurité sérieuse pour héberger ensuite des applications, des conteneurs ou un SaaS.
 
 
 ## Sécurité de l'utilisateur vpsadmin
 
-Le script crée un utilisateur dédié (vpsadmin) pour gérer ton serveur. Voici ce qu'il faut savoir sur ses pouvoirs :
+Le script crée un utilisateur dédié, vpsadmin, pour administrer le serveur au quotidien.
+Cela évite d’utiliser le compte root pour les tâches courantes et réduit le risque d’erreur humaine.
+En pratique, cela correspond à une bonne hygiène d’administration système.
 
-- ⚡ Sudo simplifié : vpsadmin peut exécuter des commandes d'administration sans taper son mot de passe à chaque fois. Pour éviter les piratages de terminal, une sécurité supplémentaire (use_pty) a été ajoutée.
+- ⚡ **Sudo simplifié** : vpsadmin peut exécuter des commandes d’administration sans ressaisir son mot de passe à chaque fois. Une configuration supplémentaire (use_pty) renforce la sécurité de cette délégation.
 
-- 🐳 Docker = Pouvoir Root : Comme vpsadmin peut lancer Docker, il peut techniquement accéder à tout le serveur. C'est normal et nécessaire pour gérer tes containers facilement.
+- 🐳 **Docker** implique une élévation de privilèges : comme vpsadmin peut lancer Docker, il a potentiellement un niveau de contrôle très élevé sur le serveur. C’est normal : c’est le compromis nécessaire pour gérer facilement des containers sur un VPS.
 
->⚠️ La règle d'or : Protège ta clé SSH !
->Puisque vpsadmin a de grands pouvoirs, celui qui possède ta clé privée SSH possède ton serveur.
-> - Ne stocke jamais ta clé privée sur un Cloud (Drive, Dropbox).
+> ⚠️ La règle d'or : Protège ta clé SSH !
+> Celui qui possède la clé privée SSH de vpsadmin possède en pratique l’accès d’administration au serveur.
+> - Ne stocke jamais cette clé privée sur un cloud public.
 > - Ne la partage jamais.
+> - Utilise une machine de confiance pour les accès d’administration.
 
 ---
 

@@ -177,10 +177,8 @@ Le script est interactif. Il te pose **2 questions obligatoires** :
 
 Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 
-À la toute fin, le script affiche la commande pour te reconnecter et la commande de vérification - puis attend que tu appuies sur Entrée avant de redémarrer. Prends le temps de les noter.
+> ⚠️ À la toute fin, le script affiche la commande pour te reconnecter et la commande de vérification - puis attend que tu appuies sur Entrée avant de redémarrer. Prends le temps de les noter.
 
-> ⚠️ **Ne ferme pas cette session root avant que le script te le demande.**
-> Il vérifie lui-même que tu peux te reconnecter avant de désactiver root.
 
 ---
 

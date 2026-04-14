@@ -12,6 +12,9 @@ import subprocess
 import time
 import urllib.error
 import urllib.request
+import base64
+import hmac
+import threading
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -25,6 +28,58 @@ CROWDSEC_KEY        = os.environ.get("CROWDSEC_API_KEY", "")
 ENDLESSH_CONTAINER  = os.environ.get("ENDLESSH_CONTAINER", "endlessh")
 CROWDSEC_CONTAINER  = os.environ.get("CROWDSEC_CONTAINER", "crowdsec")
 HOSTFS              = os.environ.get("HOSTFS", "/")
+
+# ── Auth & Rate Limiting ──────────────────────────────────────────────────────
+DASHBOARD_USER   = os.environ.get("DASHBOARD_USER", "admin")
+DASHBOARD_PASS   = os.environ.get("DASHBOARD_PASS", "")   # vide = auth désactivée
+RL_MAX_ATTEMPTS  = int(os.environ.get("AUTH_MAX_ATTEMPTS", "5"))
+RL_WINDOW_SEC    = int(os.environ.get("AUTH_WINDOW_SEC",  "300"))   # 5 min
+RL_LOCKOUT_SEC   = int(os.environ.get("AUTH_LOCKOUT_SEC", "900"))   # 15 min
+
+_rl_lock      = threading.Lock()
+_rl_failed:   dict[str, list[float]] = {}
+_rl_lockouts: dict[str, float]       = {}
+
+def _client_ip(handler: "Handler") -> str:
+    """Extrait l'IP réelle — gère X-Forwarded-For de Caddy."""
+    xff = handler.headers.get("X-Forwarded-For", "")
+    return xff.split(",")[0].strip() if xff else handler.client_address[0]
+
+def _is_rate_limited(ip: str) -> bool:
+    now = time.time()
+    with _rl_lock:
+        if ip in _rl_lockouts:
+            if now < _rl_lockouts[ip]:
+                return True
+            del _rl_lockouts[ip]
+            _rl_failed.pop(ip, None)
+        _rl_failed[ip] = [t for t in _rl_failed.get(ip, []) if now - t < RL_WINDOW_SEC]
+        return len(_rl_failed[ip]) >= RL_MAX_ATTEMPTS
+
+def _record_auth_failure(ip: str) -> None:
+    now = time.time()
+    with _rl_lock:
+        _rl_failed.setdefault(ip, []).append(now)
+        if len(_rl_failed[ip]) >= RL_MAX_ATTEMPTS:
+            _rl_lockouts[ip] = now + RL_LOCKOUT_SEC
+            print(f"[VPS Monitor] ⚠️  RATE LIMIT {ip} — lockout {RL_LOCKOUT_SEC}s", flush=True)
+
+def _check_basic_auth(handler: "Handler") -> bool:
+    """HTTP Basic Auth avec hmac.compare_digest (anti timing-attack)."""
+    if not DASHBOARD_PASS:
+        return True  # Auth désactivée — usage interne 127.0.0.1 uniquement
+    auth = handler.headers.get("Authorization", "")
+    if not auth.startswith("Basic "):
+        return False
+    try:
+        decoded = base64.b64decode(auth[6:]).decode("utf-8", errors="replace")
+        username, _, password = decoded.partition(":")
+        return (
+            hmac.compare_digest(username.encode(), DASHBOARD_USER.encode()) and
+            hmac.compare_digest(password.encode(), DASHBOARD_PASS.encode())
+        )
+    except Exception:
+        return False
 
 _cache: dict | None = None
 _cache_time: float  = 0.0
@@ -810,6 +865,30 @@ ROUTES = {
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
+        ip = _client_ip(self)
+
+        # 1. Rate limiting (avant auth)
+        if _is_rate_limited(ip):
+            self.send_response(429)
+            self.send_header("Retry-After", str(RL_LOCKOUT_SEC))
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(b'{"error":"too_many_requests"}')
+            return
+
+        # 2. Authentification HTTP Basic
+        if DASHBOARD_PASS and not _check_basic_auth(self):
+            _record_auth_failure(ip)
+            self.send_response(401)
+            self.send_header("WWW-Authenticate", 'Basic realm="VPS-SECURE Dashboard"')
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(b'{"error":"unauthorized"}')
+            return
+
+        # 3. Routing
         fn = ROUTES.get(self.path.rstrip("/"))
         if fn is None:
             self.send_error(404)

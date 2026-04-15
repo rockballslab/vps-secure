@@ -173,7 +173,7 @@ if [[ ${#RK_FAILS[@]} -eq 0 ]]; then
     RK_LAST="jamais"
     [[ -f /var/log/rkhunter-cron.log ]] \
         && RK_LAST=$(stat -c "%y" /var/log/rkhunter-cron.log 2>/dev/null | cut -d'.' -f1 || echo "?")
-    _pass "rkhunter" "installé · baseline présente · conf.local OK · cron 04h00 · dernier scan : ${RK_LAST}"
+    _pass "rkhunter" "installé · baseline présente · conf.local OK · cron 00h00 UTC · dernier scan : ${RK_LAST}"
 else
     _fail "rkhunter" "$(IFS=', '; echo "${RK_FAILS[*]}")"
 fi

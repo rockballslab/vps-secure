@@ -1084,9 +1084,14 @@ fi
 # Étape 11 : Scanner de rootkits (rkhunter)
 # ============================================================
 etape "11" "$TOTAL_ETAPES" "Installation du scanner de rootkits (rkhunter)"
+# NOTE : rkhunter 1.4.6 (2018) est la version disponible dans les dépôts Ubuntu 24.04.
+# Sa base de signatures couvre les rootkits connus jusqu'à ~2020.
+# Les rootkits post-2022 (BPFDoor, Symbiote, OrBit) ne sont pas détectés par rkhunter.
+# La couverture est complétée par AIDE (étape 15) + auditd (étape 9).
 
 _wait_dpkg
-apt-get install -y -qq rkhunter
+# M2 : unhide ajouté — améliore la détection de processus cachés par rkhunter
+apt-get install -y -qq rkhunter unhide
 
 # Supprimer les faux positifs connus sur Ubuntu 24.04 + Docker
 # Sans ce fichier : chaque apt upgrade génère des warnings sur les binaires mis à jour,
@@ -1108,6 +1113,13 @@ SCRIPTWHITELIST=/usr/sbin/delgroup
 ALLOWHIDDENFILE=/etc/.resolv.conf.systemd-resolved.bak
 ALLOWHIDDENFILE=/etc/.updated
 ALLOWHIDDENFILE=/etc/.pwd.lock
+TMPDIR=/tmp
+# M1 : Transmettre alertes rkhunter à syslog — corrélation avec auditd
+USE_SYSLOG=authpriv.warning
+# E3 : Docker overlay2 génère des faux positifs "deleted files" pour les containers actifs
+# (libs des containers marquées "(deleted)" dans /proc/maps — comportement normal overlay2)
+# Ce test est redondant avec AIDE — désactivé pour éliminer l'alert fatigue quotidienne
+DISABLE_TESTS=deleted_files
 RKHEOF
 chmod 640 /etc/rkhunter.conf.local
 
@@ -1147,12 +1159,19 @@ fi
 
 # Hook apt — rkhunter --propupd automatique après chaque apt upgrade
 # Sans ça, tout binaire mis à jour par apt déclenche une fausse alerte rkhunter
-cat > /etc/apt/apt.conf.d/99-rkhunter-propupd << 'APTEOF'
+# C3 : Hook APT maintenu (évite faux positifs rkhunter) mais rendu traçable dans les logs
+cat > /etc/apt/apt.conf.d/99-rkhunter-propupd << 'RKHAPTEOF'
 DPkg::Post-Invoke {
-    "if command -v rkhunter >/dev/null 2>&1; then rkhunter --propupd --nocolors >/dev/null 2>&1 || true; fi";
+    "if command -v rkhunter >/dev/null 2>&1; then \
+        echo \"$(date -u +%Y-%m-%dT%H:%M:%SZ) [vps-secure] rkhunter --propupd triggered by apt\" \
+            >> /var/log/rkhunter-propupd.log 2>/dev/null || true; \
+        rkhunter --propupd --nocolors >> /var/log/rkhunter-propupd.log 2>&1 || true; \
+    fi";
 };
-APTEOF
-chmod 644 /etc/apt/apt.conf.d/99-rkhunter-propupd
+RKHAPTEOF
+chmod 640 /etc/apt/apt.conf.d/99-rkhunter-propupd
+touch /var/log/rkhunter-propupd.log
+chmod 640 /var/log/rkhunter-propupd.log
 log_success "Hook apt rkhunter configuré — baseline mise à jour automatiquement après chaque apt upgrade."
 
 # Nettoyage du log du premier scan — lire les warnings avant suppression
@@ -1303,6 +1322,14 @@ else
 "
 fi
 
+# C3 : Notifier si baseline rkhunter a été mise à jour par apt dans les 27h
+PROPUPD_LOG="/var/log/rkhunter-propupd.log"
+PROPUPD_RECENT=""
+if [[ -f "$PROPUPD_LOG" ]] && find "$PROPUPD_LOG" -mmin -1620 -quiet 2>/dev/null; then
+    PROPUPD_DATE=$(tail -1 "$PROPUPD_LOG" 2>/dev/null | grep -oP '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}' || echo "?")
+    PROPUPD_RECENT="ℹ️ Baseline rkhunter mise à jour par apt le ${PROPUPD_DATE}"
+fi
+
 # ── auditd ──
 PRIV_COUNT=$(ausearch -k privilege_escalation --start today -i 2>/dev/null \
     | grep -c "type=" || echo "0")
@@ -1341,34 +1368,43 @@ else
 fi
 
 # ── AIDE (integrity monitoring) ──
-if command -v aide &>/dev/null; then
-    if [[ -f /var/log/aide-daily.exit ]]; then
-        AIDE_EXIT=$(cat /var/log/aide-daily.exit 2>/dev/null | tr -d '[:space:]')
-        if ! [[ "$AIDE_EXIT" =~ ^[0-9]+$ ]]; then
-            DETAILS+="⚠️ AIDE : fichier exit invalide — relancer manuellement
-  → sudo aide --check --config /etc/aide/aide.conf
+AIDE_EXIT_FILE="/var/log/aide-daily.exit"
+AIDE_CONTEXT_FILE="/var/log/aide-daily.exit.context"
+# E1 : Vérification de fraîcheur — le scan AIDE tourne à 03h00, rapport à 07h00, marge = 28h
+if [[ ! -f "$AIDE_EXIT_FILE" ]]; then
+    DETAILS+="⚠️ AIDE — fichier résultat manquant (cron désactivé ?)
 "
-        elif [[ "$AIDE_EXIT" -eq 0 ]]; then
-            DETAILS+="✅ AIDE : aucune modification système détectée
+    ISSUES=$(( ISSUES + 1 ))
+elif ! find "$AIDE_EXIT_FILE" -mmin -1680 -quiet 2>/dev/null; then
+    DETAILS+="⚠️ AIDE — pas de scan depuis +28h (cron en panne ?)
 "
-        elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]]; then
-            ISSUES=$((ISSUES + 1))
-            DETAILS+="🔴 AIDE : modifications système détectées (exit ${AIDE_EXIT})
-  → Détail : sudo aide --check --config /etc/aide/aide.conf
-  → Si mise à jour OS : sudo chattr -i /var/lib/aide/aide.db && sudo aide --update --config /etc/aide/aide.conf && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db && sudo chattr +i /var/lib/aide/aide.db && sudo rm -f /var/lib/aide/aide.db.new
-
+    ISSUES=$(( ISSUES + 1 ))
+else
+    AIDE_EXIT=$(cat "$AIDE_EXIT_FILE" 2>/dev/null || echo "99")
+    # C2 : Tester les erreurs techniques EN PREMIER (& 56 avant & 7)
+    # Évite de classifier les exits 14/15/17/18/19 comme "modifications détectées"
+    if [[ "$AIDE_EXIT" -ge 128 ]]; then
+        DETAILS+="⚠️ AIDE — erreur système (signal $(( AIDE_EXIT - 128 )))
 "
-        elif [[ $(( AIDE_EXIT & 56 )) -ne 0 ]]; then
-            DETAILS+="⚠️ AIDE : erreur technique (exit ${AIDE_EXIT})
-  → Relance : sudo aide --check 2>&1 | tail -5
+        ISSUES=$(( ISSUES + 1 ))
+    elif [[ $(( AIDE_EXIT & 56 )) -ne 0 ]]; then
+        DETAILS+="⚠️ AIDE — erreur technique (code $AIDE_EXIT)
+"
+        ISSUES=$(( ISSUES + 1 ))
+    elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]]; then
+        # C1 : Message contextuel non-anxiogène si apt a tourné
+        if [[ -f "$AIDE_CONTEXT_FILE" ]]; then
+            DPKG_PKG_COUNT=$(grep -oP 'dpkg_active:\K[0-9]+' "$AIDE_CONTEXT_FILE" 2>/dev/null || echo "?")
+            DETAILS+="ℹ️ AIDE — apt a mis à jour ~${DPKG_PKG_COUNT} pkg(s). OK si attendu — validez : aide --update
 "
         else
-            DETAILS+="⚠️ AIDE : état inconnu (exit ${AIDE_EXIT})
-  → Relance : sudo aide --check
+            DETAILS+="🚨 AIDE — MODIFICATIONS INATTENDUES
+  → Détail : sudo aide --check --config /etc/aide/aide.conf
 "
+            ISSUES=$(( ISSUES + 1 ))
         fi
     else
-        DETAILS+="⏳ AIDE : premier scan prévu à 01h00 UTC (03h00 Paris)
+        DETAILS+="✅ AIDE OK
 "
     fi
 fi
@@ -1388,18 +1424,19 @@ MESSAGE="🔐 vps-secure — Rapport quotidien
 ${HEADER}
 
 ${DETAILS}
-${FOOTER}"
+${PROPUPD_RECENT:+${PROPUPD_RECENT}
+}${FOOTER}"
 
 send_telegram "$MESSAGE"
 CHECKEOF
 
             chmod +x /usr/local/bin/vps-secure-check.sh
 
-            # Créer le cron quotidien à 07h00
+            # Rapport Telegram quotidien 07h00 UTC (= 09h00 Paris heure d'été CEST / 08h00 heure d'hiver CET)
             echo "0 7 * * * root /usr/local/bin/vps-secure-check.sh" > /etc/cron.d/vps-secure
             chmod 644 /etc/cron.d/vps-secure
 
-            log_success "Rapport quotidien configuré — tous les jours à 05h00 UTC (07h00 Paris)."
+            log_success "Rapport quotidien configuré — tous les jours à 07h00 UTC (09h00 Paris CEST / 08h00 CET)."
             log_info "  Script    : /usr/local/bin/vps-secure-check.sh"
             log_info "  Config    : /etc/vps-secure/telegram.conf"
             log_info "  Cron      : /etc/cron.d/vps-secure"
@@ -1764,21 +1801,28 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/var/lib/update-notifier
 !/var/lib/dpkg/triggers
 !/var/log/sysstat
-!/var/log/aide
-!/run/
-!/var/log/crowdsec
-!/var/log/audit/
-!/var/lib/docker
-!/var/lib/containerd
-!/run/docker
-!/var/run/docker
-!/home/[^/]+/\.docker/
-!/home/[^/]+/\.gnupg/
-!/home/[^/]+/\.npm/
-!/root/.docker
-!/root/.gnupg
-!/root/.npm
-!/var/lib/command-not-found
+!/var/log/aide(/.*)?$
+!/run(/.*)?$
+!/var/log/crowdsec(/.*)?$
+!/var/log/audit(/.*)?$
+!/var/lib/docker(/.*)?$
+!/var/lib/containerd(/.*)?$
+!/run/docker(/.*)?$
+!/var/run/docker(/.*)?$
+!/home/[^/]+/\.docker(/.*)?$
+!/root/\.docker(/.*)?$
+!/var/lib/command-not-found(/.*)?$
+# E2 : Exclusions manquantes — ces fichiers sont modifiés à chaque unattended-upgrades
+!/var/lib/dpkg/status$
+!/etc/ld\.so\.cache$
+!/run/utmp$
+!/var/lib/crowdsec/hub(/.*)?$
+!/var/lib/apt/lists(/.*)?$
+!/var/cache/apt(/.*)?$
+!/home/[^/]+/\.gnupg(/.*)?$
+!/home/[^/]+/\.npm(/.*)?$
+!/root/\.gnupg(/.*)?$
+!/root/\.npm(/.*)?$
 !/var/log/vps-monitor-history\.json$
 !/etc/vps-secure/known-ips\.conf$
 !/etc/update-motd\.d/
@@ -1827,13 +1871,50 @@ fi
 # Mise à jour baseline rkhunter — _aide user/group créés par AIDE absent de la baseline initiale (étape 11)
 rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : non bloquant
 
-# Cron quotidien AIDE à 03h00 (4h avant le rapport Telegram de 07h00)
+# Smart-check AIDE v2.4.0 — script dédié (bitmask + contexte dpkg + protection chattr)
+cat > /usr/local/bin/vps-secure-aide-check.sh << 'AIDESMART'
+#!/usr/bin/env bash
+set -euo pipefail
+readonly AIDE_CONF="/etc/aide/aide.conf"
+readonly AIDE_DB="/var/lib/aide/aide.db"
+readonly AIDE_DB_NEW="/var/lib/aide/aide.db.new"
+readonly AIDE_LOG="/var/log/aide-daily.log"
+readonly AIDE_EXIT_FILE="/var/log/aide-daily.exit"
+readonly AIDE_CONTEXT_FILE="/var/log/aide-daily.exit.context"
+readonly DPKG_LOG="/var/log/dpkg.log"
+readonly DPKG_WINDOW_HOURS=26
+
+AIDE_EXIT=0
+# E1 : Lever la protection chattr avant écriture
+chattr -i "$AIDE_EXIT_FILE" 2>/dev/null || true
+aide --check --config "$AIDE_CONF" > "$AIDE_LOG" 2>&1 || AIDE_EXIT=$?
+echo "$AIDE_EXIT" > "$AIDE_EXIT_FILE"
+# E1 : Protéger le fichier contre falsification post-compromise
+chattr +i "$AIDE_EXIT_FILE" 2>/dev/null || true
+
+[[ "$AIDE_EXIT" -eq 0 ]] && { rm -f "$AIDE_CONTEXT_FILE"; exit 0; }
+[[ $(( AIDE_EXIT & 56 )) -ne 0 ]] && exit 0
+
+CUTOFF=$(date -d "${DPKG_WINDOW_HOURS} hours ago" '+%Y-%m-%d %H:%M:%S')
+DPKG_ACTIVITY=$(awk -v c="$CUTOFF" '$0 > c && / status installed / {count++} END {print count+0}' "$DPKG_LOG" 2>/dev/null || echo 0)
+[[ "$DPKG_ACTIVITY" -eq 0 ]] && { rm -f "$AIDE_CONTEXT_FILE"; exit 0; }
+
+# C1 v2.4.0 : NE PAS auto-mettre à jour la baseline silencieusement
+# Écrire le contexte dpkg — vps-secure-check.sh affichera une alerte informative
+# Validation manuelle : sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+echo "dpkg_active:${DPKG_ACTIVITY}" > "$AIDE_CONTEXT_FILE"
+exit 0
+AIDESMART
+chmod 700 /usr/local/bin/vps-secure-aide-check.sh
+log_success "Script vps-secure-aide-check.sh installé."
+
+# Cron quotidien AIDE à 01h00 UTC (4h avant le rapport Telegram de 07h00 UTC)
 # Le résultat est lu par vps-secure-check.sh pour le rapport Telegram
 cat > /etc/cron.d/aide-daily << 'AIDECRONEOF'
 # vps-secure — AIDE integrity check quotidien à 01h00 UTC (03h00 Paris)
-# Résultat lu par vps-secure-check.sh pour le rapport Telegram 05h00 UTC (07h00 Paris)
+# Résultat lu par vps-secure-check.sh pour le rapport Telegram 07h00 UTC (09h00 Paris CEST)
 # Exit code AIDE (bitmask) : 0=OK · 1=ajouts · 2=suppressions · 4=modifications · 7=les trois · 8+=erreur technique
-0 1 * * * root aide --check --config /etc/aide/aide.conf > /var/log/aide-daily.log 2>&1; echo $? > /var/log/aide-daily.exit
+0 1 * * * root /usr/local/bin/vps-secure-aide-check.sh
 AIDECRONEOF
 chmod 644 /etc/cron.d/aide-daily
 
@@ -1953,15 +2034,16 @@ if [[ -f /var/log/aide-daily.exit ]]; then
         AIDE_STATUS="${JAUNE}Fichier exit invalide — sudo aide --check${RESET}"
     elif [[ "$AIDE_EXIT" -eq 0 ]]; then
         AIDE_STATUS="${VERT}Aucune modification${RESET}"
+    elif [[ $(( AIDE_EXIT & 56 )) -ne 0 ]]; then
+        # C2 : erreurs techniques testées AVANT les modifications (évite faux positifs bitmask)
+        AIDE_STATUS="${JAUNE}Erreur technique AIDE (exit ${AIDE_EXIT}) — sudo aide --check 2>&1 | tail -5${RESET}"
     elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]]; then
         AIDE_STATUS="${ROUGE}Modifications détectées (exit ${AIDE_EXIT}) — sudo aide --check --config /etc/aide/aide.conf${RESET}"
-    elif [[ $(( AIDE_EXIT & 56 )) -ne 0 ]]; then
-        AIDE_STATUS="${JAUNE}Erreur technique AIDE (exit ${AIDE_EXIT}) — sudo aide --check 2>&1 | tail -5${RESET}"
     else
         AIDE_STATUS="${JAUNE}État inconnu (exit ${AIDE_EXIT}) — sudo aide --check${RESET}"
     fi
 else
-    AIDE_STATUS="${JAUNE}Pas encore exécuté (scan à 03h00)${RESET}"
+    AIDE_STATUS="${JAUNE}Pas encore exécuté (scan à 01h00 UTC)${RESET}"
 fi
 
 # ── Système ──
@@ -2080,7 +2162,7 @@ echo -e "  ${VERT}✅${RESET} Kernel hardening    : ${BLANC}Anti-spoofing · SYN
 echo -e "  ${VERT}✅${RESET} DNS chiffré         : ${BLANC}DNS over TLS — Quad9 + Cloudflare (activé avant les téléchargements)${RESET}"
 echo -e "  ${VERT}✅${RESET} Audit système       : ${BLANC}auditd — identité · SSH · Docker · crontabs · /etc/hosts${RESET}"
 echo -e "  ${VERT}✅${RESET} Swap                : ${BLANC}2 GB actif (swappiness=10)${RESET}"
-echo -e "  ${VERT}✅${RESET} rkhunter            : ${BLANC}Scanner de rootkits — baseline + scan quotidien 04h00${RESET}"
+echo -e "  ${VERT}✅${RESET} rkhunter            : ${BLANC}Scanner de rootkits — baseline + scan quotidien 00h00 UTC (minuit)${RESET}"
 echo -e "  ${VERT}✅${RESET} Services inutiles   : ${BLANC}avahi · cups · bluetooth · ModemManager désactivés${RESET}"
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
     echo -e "  ${VERT}✅${RESET} Endlessh            : ${BLANC}Honeypot actif — bots piégés sur le port 22${RESET}"

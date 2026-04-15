@@ -1114,7 +1114,8 @@ ALLOWHIDDENFILE=/etc/.resolv.conf.systemd-resolved.bak
 ALLOWHIDDENFILE=/etc/.updated
 ALLOWHIDDENFILE=/etc/.pwd.lock
 TMPDIR=/tmp
-# M1 : Transmettre alertes rkhunter à syslog — corrélation avec auditd
+# M1 : Transmettre alertes rkhunter à syslog (authpriv.warning)
+# Visible dans /var/log/auth.log — corrélable avec auditd
 USE_SYSLOG=authpriv.warning
 # E3 : Docker overlay2 génère des faux positifs "deleted files" pour les containers actifs
 # (libs des containers marquées "(deleted)" dans /proc/maps — comportement normal overlay2)
@@ -1819,6 +1820,7 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/var/lib/crowdsec/hub(/.*)?$
 !/var/lib/apt/lists(/.*)?$
 !/var/cache/apt(/.*)?$
+!/etc/alternatives(/.*)?$
 !/home/[^/]+/\.gnupg(/.*)?$
 !/home/[^/]+/\.npm(/.*)?$
 !/root/\.gnupg(/.*)?$
@@ -1891,6 +1893,7 @@ aide --check --config "$AIDE_CONF" > "$AIDE_LOG" 2>&1 || AIDE_EXIT=$?
 echo "$AIDE_EXIT" > "$AIDE_EXIT_FILE"
 # E1 : Protéger le fichier contre falsification post-compromise
 chattr +i "$AIDE_EXIT_FILE" 2>/dev/null || true
+chattr -i "$AIDE_CONTEXT_FILE" 2>/dev/null || true
 
 [[ "$AIDE_EXIT" -eq 0 ]] && { rm -f "$AIDE_CONTEXT_FILE"; exit 0; }
 [[ $(( AIDE_EXIT & 56 )) -ne 0 ]] && exit 0
@@ -1903,6 +1906,7 @@ DPKG_ACTIVITY=$(awk -v c="$CUTOFF" '$0 > c && / status installed / {count++} END
 # Écrire le contexte dpkg — vps-secure-check.sh affichera une alerte informative
 # Validation manuelle : sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 echo "dpkg_active:${DPKG_ACTIVITY}" > "$AIDE_CONTEXT_FILE"
+chattr +i "$AIDE_CONTEXT_FILE" 2>/dev/null || true
 exit 0
 AIDESMART
 chmod 700 /usr/local/bin/vps-secure-aide-check.sh
@@ -1928,6 +1932,18 @@ cat > /etc/logrotate.d/aide-daily << 'LOGROTEOF'
     notifempty
 }
 LOGROTEOF
+
+cat > /etc/logrotate.d/vps-secure-rkhunter << 'RKLOGROTEOF'
+/var/log/rkhunter-cron.log
+/var/log/rkhunter-propupd.log {
+    weekly
+    rotate 8
+    compress
+    missingok
+    notifempty
+    create 640 root root
+}
+RKLOGROTEOF
 
 log_success "AIDE configuré — scan quotidien à 01h00 UTC (03h00 Paris)."
 log_info "  Base de référence : /var/lib/aide/aide.db"

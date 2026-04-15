@@ -317,7 +317,7 @@ ssh monvps
 ```
 
 
-## Dashboard de monitoring (optionnel)
+## Dashboard de monitoring (optionnel mais fortement recommandé)
  
 Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
 
@@ -342,6 +342,7 @@ Le script te demande un domaine et un mot de passe que tu dois créer. Ton mot d
   <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">
 </p>
 
+Ce Dashboard comprend:
 
 > Design system complet clair/sombre
 > 

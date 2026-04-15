@@ -1513,6 +1513,8 @@ log_info "Les bots cherchent le port 22 en priorité : Endlessh les maintient co
 log_info "des heures en envoyant un banner SSH infini, les empêchant d'attaquer ailleurs."
 
 # Ouvrir le port 22 dans UFW pour le honeypot
+hash -r 2>/dev/null || true           # réinitialiser le cache PATH bash
+apt-get install -y -qq --reinstall ufw 2>/dev/null || true  # garantir ufw intact après les installs précédentes
 ufw allow 22/tcp comment 'Honeypot Endlessh'
 log_success "Port 22 ouvert dans UFW pour le honeypot."
 

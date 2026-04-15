@@ -1171,8 +1171,6 @@ fi
 cat > /etc/apt/apt.conf.d/99-rkhunter-propupd << 'RKHAPTEOF'
 DPkg::Post-Invoke {
     "if command -v rkhunter >/dev/null 2>&1; then \
-        echo \"$(date -u +%Y-%m-%dT%H:%M:%SZ) [vps-secure] rkhunter --propupd triggered by apt\" \
-            >> /var/log/rkhunter-propupd.log 2>/dev/null || true; \
         rkhunter --propupd --nocolors >> /var/log/rkhunter-propupd.log 2>&1 || true; \
     fi";
 };

@@ -115,19 +115,17 @@ Avant de commencer et de lancer le script, tu as besoin de :
 ---
 
 
-💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
-
-
----
-
-
 # Installation en 15mn chrono
 
 ### Étape 0 - Utilise le guide interactif (recommandé)
 
 Avant de commencer, ouvre le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html) et suit les indications pas à pas.
 
-Ce guide te permet de noter ton IP et toutes les infos qui te seront demandées pendant l'installation en UN SEUL ENDROIT localement
+Ce guide te permet de noter l'IP de ton VPS et toutes les infos qui te seront demandées pendant l'installation en UN SEUL ENDROIT localement.
+
+
+💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
+
 
 ---
 
@@ -589,9 +587,9 @@ sudo /usr/local/bin/vps-secure-aide-check.sh
 
 ## Compatibilité
 
-Testé et vérifié le 15 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, KVM4, KVM8 · 
+Testé et vérifié le 15 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, KVM4, KVM8
 
-Installation complète et 100% fonctionnelle en 13 min ·
+Installation complète et 100% fonctionnelle en 13 min
 
 ---
 

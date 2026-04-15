@@ -69,7 +69,7 @@ Inclus un dashboard web complet pour visualiser en temps réel l'état de ton se
 | 8 | Kernel hardening | 33 paramètres : réseau (spoofing, SYN flood, ICMP, redirections sécurisées) + ASLR + protection ptrace + core dumps désactivés + perf events restreints |
 | 9 | **auditd** | Journalise tout : SSH, sudo, Docker, fichiers sensibles, crontabs (vecteur de persistence) et `/etc/hosts` (MITM DNS local) |
 | 10 | Swap 2 GB | Mémoire virtuelle d'urgence - évite les crashs |
-| 11 | **rkhunter** | Scanne les backdoors et rootkits. Scan quotidien automatique à 04h00 - indépendant de Telegram |
+| 11 | **rkhunter** | Scanne les backdoors et rootkits. Scan quotidien automatique à **00h00 UTC (02h00 Paris)** — indépendant de Telegram |
 | 12 | Désactivation des services inutiles | avahi, cups, bluetooth, ModemManager désactivés - chaque service actif = surface d'attaque (CIS 2.x). Ctrl-Alt-Delete masqué (DISA STIG) |
 | 13 | Alertes **Telegram** | Rapport de sécurité quotidien + Alerte immédiate à chaque connexion SSH |
 | 14 | **Endlessh** (honeypot port 22) | SSH est sur le port 2222 - le port 22 est libre. Endlessh le capture et maintient les bots connectés des heures en leur envoyant un banner SSH infini. Ils ne peuvent pas attaquer ailleurs pendant ce temps |
@@ -217,7 +217,7 @@ Chaque composant retourne `[PASS]` ou `[FAIL]` avec la raison. Tout doit être P
   [PASS] Docker       : actif · v29.3.1 · iptables:false confirmé
   [PASS] Endlessh     : container actif · port 22 en écoute · règle UFW présente
   [PASS] AIDE         : baseline présente (âge : 0j) · cron 03h00 configuré
-  [PASS] rkhunter     : installé · baseline présente · conf.local OK · cron 04h00 · dernier scan : jamais
+  [PASS] rkhunter     : installé · baseline présente · conf.local OK · cron 00h00 UTC · dernier scan : jamais
   [PASS] auditd       : actif · 26 règle(s) chargée(s)
   [PASS] Swap         : actif · 2048 MB · swappiness=10
   [PASS] Kernel       : ASLR=2 · ptrace_scope=1 · syncookies=1 · ip_forward=1 · suid_dumpable=0 · dmesg/kptr/eBPF restreints
@@ -254,6 +254,7 @@ Ton VPS est maintenant **SÉCURISÉ**. C'est officiellement une **FORTERESSE**.
 
 ✅ CrowdSec : aucune alerte
 ✅ rkhunter : aucune anomalie
+ℹ️ Baseline rkhunter mise à jour par apt le 2026-04-15T01:00:00Z
 ✅ auditd : aucun événement critique
 🍯 Endlessh : 247 bot(s) piégé(s) en 24h
 ✅ AIDE : aucune modification système détectée
@@ -479,7 +480,7 @@ sudo aureport --summary
 # Lancer un scan de rootkits
 sudo rkhunter --check --report-warnings-only
 
-# Voir le log du scan rkhunter quotidien (04h00)
+# Voir le log du scan rkhunter quotidien (00h00 UTC · 02h00 Paris)
 sudo cat /var/log/rkhunter-cron.log
 
 # Statut du pare-feu
@@ -513,13 +514,19 @@ sudo chattr -i /var/lib/aide/aide.db \
 
 # Cache sécurité (Endlessh + CrowdSec) - mis à jour toutes les 5 min
 cat /var/cache/vps-secure/security-stats.json
+
+# Vérifier si rkhunter a été mis à jour par apt (nouvelle feature v2.4.0)
+sudo cat /var/log/rkhunter-propupd.log
+
+# Lancer le smart-check AIDE manuellement (smart-check v3)
+sudo /usr/local/bin/vps-secure-aide-check.sh
 ```
 
 ---
 
 ## Compatibilité
 
-Testé et vérifié le 14 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 12 min · 100% fonctionnel
+Testé et vérifié le 15 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, KVM4 · Hetzner CX · Installation complète en 12 min · 100% fonctionnel
 
 
 ---

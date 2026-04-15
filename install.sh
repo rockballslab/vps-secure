@@ -1170,9 +1170,7 @@ fi
 # C3 : Hook APT maintenu (évite faux positifs rkhunter) mais rendu traçable dans les logs
 cat > /etc/apt/apt.conf.d/99-rkhunter-propupd << 'RKHAPTEOF'
 DPkg::Post-Invoke {
-    "if command -v rkhunter >/dev/null 2>&1; then \
-        rkhunter --propupd --nocolors >> /var/log/rkhunter-propupd.log 2>&1 || true; \
-    fi";
+    "if command -v rkhunter >/dev/null 2>&1; then rkhunter --propupd --nocolors >> /var/log/rkhunter-propupd.log 2>&1 || true; fi";
 };
 RKHAPTEOF
 chmod 640 /etc/apt/apt.conf.d/99-rkhunter-propupd

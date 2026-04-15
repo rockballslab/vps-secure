@@ -32,10 +32,11 @@ Un VPS nu ou configuré par défaut est une cible facile, visible et attaquable 
 
 👋 Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et geek paranoïaque.
 
-Et c'est précisément la configuration que j'utilise pour sécuriser mes nouveaux serveurs de production ou tester les dernières nouveautés comme OpenClaw sans risque.
-
 
 > *"J'ai créé VPS-SECURE pour que mon serveur devienne une forteresse prête à accueillir mes services en toute sérennité."*
+
+
+Et c'est précisément la configuration que j'utilise pour sécuriser mes nouveaux serveurs de production ou tester les dernières nouveautés comme OpenClaw sans risque.
 
 
 ---

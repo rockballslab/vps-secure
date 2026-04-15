@@ -30,14 +30,14 @@ Un VPS nu ou configuré par défaut est une cible facile, visible et attaquable 
 
 ## Qui suis-je ?
 
-👋 Je m'appelle Fabrice, entrepreneur avec plusieurs SaaS à mon actif, et geek paranoïaque.
+👋 Hello, moi c'est Fabrice.
+Entrepreneur, fondateur de plusieurs SaaS et adepte du "Zero Trust".
 
 
-> *"J'ai créé VPS-SECURE pour que mon serveur devienne une forteresse prête à accueillir mes services en toute sérennité."*
+J'ai conçu **VPS-SECURE** par nécessité : je voulais un outil capable de transformer n'importe quel serveur brut en une forteresse imprenable en quelques minutes, sans sacrifier la stabilité de mes services.
 
 
-Et c'est précisément la configuration que j'utilise pour sécuriser mes nouveaux serveurs de production ou tester les dernières nouveautés comme OpenClaw sans risque.
-
+> *"Eat your own dog food"* : C'est précisément la configuration que j'utilise pour blinder mes serveurs de production et tester de nouveaux services (comme OpenClaw) avec une tranquillité d'esprit absolue.
 
 ---
 

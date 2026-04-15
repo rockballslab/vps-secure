@@ -448,6 +448,18 @@ Le script ne devine pas tes noms de domaine. Pour mettre tes propres sites en HT
 # Tableau de bord de sécurité instantané
 sudo vps-secure-stats
 ```
+```bash
+# Pour l'ego-boost du matin:
+sudo vps-secure-stats
+```
+```bash
+# Pour installer une app
+sudo ufw allow 8080/tcp
+```
+```bash
+#Après une mise à jour)
+sudo vps-secure-aide-check.sh
+```
 
 ```
 ╔══════════════════════════════════════════════════════╗
@@ -488,11 +500,6 @@ sudo vps-secure-stats
 
 
 ```bash
-# Les 3 commandes essentielles:
-sudo vps-secure-stats (Pour l'ego-boost du matin).
-sudo ufw allow 8080/tcp (Pour installer une app).
-sudo vps-secure-aide-check.sh (Après une mise à jour).
-
 #Voir les alertes CrowdSec (dernières 24h)
 sudo cscli alerts list --since 24h
 

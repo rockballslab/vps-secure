@@ -80,7 +80,58 @@ log_ok "Clé vérifiée : VPS-SECURE <${KEY_EMAIL}>"
 log_ok "Fingerprint  : ${EXPECTED_FP}"
 log_sep
 echo ""
-log_ok "Intégrité confirmée — lancement de l'installation..."
+log_ok "Intégrité confirmée — vérification de la licence..."
+echo ""
+
+# ── Vérification clé d'activation ────────────────────────────────────────
+log_sep
+echo -e "${BOLD}  Clé d'activation requise${NC}"
+echo -e "  → Obtenez la vôtre : ${CYAN}https://vps-secure.aiforceone.fr/offre.html${NC}"
+echo ""
+
+# Réinstall : clé déjà sauvegardée ?
+if [[ -f /etc/vps-secure/.license ]]; then
+    ACTIVATION_KEY=$(cat /etc/vps-secure/.license)
+    log_info "Clé trouvée dans /etc/vps-secure/.license — réutilisation."
+else
+    read -rp "  Entrez votre clé d'activation : " ACTIVATION_KEY
+    echo ""
+fi
+
+[[ -z "${ACTIVATION_KEY}" ]] && log_fail "Clé d'activation manquante. Abandon."
+
+log_info "Validation de la licence..."
+
+LICENSE_RESPONSE=$(curl -fsSL -X POST \
+    "https://api.genieshot.com/webhooks/check-license" \
+    -H "Content-Type: application/json" \
+    -d "{\"key\":\"${ACTIVATION_KEY}\",\"hostname\":\"$(hostname)\"}" \
+    2>/dev/null || echo '{"status":"error"}')
+
+LICENSE_STATUS=$(echo "${LICENSE_RESPONSE}" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+
+case "${LICENSE_STATUS}" in
+    success)
+        # Sauvegarder la clé pour les réinstalls
+        mkdir -p /etc/vps-secure
+        echo "${ACTIVATION_KEY}" > /etc/vps-secure/.license
+        chmod 600 /etc/vps-secure/.license
+        log_ok "Licence valide — accès autorisé."
+        ;;
+    blocked)
+        log_fail "Limite d'activations atteinte (5/5). Contactez : support@aiforceone.fr"
+        ;;
+    invalid)
+        log_fail "Clé invalide. Obtenez une licence : https://vps-secure.aiforceone.fr/offre.html"
+        ;;
+    *)
+        log_fail "Impossible de valider la licence (réseau ou serveur). Réessayez dans quelques minutes."
+        ;;
+esac
+
+log_sep
+echo ""
+log_ok "Lancement de l'installation..."
 echo ""
 
 bash "${TMPDIR_VPS}/install.sh"

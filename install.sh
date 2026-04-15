@@ -1365,7 +1365,7 @@ CHECKEOF
             chmod +x /usr/local/bin/vps-secure-check.sh
 
             # Créer le cron quotidien à 07h00
-            echo "0 5 * * * root /usr/local/bin/vps-secure-check.sh" > /etc/cron.d/vps-secure
+            echo "0 7 * * * root /usr/local/bin/vps-secure-check.sh" > /etc/cron.d/vps-secure
             chmod 644 /etc/cron.d/vps-secure
 
             log_success "Rapport quotidien configuré — tous les jours à 05h00 UTC (07h00 Paris)."
@@ -1811,25 +1811,41 @@ GRAS='\033[1m'
 RESET='\033[0m'
 
 # ── Endlessh ──
-if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
+# Lecture du cache security-stats.json (évite docker logs synchrone)
+CACHE_FILE="/var/cache/vps-secure/security-stats.json"
+if [[ -f "$CACHE_FILE" ]]; then
+    CACHE_JSON=$(cat "$CACHE_FILE" 2>/dev/null || echo "{}")
+    CACHE_RUNNING=$(echo "$CACHE_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(str(d.get('running',False)).lower())" 2>/dev/null || echo "false")
+    BOTS_24H=$(echo "$CACHE_JSON"     | python3 -c "import sys,json; print(json.load(sys.stdin).get('last24h',0))" 2>/dev/null || echo "0")
+    BOTS_TOTAL=$(echo "$CACHE_JSON"   | python3 -c "import sys,json; print(json.load(sys.stdin).get('total',0))" 2>/dev/null || echo "0")
+    if [[ "$CACHE_RUNNING" == "true" ]]; then
+        ENDLESSH_STATUS="${VERT}actif${RESET}"
+    else
+        ENDLESSH_STATUS="${ROUGE}inactif${RESET}"
+        BOTS_24H="0"; BOTS_TOTAL="0"
+    fi
+elif docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
     BOTS_24H=$(docker logs endlessh --since 1440m 2>&1 | { grep -ci "accept" || true; })
     BOTS_TOTAL=$(docker logs endlessh 2>&1 | { grep -ci "accept" || true; })
     ENDLESSH_STATUS="${VERT}actif${RESET}"
 else
-    BOTS_24H="0"
-    BOTS_TOTAL="0"
+    BOTS_24H="0"; BOTS_TOTAL="0"
     ENDLESSH_STATUS="${ROUGE}inactif${RESET}"
 fi
 
 # ── CrowdSec ──
 if command -v cscli &>/dev/null; then
-    CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
-        | python3 -c "import sys,json
+    if [[ -f "$CACHE_FILE" ]]; then
+        CS_BANNED=$(cat "$CACHE_FILE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cs_banned',0))" 2>/dev/null || echo "0")
+    else
+        CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
+            | python3 -c "import sys,json
 try:
     d=json.load(sys.stdin)
     print(len(d) if d else 0)
 except:
     print(0)" 2>/dev/null || echo "0")
+    fi
     CS_ALERTS_24H=$(cscli alerts list --since 24h -o json 2>/dev/null \
         | python3 -c "import sys,json
 try:
@@ -1878,7 +1894,6 @@ if [[ -f /var/log/aide-daily.exit ]]; then
     else
         AIDE_STATUS="${JAUNE}Erreur technique AIDE (exit $AIDE_EXIT) — sudo aide --check 2>&1 | tail -5${RESET}"
     fi
-
 else
     AIDE_STATUS="${JAUNE}Pas encore exécuté (scan à 03h00)${RESET}"
 fi

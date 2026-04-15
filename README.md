@@ -47,8 +47,7 @@ J'ai conçu **VPS-SECURE** par nécessité : je voulais un outil capable de tran
 ---
 
 
-## Exemple du Dashboard inclus
-*24h seulement aprés l'installation de VPS-SECURE sur un serveur vierge*
+## Exemple du Dashboard inclus - 24h seulement aprés l'installation de VPS-SECURE sur un serveur vierge
 
 Un cockpit web complet pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système, alertes Telegram.
 

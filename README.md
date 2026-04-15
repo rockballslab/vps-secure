@@ -97,6 +97,11 @@ Avant de commencer et de lancer le script, tu as besoin de :
 💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
 
 
+<p align="center">
+  <img src="./screenshots/sticker1.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
+</p>
+
+
 ---
 
 

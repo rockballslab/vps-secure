@@ -92,10 +92,6 @@ bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système, 
 
 ---
 
-## Prêt(e) pour une forteresse en 15mn ?
-
-
----
 
 ## Prérequis
 

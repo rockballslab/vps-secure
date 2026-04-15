@@ -12,7 +12,7 @@
 
 ---
 
-## 🛡️ Pourquoi utiliser ce script ?
+## 🛡️ Pourquoi utiliser ce script VPS SECURE ?
 
 Un VPS nu ou configuré par défaut est une cible facile, visible et attaquable en quelques minutes.
 

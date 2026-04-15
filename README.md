@@ -103,7 +103,7 @@ Avant de commencer et de lancer le script, tu as besoin de :
 
 > 🔑 Ce script nécessite une licence au lancement — [disponible ici](https://vps-secure.aiforceone.fr/offre.html) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
 >
-> 👨‍💻 Dev, DevOps, SysAdmin,... ? [Contacte-moi pour un accès Bêta](https://tally.so/r/lblb0k) - ta clé d'activation unique sera envoyée en quelques minutes après acceptation de ta demande.
+> 👨‍💻 Tu souhaites contribuer et auditer le code ? Postule à la Bêta. [Contacte-moi pour un accès Bêta](https://tally.so/r/lblb0k) - ta clé d'activation unique sera envoyée en quelques minutes après acceptation de ta demande.
 
 
 <p align="center">
@@ -361,18 +361,17 @@ Le script te demande un domaine et un mot de passe que tu dois créer. Ton mot d
 
 ---
 
-## ⚠️ Docker & Firewall : Sécurité Garantie
+## 🔒 Docker & Firewall : Le "UFW Bypass" corrigé
 
-Par défaut, Docker ignore les règles de votre pare-feu (UFW) et expose vos ports directement sur Internet. Ce script corrige cette faille critique.
+Par défaut, Docker manipule iptables et ignore totalement les règles de votre pare-feu (UFW), exposant vos ports directement sur le web. Ce script corrige cette faille critique présente sur la quasi-totalité des installations standards.
 
-- Le correctif : Le script désactive la gestion automatique d'iptables par Docker.
+    Le correctif : Le script désactive la gestion automatique d'iptables par le démon Docker (iptables: false).
 
-- Accès Internet : Une règle de NAT (MASQUERADE) est automatiquement ajoutée à before.rules pour que vos containers conservent un accès à Internet.
+    Accès Internet : Une règle de NAT (MASQUERADE) est automatiquement injectée dans before.rules pour que vos containers conservent un accès sortant (updates, API, etc.).
 
-- Contrôle Total : Rien ne sort, rien ne rentre sans votre accord.
+    Contrôle Total : Rien ne rentre sans votre accord explicite.
 
-
-**Ce que ça change concrètement :** Si vous lancez un container sur le port 8080, il restera **invisible** depuis l'extérieur. Pour l'ouvrir, vous devrez le faire manuellement :
+Conséquence directe : Si vous lancez un container sur le port 8080, il restera invisible de l'extérieur par défaut. Pour l'ouvrir, vous devez le faire manuellement :
 
 ```bash
 sudo ufw allow 8080/tcp comment 'Mon application'
@@ -489,7 +488,12 @@ sudo vps-secure-stats
 
 
 ```bash
-# Voir les alertes CrowdSec (dernières 24h)
+# Les 3 commandes essentielles:
+sudo vps-secure-stats (Pour l'ego-boost du matin).
+sudo ufw allow 8080/tcp (Pour installer une app).
+sudo vps-secure-aide-check.sh (Après une mise à jour).
+
+#Voir les alertes CrowdSec (dernières 24h)
 sudo cscli alerts list --since 24h
 
 # Consulter les logs d'audit

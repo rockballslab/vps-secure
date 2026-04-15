@@ -77,6 +77,7 @@ Inclus un dashboard web complet pour visualiser en temps réel l'état de ton se
 | 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 — toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram. Après une mise à jour OS, relancer la baseline manuellement (commande fournie). |
 
 
+
 <p align="center">
   <img src="./screenshots/sticker2.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>

@@ -448,18 +448,6 @@ Le script ne devine pas tes noms de domaine. Pour mettre tes propres sites en HT
 # Tableau de bord de sécurité instantané
 sudo vps-secure-stats
 ```
-```bash
-# Pour l'ego-boost du matin:
-sudo vps-secure-stats
-```
-```bash
-# Pour installer une app
-sudo ufw allow 8080/tcp
-```
-```bash
-#Après une mise à jour)
-sudo vps-secure-aide-check.sh
-```
 
 ```
 ╔══════════════════════════════════════════════════════╗
@@ -497,6 +485,20 @@ sudo vps-secure-aide-check.sh
 > ⓘ Le jour de l'installation, les escalades de privilèges affichent un nombre élevé (1000+).
 > C'est normal - le script install.sh tourne en root et chaque commande système est auditée.
 > Dès le lendemain, le compteur reflète uniquement tes actions réelles.
+
+
+```bash
+# Pour l'ego-boost du matin
+sudo vps-secure-stats
+```
+```bash
+# Pour installer une app
+sudo ufw allow 8080/tcp
+```
+```bash
+#Après une mise à jour
+sudo vps-secure-aide-check.sh
+```
 
 
 ```bash

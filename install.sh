@@ -1320,20 +1320,28 @@ fi
 # ── AIDE (integrity monitoring) ──
 if command -v aide &>/dev/null; then
     if [[ -f /var/log/aide-daily.exit ]]; then
-        AIDE_EXIT=$(cat /var/log/aide-daily.exit 2>/dev/null || echo "99")
-        if [[ "$AIDE_EXIT" -eq 0 ]]; then
+        AIDE_EXIT=$(cat /var/log/aide-daily.exit 2>/dev/null | tr -d '[:space:]')
+        if ! [[ "$AIDE_EXIT" =~ ^[0-9]+$ ]]; then
+            DETAILS+="⚠️ AIDE : fichier exit invalide — relancer manuellement
+  → sudo aide --check --config /etc/aide/aide.conf
+"
+        elif [[ "$AIDE_EXIT" -eq 0 ]]; then
             DETAILS+="✅ AIDE : aucune modification système détectée
 "
-        elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]] && [[ $(( AIDE_EXIT & 56 )) -eq 0 ]]; then
+        elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]]; then
             ISSUES=$((ISSUES + 1))
-            DETAILS+="🔴 AIDE : modifications système détectées
+            DETAILS+="🔴 AIDE : modifications système détectées (exit ${AIDE_EXIT})
   → Détail : sudo aide --check --config /etc/aide/aide.conf
-  → Si mise à jour OS : sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+  → Si mise à jour OS : sudo chattr -i /var/lib/aide/aide.db && sudo aide --update --config /etc/aide/aide.conf && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db && sudo chattr +i /var/lib/aide/aide.db && sudo rm -f /var/lib/aide/aide.db.new
 
 "
-        else
-            DETAILS+="⚠️ AIDE : erreur technique (code $AIDE_EXIT)
+        elif [[ $(( AIDE_EXIT & 56 )) -ne 0 ]]; then
+            DETAILS+="⚠️ AIDE : erreur technique (exit ${AIDE_EXIT})
   → Relance : sudo aide --check 2>&1 | tail -5
+"
+        else
+            DETAILS+="⚠️ AIDE : état inconnu (exit ${AIDE_EXIT})
+  → Relance : sudo aide --check
 "
         fi
     else
@@ -1726,7 +1734,7 @@ apt-get install -y -qq aide aide-common
 cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 
 # ── vps-secure — exclusions fichiers dynamiques ──────────────────
-!/home/.+/\.bash_history$
+!/home/[^/]+/\.bash_history$
 !/var/lib/crowdsec/data
 !/var/cache/apt/pkgcache\.bin$
 !/var/lib/snapd/state\.json$
@@ -1741,9 +1749,9 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/var/lib/containerd
 !/run/docker
 !/var/run/docker
-!/home/*/.docker
-!/home/*/.gnupg
-!/home/*/.npm
+!/home/[^/]+/\.docker/
+!/home/[^/]+/\.gnupg/
+!/home/[^/]+/\.npm/
 !/root/.docker
 !/root/.gnupg
 !/root/.npm
@@ -1756,21 +1764,41 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/etc/systemd/system/motd-news\.timer$
 !/etc/systemd/system/update-notifier-motd\.timer$
 !/^/$
+# ── Ubuntu 24.04 — fichiers système dynamiques ───────────────────
+!/var/lib/dpkg/info/
+!/var/lib/dpkg/status-old$
+!/var/lib/dpkg/lock.*
+!/var/lib/apt/lists/
+!/var/cache/apt/
+!/var/log/journal/
+!/var/log/btmp$
+!/var/log/wtmp$
+!/var/log/lastlog$
+!/var/lib/systemd/
+!/var/cache/ldconfig/
+!/var/cache/debconf/
+!/var/lib/snapd/
+!/snap/
+!/var/lib/docker/volumes/
+!/var/lib/docker/overlay2/
 AIDEEXCLEOF
 
 # Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)
 log_info "Création de la baseline AIDE — peut prendre 2 à 5 minutes selon la taille du disque..."
 log_info "  (le script continue automatiquement)"
-aideinit --yes --force 2>/dev/null || aideinit 2>/dev/null </dev/null || true
+DEBIAN_FRONTEND=noninteractive aideinit -y -f 2>/dev/null || \
+    aide --init --config /etc/aide/aide.conf 2>/dev/null || true
 
 if [[ -f /var/lib/aide/aide.db.new ]]; then
     cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
     chmod 600 /var/lib/aide/aide.db
-    log_success "Baseline AIDE créée — état sain du système enregistré."
+    chattr +i /var/lib/aide/aide.db
+    rm -f /var/lib/aide/aide.db.new
+    log_success "Baseline AIDE créée — état sain du système enregistré (protégée en écriture)."
 else
     log_warn "Baseline AIDE non créée automatiquement."
     log_warn "  Lance manuellement après installation :"
-    log_warn "  sudo aideinit && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db"
+    log_warn "  sudo DEBIAN_FRONTEND=noninteractive aideinit -y -f && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db && sudo chattr +i /var/lib/aide/aide.db && sudo rm -f /var/lib/aide/aide.db.new"
 fi
 
 # Mise à jour baseline rkhunter — _aide user/group créés par AIDE absent de la baseline initiale (étape 11)
@@ -1786,11 +1814,22 @@ cat > /etc/cron.d/aide-daily << 'AIDECRONEOF'
 AIDECRONEOF
 chmod 644 /etc/cron.d/aide-daily
 
+# Rotation des logs AIDE (évite accumulation sur 1 an)
+cat > /etc/logrotate.d/aide-daily << 'LOGROTEOF'
+/var/log/aide-daily.log {
+    weekly
+    rotate 8
+    compress
+    missingok
+    notifempty
+}
+LOGROTEOF
+
 log_success "AIDE configuré — scan quotidien à 01h00 UTC (03h00 Paris)."
 log_info "  Base de référence : /var/lib/aide/aide.db"
 log_info "  Log quotidien     : /var/log/aide-daily.log"
 log_info "  Scanner manuellement : sudo aide --check"
-log_info "  Après mise à jour OS : sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db"
+log_info "  Après mise à jour OS : sudo chattr -i /var/lib/aide/aide.db && sudo aide --update --config /etc/aide/aide.conf && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db && sudo chattr +i /var/lib/aide/aide.db && sudo rm -f /var/lib/aide/aide.db.new"
 
 # ============================================================
 # Installation de vps-secure-stats
@@ -1886,13 +1925,17 @@ fi
 
 # ── AIDE ──
 if [[ -f /var/log/aide-daily.exit ]]; then
-    AIDE_EXIT=$(cat /var/log/aide-daily.exit)
-    if [[ "$AIDE_EXIT" -eq 0 ]]; then
+    AIDE_EXIT=$(cat /var/log/aide-daily.exit 2>/dev/null | tr -d '[:space:]')
+    if ! [[ "$AIDE_EXIT" =~ ^[0-9]+$ ]]; then
+        AIDE_STATUS="${JAUNE}Fichier exit invalide — sudo aide --check${RESET}"
+    elif [[ "$AIDE_EXIT" -eq 0 ]]; then
         AIDE_STATUS="${VERT}Aucune modification${RESET}"
-    elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]] && [[ $(( AIDE_EXIT & 56 )) -eq 0 ]]; then
-        AIDE_STATUS="${ROUGE}Modifications détectées — sudo aide --check --config /etc/aide/aide.conf${RESET}"
+    elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]]; then
+        AIDE_STATUS="${ROUGE}Modifications détectées (exit ${AIDE_EXIT}) — sudo aide --check --config /etc/aide/aide.conf${RESET}"
+    elif [[ $(( AIDE_EXIT & 56 )) -ne 0 ]]; then
+        AIDE_STATUS="${JAUNE}Erreur technique AIDE (exit ${AIDE_EXIT}) — sudo aide --check 2>&1 | tail -5${RESET}"
     else
-        AIDE_STATUS="${JAUNE}Erreur technique AIDE (exit $AIDE_EXIT) — sudo aide --check 2>&1 | tail -5${RESET}"
+        AIDE_STATUS="${JAUNE}État inconnu (exit ${AIDE_EXIT}) — sudo aide --check${RESET}"
     fi
 else
     AIDE_STATUS="${JAUNE}Pas encore exécuté (scan à 03h00)${RESET}"

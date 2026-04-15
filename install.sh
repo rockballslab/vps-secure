@@ -626,10 +626,10 @@ log_success "CrowdSec actif — protection SSH + HTTP communautaire."
 etape "5" "$TOTAL_ETAPES" "Configuration du pare-feu UFW"
 
 # Garantir que ufw est accessible quel que soit le chemin sur l'image hôte
-if [[ ! -x "/usr/sbin/ufw" ]]; then
+if ! command -v ufw &>/dev/null; then
     log_info "ufw non trouvé dans PATH — installation..."
     _wait_dpkg && apt-get install -y -qq ufw
-    [[ ! -x "/usr/sbin/ufw" ]] && { log_error "Installation UFW échouée — abandon."; exit 1; }
+    command -v ufw &>/dev/null || { log_error "Installation UFW échouée — abandon."; exit 1; }
 fi
 
 ufw --force reset
@@ -1510,10 +1510,10 @@ log_info "Les bots cherchent le port 22 en priorité : Endlessh les maintient co
 log_info "des heures en envoyant un banner SSH infini, les empêchant d'attaquer ailleurs."
 
 # Ouvrir le port 22 dans UFW pour le honeypot
-if [[ ! -x "/usr/sbin/ufw" ]]; then
+if ! command -v ufw &>/dev/null; then
     log_info "ufw non trouvé dans PATH — réinstallation..."
     _wait_dpkg && apt-get install -y -qq ufw
-    [[ ! -x "/usr/sbin/ufw" ]] && { log_error "Installation UFW échouée — abandon."; exit 1; }
+    command -v ufw &>/dev/null || { log_error "Installation UFW échouée — abandon."; exit 1; }
 fi
 ufw allow 22/tcp comment 'Honeypot Endlessh'
 log_success "Port 22 ouvert dans UFW pour le honeypot."

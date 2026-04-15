@@ -1122,11 +1122,21 @@ log_info "  Dernier rapport      : /var/log/rkhunter.log"
 # Cron rkhunter quotidien à 04h00 — indépendant de Telegram
 # (si Telegram n'est pas configuré, rkhunter scanne quand même)
 if [[ ! -f /etc/cron.d/rkhunter-daily ]]; then
-    echo "0 4 * * * root rkhunter --check --sk --report-warnings-only >> /var/log/rkhunter-cron.log 2>&1" \
+    echo "0 0 * * * root rkhunter --check --sk --report-warnings-only >> /var/log/rkhunter-cron.log 2>&1" \
         > /etc/cron.d/rkhunter-daily
     chmod 644 /etc/cron.d/rkhunter-daily
-    log_success "Scan rkhunter quotidien configuré à 04h00 (log : /var/log/rkhunter-cron.log)."
+    log_success "Scan rkhunter quotidien configuré à 00h00 UTC (02h00 Paris) (log : /var/log/rkhunter-cron.log)."
 fi
+
+# Hook apt — rkhunter --propupd automatique après chaque apt upgrade
+# Sans ça, tout binaire mis à jour par apt déclenche une fausse alerte rkhunter
+cat > /etc/apt/apt.conf.d/99-rkhunter-propupd << 'APTEOF'
+DPkg::Post-Invoke {
+    "if command -v rkhunter >/dev/null 2>&1; then rkhunter --propupd --nocolors >/dev/null 2>&1 || true; fi";
+};
+APTEOF
+chmod 644 /etc/apt/apt.conf.d/99-rkhunter-propupd
+log_success "Hook apt rkhunter configuré — baseline mise à jour automatiquement après chaque apt upgrade."
 
 # Nettoyage du log du premier scan (contient des infos sur la config système)
 rm -f /tmp/rkhunter-first-scan.log
@@ -1298,7 +1308,7 @@ fi
 
 # ── Endlessh (honeypot port 22) ──
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
-    HONEY_COUNT=$(docker logs endlessh --since 24h 2>&1 | grep -ci "accept" || echo "0")
+    HONEY_COUNT=$(docker logs endlessh --since 1440m 2>&1 | grep -ci "accept" || echo "0")
     DETAILS+="🍯 Endlessh : ${HONEY_COUNT} bot(s) piégé(s) en 24h
 "
 else
@@ -1327,7 +1337,7 @@ if command -v aide &>/dev/null; then
 "
         fi
     else
-        DETAILS+="⏳ AIDE : premier scan prévu à 03h00
+        DETAILS+="⏳ AIDE : premier scan prévu à 01h00 UTC (03h00 Paris)
 "
     fi
 fi
@@ -1355,10 +1365,10 @@ CHECKEOF
             chmod +x /usr/local/bin/vps-secure-check.sh
 
             # Créer le cron quotidien à 07h00
-            echo "0 7 * * * root /usr/local/bin/vps-secure-check.sh" > /etc/cron.d/vps-secure
+            echo "0 5 * * * root /usr/local/bin/vps-secure-check.sh" > /etc/cron.d/vps-secure
             chmod 644 /etc/cron.d/vps-secure
 
-            log_success "Rapport quotidien configuré — tous les jours à 07h00."
+            log_success "Rapport quotidien configuré — tous les jours à 05h00 UTC (07h00 Paris)."
             log_info "  Script    : /usr/local/bin/vps-secure-check.sh"
             log_info "  Config    : /etc/vps-secure/telegram.conf"
             log_info "  Cron      : /etc/cron.d/vps-secure"
@@ -1460,7 +1470,7 @@ docker run -d \
 sleep 2
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
     log_success "Endlessh actif — bots piégés sur le port 22."
-    log_info "  Stats 24h : sudo docker logs endlessh --since 24h | grep -ci accept"
+    log_info "  Stats 24h : sudo docker logs endlessh --since 1440m | grep -ci accept"
     log_info "  Logs live : sudo docker logs -f endlessh"
 else
     log_warn "Endlessh n'a pas démarré — vérifie : sudo docker logs endlessh"
@@ -1552,8 +1562,6 @@ add_redirect() {
          -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT" 2>/dev/null; then
         iptables -t nat -A "$REDIRECT_CHAIN" \
             -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT"
-        iptables -I INPUT \
-            -s "$ip" -p tcp --dport "$HONEYPOT_PORT" -j ACCEPT
         logger -t "$LOG_TAG" "PIEGE: $ip -> Endlessh :$HONEYPOT_PORT"
     fi
 }
@@ -1564,8 +1572,6 @@ remove_redirect() {
        -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT" 2>/dev/null; then
         iptables -t nat -D "$REDIRECT_CHAIN" \
             -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT"
-        iptables -D INPUT \
-            -s "$ip" -p tcp --dport "$HONEYPOT_PORT" -j ACCEPT 2>/dev/null
         logger -t "$LOG_TAG" "LIBERE: $ip (décision expirée)"
     fi
 }
@@ -1736,9 +1742,19 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/run/docker
 !/var/run/docker
 !/home/*/.docker
+!/home/*/.gnupg
+!/home/*/.npm
 !/root/.docker
+!/root/.gnupg
+!/root/.npm
 !/var/lib/command-not-found
 !/var/log/vps-monitor-history\.json$
+!/etc/vps-secure/known-ips\.conf$
+!/etc/update-motd\.d/
+!/etc/cron\.d/vps-secure
+!/etc/cron\.d/aide-daily
+!/etc/systemd/system/motd-news\.timer$
+!/etc/systemd/system/update-notifier-motd\.timer$
 !/^/$
 AIDEEXCLEOF
 
@@ -1763,14 +1779,14 @@ rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : non bloqua
 # Cron quotidien AIDE à 03h00 (4h avant le rapport Telegram de 07h00)
 # Le résultat est lu par vps-secure-check.sh pour le rapport Telegram
 cat > /etc/cron.d/aide-daily << 'AIDECRONEOF'
-# vps-secure — AIDE integrity check quotidien à 03h00
-# Résultat lu par vps-secure-check.sh pour le rapport Telegram 07h00
+# vps-secure — AIDE integrity check quotidien à 01h00 UTC (03h00 Paris)
+# Résultat lu par vps-secure-check.sh pour le rapport Telegram 05h00 UTC (07h00 Paris)
 # Exit code AIDE (bitmask) : 0=OK · 1=ajouts · 2=suppressions · 4=modifications · 7=les trois · 8+=erreur technique
-0 3 * * * root aide --check --config /etc/aide/aide.conf > /var/log/aide-daily.log 2>&1; echo $? > /var/log/aide-daily.exit
+0 1 * * * root aide --check --config /etc/aide/aide.conf > /var/log/aide-daily.log 2>&1; echo $? > /var/log/aide-daily.exit
 AIDECRONEOF
 chmod 644 /etc/cron.d/aide-daily
 
-log_success "AIDE configuré — scan quotidien à 03h00."
+log_success "AIDE configuré — scan quotidien à 01h00 UTC (03h00 Paris)."
 log_info "  Base de référence : /var/lib/aide/aide.db"
 log_info "  Log quotidien     : /var/log/aide-daily.log"
 log_info "  Scanner manuellement : sudo aide --check"
@@ -1796,7 +1812,7 @@ RESET='\033[0m'
 
 # ── Endlessh ──
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
-    BOTS_24H=$(docker logs endlessh --since 24h 2>&1 | { grep -ci "accept" || true; })
+    BOTS_24H=$(docker logs endlessh --since 1440m 2>&1 | { grep -ci "accept" || true; })
     BOTS_TOTAL=$(docker logs endlessh 2>&1 | { grep -ci "accept" || true; })
     ENDLESSH_STATUS="${VERT}actif${RESET}"
 else
@@ -1940,7 +1956,7 @@ CS_BANNED=$(cscli decisions list -o json 2>/dev/null \
     | python3 -c "import sys,json
 try: print(len(json.load(sys.stdin) or []))
 except: print(0)" 2>/dev/null || echo "0")
-BOTS=$(docker logs endlessh --since 24h 2>&1 | { grep -ci "accept" || true; })
+BOTS=$(docker logs endlessh --since 1440m 2>&1 | { grep -ci "accept" || true; })
 UFW_BLOCKS=$(grep -c "\[UFW BLOCK\]" /var/log/ufw.log 2>/dev/null || echo "0")
 
 G='\033[0;32m'

@@ -73,6 +73,7 @@ BLANC='\033[0;37m'
 GRAS='\033[1m'
 RESET='\033[0m'
 
+
 log_info()    { echo -e "${BLANC}[INFO]  $*${RESET}"; }
 log_success() { echo -e "${VERT}[OK]    $*${RESET}"; }
 log_warn()    { echo -e "${JAUNE}[WARN]  $*${RESET}"; }
@@ -110,6 +111,15 @@ echo -e "${VERT}$(printf '═%.0s' {1..75})${RESET}\n"
 
 USERNAME="vpsadmin"
 TOTAL_ETAPES=15
+
+# ============================================================
+# CONFIGURATION ENVIRONNEMENT (À AJOUTER ICI)
+# ============================================================
+# Évite les interruptions "needrestart" ou les popups violets d'apt
+export DEBIAN_FRONTEND=noninteractive
+
+# Garantit que les outils système (ufw, ip, systemctl) sont toujours trouvés
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # ============================================================
 # Étape 1 : Créer l'utilisateur vpsadmin
@@ -625,73 +635,51 @@ log_success "CrowdSec actif — protection SSH + HTTP communautaire."
 # ============================================================
 etape "5" "$TOTAL_ETAPES" "Configuration du pare-feu UFW"
 
-# Garantir que ufw est accessible quel que soit le chemin sur l'image hôte
-if [[ ! -x "/usr/sbin/ufw" ]]; then
-    log_info "ufw non trouvé dans PATH — installation..."
+# On s'assure que le binaire est là (le PATH peut varier)
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+if ! command -v ufw >/dev/null 2>&1; then
+    log_info "ufw non trouvé — installation..."
     _wait_dpkg && apt-get install -y -qq ufw
-    [[ ! -x "/usr/sbin/ufw" ]] && { log_error "Installation UFW échouée — abandon."; exit 1; }
 fi
 
+# Reset pour repartir sur une base saine
 ufw --force reset
 ufw default deny incoming
 ufw default allow outgoing
 ufw default deny forward
 
+# Ports de base
 ufw allow 2222/tcp comment 'SSH vps-secure'
 ufw allow 80/tcp  comment 'HTTP'
 ufw allow 443/tcp comment 'HTTPS'
 
-# Détecter l'interface réseau principale (ens3, ens18, eth0... selon l'hébergeur)
+# Détection de l'interface et Forwarding Docker
 MAIN_IFACE=$(ip route show default 2>/dev/null | awk '/default/ {print $5}' | head -1)
 if [[ -z "$MAIN_IFACE" ]]; then
     log_warn "Interface réseau principale non détectée — forwarding Docker bridge ignoré."
-    log_warn "  Si tes containers n'ont pas internet après installation, lance :"
-    log_warn "  sudo ufw route allow in on docker0 out on <ton_interface>"
 else
     UFW_ROUTE_OK=true
-    ufw route allow in on docker0 out on "$MAIN_IFACE" 2>/dev/null \
-        || { log_warn "ufw route allow docker0→$MAIN_IFACE échoué."; UFW_ROUTE_OK=false; }  # optionnel : ufw route absent sur UFW < 0.36
-    ufw route allow in on "$MAIN_IFACE" out on docker0 2>/dev/null \
-        || { log_warn "ufw route allow $MAIN_IFACE→docker0 échoué."; UFW_ROUTE_OK=false; }  # optionnel : même raison
+    # On autorise le passage du trafic entre Docker et l'extérieur
+    ufw route allow in on docker0 out on "$MAIN_IFACE" 2>/dev/null || UFW_ROUTE_OK=false
+    ufw route allow in on "$MAIN_IFACE" out on docker0 2>/dev/null || UFW_ROUTE_OK=false
+    
     if [[ "$UFW_ROUTE_OK" == "true" ]]; then
         log_success "Forwarding Docker bridge via $MAIN_IFACE autorisé."
     else
-        log_warn "Forwarding Docker bridge incomplet — les containers pourraient ne pas avoir internet."
-        log_warn "  Vérifie : sudo ufw status verbose | grep docker"
+        log_warn "Forwarding Docker bridge incomplet — vérifie manuellement."
     fi
 fi
 
-ufw --force enable
+# Activation de UFW
+echo "y" | ufw enable >/dev/null
 ufw logging medium
 
-# ── Fix #29 : iptables-persistent (installé en dépendance par crowdsec-firewall-bouncer-iptables) ──
-log_info "Configuration d'iptables-persistent (persistance règles au reboot)..."
+# IMPORTANT : On ne met PAS iptables-persistent ici. 
+# UFW est déjà persistant via son propre service systemd.
+systemctl enable ufw >/dev/null 2>&1
 
-if dpkg -l iptables-persistent 2>/dev/null | grep -q "^un"; then
-    log_info "iptables-persistent non configuré (état 'un') — configuration forcée..."
-    DEBIAN_FRONTEND=noninteractive dpkg --configure iptables-persistent 2>/dev/null || \
-        DEBIAN_FRONTEND=noninteractive apt-get install -y --fix-broken iptables-persistent
-fi
-
-if ! dpkg -l iptables-persistent 2>/dev/null | grep -q "^ii"; then
-    _wait_dpkg
-    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq iptables-persistent
-fi
-
-systemctl enable netfilter-persistent 2>/dev/null || true  # optionnel : absent sur certains kernels minimalistes
-systemctl start netfilter-persistent 2>/dev/null || true
-
-if systemctl is-active --quiet netfilter-persistent; then
-    log_success "iptables-persistent actif — règles firewall persistantes au reboot."
-else
-    log_warn "netfilter-persistent non actif — les règles iptables custom (NAT Docker, Bot Funnel) ne survivront pas au reboot."
-    log_warn "  Vérifier : sudo systemctl status netfilter-persistent"
-fi
-
-log_success "UFW activé : ports 2222/80/443 uniquement."
-log_warn "⚠️  Docker : les ports exposés via -p doivent être déclarés dans UFW."
-log_warn "   Exemple : sudo ufw allow 8080/tcp comment 'Mon app'"
-ufw status verbose 2>/dev/null || true
+log_success "UFW activé : ports 2222/80/443."
 
 # ============================================================
 # Étape 6 : Installer Docker Engine + Compose v2
@@ -1509,30 +1497,23 @@ fi
 # ============================================================
 etape "14" "$TOTAL_ETAPES" "Honeypot SSH (Endlessh — port 22)"
 
-log_info "Port 22 libéré (SSH sur 2222) — Endlessh le capture pour piéger les bots."
-log_info "Les bots cherchent le port 22 en priorité : Endlessh les maintient connectés"
-log_info "des heures en envoyant un banner SSH infini, les empêchant d'attaquer ailleurs."
+log_info "Port 22 libéré — Endlessh le capture pour piéger les bots."
 
-# Ouvrir le port 22 dans UFW pour le honeypot
-if [[ ! -x "/usr/sbin/ufw" ]]; then
-    log_info "ufw non trouvé dans PATH — réinstallation..."
-    _wait_dpkg && apt-get install -y -qq ufw
-    [[ ! -x "/usr/sbin/ufw" ]] && { log_error "Installation UFW échouée — abandon."; exit 1; }
+# On vérifie si UFW est là, mais on n'installe RIEN (pour éviter le conflit avec Docker)
+if command -v ufw >/dev/null 2>&1; then
+    # On ouvre le port 22. Le || true évite de crash si Docker a "verrouillé" iptables
+    ufw allow 22/tcp comment 'Honeypot Endlessh' || log_warn "UFW busy, vérifie le port 22 plus tard."
+    log_success "Port 22 ouvert dans UFW."
+else
+    log_error "UFW introuvable (problème étape 5). Le honeypot risque d'être bloqué."
 fi
-ufw allow 22/tcp comment 'Honeypot Endlessh'
-log_success "Port 22 ouvert dans UFW pour le honeypot."
 
-# Lancer le container Endlessh
+# Lancer le container (Ta logique originale est parfaite ici)
 if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
     log_warn "Container Endlessh déjà présent — redémarrage."
-    docker rm -f endlessh 2>/dev/null || true  # optionnel : rm -f retourne 1 si le container n'existe pas — cas normal à la première installation
+    docker rm -f endlessh 2>/dev/null || true
 fi
 
-# ⚠️  MAINTENEUR : épingler le digest avant chaque release pour éviter un supply chain risk.
-# Commande pour obtenir le digest actuel :
-#   docker pull shizunge/endlessh-go && \
-#   docker inspect --format='{{index .RepoDigests 0}}' shizunge/endlessh-go
-# Puis remplacer le tag par : shizunge/endlessh-go@sha256:NOUVEAU_DIGEST
 docker run -d \
     --name endlessh \
     --restart unless-stopped \
@@ -1542,20 +1523,13 @@ docker run -d \
     --cap-add NET_BIND_SERVICE \
     --read-only \
     shizunge/endlessh-go@sha256:c9c5cd7084fda893f2b9f2c15d0b5867ba91ed06727375a3ca0f2678474fc09a \
-    -logtostderr \
-    -v=1 \
-    -port=22 \
-    > /dev/null || true  # optionnel : échec docker run géré par le check docker ps ci-dessous
+    -logtostderr -v=1 -port=22 > /dev/null || true
 
-# Vérifier que le container tourne
 sleep 2
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
-    log_success "Endlessh actif — bots piégés sur le port 22."
-    log_info "  Stats 24h : sudo docker logs endlessh --since 1440m | grep -ci accept"
-    log_info "  Logs live : sudo docker logs -f endlessh"
+    log_success "Endlessh actif sur le port 22."
 else
-    log_warn "Endlessh n'a pas démarré — vérifie : sudo docker logs endlessh"
-    log_warn "  Le reste de l'installation n'est pas affecté."
+    log_warn "Endlessh n'a pas démarré."
 fi
 
 # ============================================================

@@ -99,7 +99,7 @@ Avant de commencer et de lancer le script, tu as besoin de :
 - ✅ Une **clé SSH** générée sur ton ordinateur
 
 
-> 🔑 Ce script nécessite une licence au lancement du script — [disponible ici](https://vps-secure.aiforceone.fr/offre.html) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
+> 🔑 Ce script nécessite une licence au lancement — [disponible ici](https://vps-secure.aiforceone.fr/offre.html) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
 >
 > 👨‍💻 Dev, DevOps, SysAdmin,... ? [Contacte-moi pour un accès Bêta](https://tally.so/r/lblb0k) - ta clé d'activation unique sera envoyée en quelques minutes après acceptation de ta demande.
 

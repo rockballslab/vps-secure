@@ -625,6 +625,12 @@ log_success "CrowdSec actif — protection SSH + HTTP communautaire."
 # ============================================================
 etape "5" "$TOTAL_ETAPES" "Configuration du pare-feu UFW"
 
+# Garantir que ufw est accessible quel que soit le chemin sur l'image hôte
+if ! command -v ufw &>/dev/null; then
+    log_info "ufw non trouvé dans PATH — installation..."
+    apt-get install -y -qq ufw
+fi
+
 ufw --force reset
 ufw default deny incoming
 ufw default allow outgoing
@@ -684,7 +690,7 @@ fi
 log_success "UFW activé : ports 2222/80/443 uniquement."
 log_warn "⚠️  Docker : les ports exposés via -p doivent être déclarés dans UFW."
 log_warn "   Exemple : sudo ufw allow 8080/tcp comment 'Mon app'"
-ufw status verbose
+ufw status verbose 2>/dev/null || true
 
 # ============================================================
 # Étape 6 : Installer Docker Engine + Compose v2

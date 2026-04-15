@@ -1095,20 +1095,37 @@ cat > /etc/rkhunter.conf.local << 'RKHEOF'
 # vps-secure — Suppressions faux positifs rkhunter
 # Ubuntu 24.04 LTS + Docker Engine
 PKGMGR=DPKG
+# Scripts bash légitimes (wrappers grep, utilitaires user/group, ldd)
 SCRIPTWHITELIST=/usr/bin/egrep
 SCRIPTWHITELIST=/usr/bin/fgrep
 SCRIPTWHITELIST=/usr/bin/which
+SCRIPTWHITELIST=/usr/bin/ldd
 SCRIPTWHITELIST=/usr/sbin/adduser
+SCRIPTWHITELIST=/usr/sbin/deluser
+SCRIPTWHITELIST=/usr/sbin/addgroup
+SCRIPTWHITELIST=/usr/sbin/delgroup
+# Fichiers cachés légitimes Ubuntu 24.04 / systemd-resolved
 ALLOWHIDDENFILE=/etc/.resolv.conf.systemd-resolved.bak
 ALLOWHIDDENFILE=/etc/.updated
+ALLOWHIDDENFILE=/etc/.pwd.lock
 RKHEOF
 chmod 640 /etc/rkhunter.conf.local
 
 # Mettre à jour la base de données des signatures
-rkhunter --update --nocolors > /dev/null 2>&1 || true  # optionnel : mise à jour réseau peut échouer (timeout) — non bloquant, baseline créée avec signatures locales
+if ! rkhunter --update --nocolors > /dev/null 2>&1; then
+    log_warn "rkhunter --update échoué (réseau ou serveur upstream indisponible) — signatures potentiellement obsolètes."
+    log_warn "  Mise à jour manuelle : sudo rkhunter --update"
+fi
 
 # Construire la baseline (empreinte initiale du système — état "sain")
 rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : peut échouer si des fichiers sont verrouillés — non bloquant, scan quotidien continuera
+
+# Vérifier que rkhunter.conf.local est bien pris en compte (après --propupd, base initialisée)
+if rkhunter --config-check --nocolors > /dev/null 2>&1; then
+    log_success "rkhunter.conf.local validé (--config-check OK)."
+else
+    log_warn "rkhunter --config-check a retourné des erreurs — vérifier : sudo rkhunter --config-check"
+fi
 
 # Premier scan silencieux pour valider l'installation
 rkhunter --check --sk --nocolors > /tmp/rkhunter-first-scan.log 2>&1 || true  # optionnel : warnings attendus sur install fraîche (Docker, etc.) — résultat dans le log, non bloquant
@@ -1119,7 +1136,7 @@ log_info "  Les futures modifications Docker ne déclencheront PAS d'alertes rkh
 log_info "  Scanner manuellement : sudo rkhunter --check --report-warnings-only"
 log_info "  Dernier rapport      : /var/log/rkhunter.log"
 
-# Cron rkhunter quotidien à 04h00 — indépendant de Telegram
+# Cron rkhunter quotidien à 00h00 UTC (02h00 Paris) — indépendant de Telegram
 # (si Telegram n'est pas configuré, rkhunter scanne quand même)
 if [[ ! -f /etc/cron.d/rkhunter-daily ]]; then
     echo "0 0 * * * root rkhunter --check --sk --report-warnings-only >> /var/log/rkhunter-cron.log 2>&1" \
@@ -1138,7 +1155,13 @@ APTEOF
 chmod 644 /etc/apt/apt.conf.d/99-rkhunter-propupd
 log_success "Hook apt rkhunter configuré — baseline mise à jour automatiquement après chaque apt upgrade."
 
-# Nettoyage du log du premier scan (contient des infos sur la config système)
+# Nettoyage du log du premier scan — lire les warnings avant suppression
+FIRST_SCAN_WARNINGS=$(grep -c "Warning" /tmp/rkhunter-first-scan.log 2>/dev/null || echo "0")
+if [[ "$FIRST_SCAN_WARNINGS" -gt 0 ]]; then
+    log_warn "rkhunter premier scan : ${FIRST_SCAN_WARNINGS} warning(s) détecté(s)."
+    log_warn "  Rapport complet : sudo cat /var/log/rkhunter.log | grep -A2 'Warning'"
+    log_warn "  Si faux positifs : ajouter SCRIPTWHITELIST ou ALLOWHIDDENFILE dans /etc/rkhunter.conf.local"
+fi
 rm -f /tmp/rkhunter-first-scan.log
 
 # ============================================================

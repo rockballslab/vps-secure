@@ -10,6 +10,11 @@
 
 **15 minutes**, une seule commande pour que ton serveur devienne une **Forteresse** prête à accueillir tes services en toute sérennité.
 
+```bash
+curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
+  && chmod +x install-secure.sh \
+  && sudo ./install-secure.sh
+```
 
 ---
 

@@ -487,6 +487,9 @@ sudo vps-secure-stats
 > Dès le lendemain, le compteur reflète uniquement tes actions réelles.
 
 
+# Autres commandes utiles après installation
+
+
 ```bash
 # Pour l'ego-boost du matin
 sudo vps-secure-stats
@@ -504,53 +507,78 @@ sudo vps-secure-aide-check.sh
 ```bash
 #Voir les alertes CrowdSec (dernières 24h)
 sudo cscli alerts list --since 24h
+```
 
+```bash
 # Consulter les logs d'audit
 sudo ausearch -k privilege_escalation --start today -i
 sudo ausearch -k docker_socket --start today -i
 sudo aureport --summary
+```
 
+```bash
 # Lancer un scan de rootkits
 sudo rkhunter --check --report-warnings-only
+```
 
+```bash
 # Voir le log du scan rkhunter quotidien (00h00 UTC · 02h00 Paris)
 sudo cat /var/log/rkhunter-cron.log
+```
 
+```bash
 # Statut du pare-feu
 sudo ufw status verbose
+```
 
+```bash
 # Vérifier les ports exposés par Docker
 sudo docker ps --format "table {{.Names}}\t{{.Ports}}"
+```
 
+```bash
 # Tester le rapport Telegram manuellement (si Telegram a été activé)
 sudo /usr/local/bin/vps-secure-check.sh
+```
 
+```bash
 # Changer l'heure du rapport Telegram quotidien (ex: 08h00 au lieu de 09h00)
 sudo sed -i 's/^0 [0-9]* \* \* \*/0 8 * * */' /etc/cron.d/vps-secure
 sudo cat /etc/cron.d/vps-secure  # vérifier
+```
 
+```bash
 # Honeypot Endlessh - logs en direct
 sudo docker logs -f endlessh
+```
 
+```bash
 # AIDE - baseline protégée en écriture — déprotéger avant mise à jour, reprotéger après
 # (fait automatiquement par le script ci-dessous)
-
 # AIDE - lancer un scan d'intégrité manuellement
 sudo aide --check --config /etc/aide/aide.conf
+```
 
+```bash
 # AIDE - mettre à jour la baseline après une mise à jour OS majeure (upgrade de version)
 sudo chattr -i /var/lib/aide/aide.db \
   && sudo aide --update --config /etc/aide/aide.conf \
   && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db \
   && sudo chattr +i /var/lib/aide/aide.db \
   && sudo rm -f /var/lib/aide/aide.db.new
+```
 
+```bash
 # Cache sécurité (Endlessh + CrowdSec) - mis à jour toutes les 5 min
 cat /var/cache/vps-secure/security-stats.json
+```
 
+```bash
 # Vérifier si rkhunter a été mis à jour par apt (nouvelle feature v2.4.0)
 sudo cat /var/log/rkhunter-propupd.log
+```
 
+```bash
 # Lancer le smart-check AIDE manuellement (smart-check v3)
 sudo /usr/local/bin/vps-secure-aide-check.sh
 ```

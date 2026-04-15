@@ -12,7 +12,7 @@
 
 ---
 
-## 🛡️ Pourquoi utiliser ce script ?
+## 🛡️ Pourquoi c'est indispensable ?
 
 Un VPS nu ou configuré par défaut est une cible facile, visible et attaquable en quelques minutes.
 

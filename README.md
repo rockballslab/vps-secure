@@ -73,7 +73,7 @@ Inclus un dashboard web complet pour visualiser en temps réel l'état de ton se
 | 12 | Désactivation des services inutiles | avahi, cups, bluetooth, ModemManager désactivés - chaque service actif = surface d'attaque (CIS 2.x). Ctrl-Alt-Delete masqué (DISA STIG) |
 | 13 | Alertes **Telegram** | Rapport de sécurité quotidien + Alerte immédiate à chaque connexion SSH |
 | 14 | **Endlessh** (honeypot port 22) | SSH est sur le port 2222 - le port 22 est libre. Endlessh le capture et maintient les bots connectés des heures en leur envoyant un banner SSH infini. Ils ne peuvent pas attaquer ailleurs pendant ce temps |
-| 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 - toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram de 09h00. Les mises à jour automatiques (`unattended-upgrades`) sont détectées et la baseline est mise à jour silencieusement - zéro fausse alerte |
+| 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 — toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram. Après une mise à jour OS, relancer la baseline manuellement (commande fournie). |
 
 
 > 🔐 **Ce n’est pas un simple script d’installation : c’est une fondation de sécurité robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.**
@@ -498,12 +498,18 @@ sudo cat /etc/cron.d/vps-secure  # vérifier
 # Honeypot Endlessh - logs en direct
 sudo docker logs -f endlessh
 
+# AIDE - baseline protégée en écriture — déprotéger avant mise à jour, reprotéger après
+# (fait automatiquement par le script ci-dessous)
+
 # AIDE - lancer un scan d'intégrité manuellement
-sudo aide --check
+sudo aide --check --config /etc/aide/aide.conf
 
 # AIDE - mettre à jour la baseline après une mise à jour OS majeure (upgrade de version)
-# Note : les patches de sécurité quotidiens (unattended-upgrades) sont gérés automatiquement
-sudo aide --update && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+sudo chattr -i /var/lib/aide/aide.db \
+  && sudo aide --update --config /etc/aide/aide.conf \
+  && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db \
+  && sudo chattr +i /var/lib/aide/aide.db \
+  && sudo rm -f /var/lib/aide/aide.db.new
 
 # Cache sécurité (Endlessh + CrowdSec) - mis à jour toutes les 5 min
 cat /var/cache/vps-secure/security-stats.json

@@ -589,7 +589,9 @@ sudo /usr/local/bin/vps-secure-aide-check.sh
 
 ## Compatibilité
 
-Testé et vérifié le 15 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, KVM4, KVM8 · Installation complète et 100% fonctionnelle en 13 min ·
+Testé et vérifié le 15 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, KVM4, KVM8 · 
+
+Installation complète et 100% fonctionnelle en 13 min ·
 
 ---
 

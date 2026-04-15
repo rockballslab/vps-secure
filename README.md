@@ -17,9 +17,7 @@
 
 Un VPS nu ou configuré par défaut est une cible facile, visible et attaquable en quelques minutes.
 
-**VPS-Secure** le transforme en serveur durci, surveillé en continu et prêt à héberger vos services en production, avec un niveau de sécurité rarement proposé dans un script public.
-
-> **VPS-SECURE n’est pas un simple script d’installation : c’est une fondation de sécurité robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.**
+**VPS-Secure** n’est pas un simple script d’installation : c’est une fondation de sécurité ultra robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.**
 
 <p align="center">
   <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">

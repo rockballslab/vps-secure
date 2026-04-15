@@ -103,7 +103,7 @@ fi
 log_info "Validation de la licence..."
 
 LICENSE_RESPONSE=$(curl -fsSL -X POST \
-    "https://api.genieshot.com/webhooks/check-license" \
+    "https://n8n.rockballsmedia.eu/webhook/check-license" \
     -H "Content-Type: application/json" \
     -d "{\"key\":\"${ACTIVATION_KEY}\",\"hostname\":\"$(hostname)\"}" \
     2>/dev/null || echo '{"status":"error"}')

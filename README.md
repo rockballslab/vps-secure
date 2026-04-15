@@ -99,9 +99,9 @@ Avant de commencer et de lancer le script, tu as besoin de :
 - ✅ Une **clé SSH** générée sur ton ordinateur
 
 
-> 🔑 Ce script nécessite une licence — [disponible ici](https://vps-secure.aiforceone.fr/offre.html) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
+> 🔑 Ce script nécessite une licence au lancement du script — [disponible ici](https://vps-secure.aiforceone.fr/offre.html) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
 >
-> 👨‍💻 Dev, DevOps, SysAdmin,... ? [Contacte-moi pour un accès](https://tally.so/r/lblb0k) - ta clé unique sera envoyée en quelques minutes après acceptation de ta demande.
+> 👨‍💻 Dev, DevOps, SysAdmin,... ? [Contacte-moi pour un accès Bêta](https://tally.so/r/lblb0k) - ta clé d'activation unique sera envoyée en quelques minutes après acceptation de ta demande.
 
 
 💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd)

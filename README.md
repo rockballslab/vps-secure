@@ -83,7 +83,7 @@ Inclus un dashboard web complet pour visualiser en temps réel l'état de ton se
 
 ## Prérequis
 
-Avant de commencer, tu as besoin de :
+Avant de commencer et de lancer le script, tu as besoin de :
 
 - ✅ Un VPS vierge **Ubuntu 24.04 LTS** (Hostinger, Hetzner,…)
 - ✅ L'**IP** et le **mot de passe root** fournis par ton hébergeur

@@ -1179,7 +1179,8 @@ chmod 640 /var/log/rkhunter-propupd.log
 log_success "Hook apt rkhunter configuré — baseline mise à jour automatiquement après chaque apt upgrade."
 
 # Nettoyage du log du premier scan — lire les warnings avant suppression
-FIRST_SCAN_WARNINGS=$(grep -c "Warning" /tmp/rkhunter-first-scan.log 2>/dev/null || echo "0")
+FIRST_SCAN_WARNINGS=$(grep -c "Warning" /tmp/rkhunter-first-scan.log 2>/dev/null || true)
+FIRST_SCAN_WARNINGS=$(echo "${FIRST_SCAN_WARNINGS:-0}" | tr -d '[:space:]' | grep -E '^[0-9]+$' || echo "0")
 if [[ "$FIRST_SCAN_WARNINGS" -gt 0 ]]; then
     log_warn "rkhunter premier scan : ${FIRST_SCAN_WARNINGS} warning(s) détecté(s)."
     log_warn "  Rapport complet : sudo cat /var/log/rkhunter.log | grep -A2 'Warning'"

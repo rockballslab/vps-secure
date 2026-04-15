@@ -361,15 +361,15 @@ Le script te demande un domaine et un mot de passe que tu dois créer. Ton mot d
 
 ---
 
-> [!WARNING] **🔒 Docker & Firewall :** Le "UFW Bypass" corrigé
+## [!WARNING] 🔒 Docker & Firewall :** Le "UFW Bypass" corrigé
 
 > Par défaut, Docker manipule iptables et ignore totalement les règles de votre pare-feu (UFW), exposant vos ports directement sur le web. Ce script corrige cette faille critique présente sur la quasi-totalité des installations standards.
-
-  > Le correctif : Le script désactive la gestion automatique d'iptables par le démon Docker (iptables: false).
-
-  > Accès Internet : Une règle de NAT (MASQUERADE) est automatiquement injectée dans before.rules pour que vos containers conservent un accès sortant (updates, API, etc.).
-
-  C> ontrôle Total : Rien ne rentre sans votre accord explicite.
+>
+> Le correctif : Le script désactive la gestion automatique d'iptables par le démon Docker (iptables: false).
+>
+> Accès Internet : Une règle de NAT (MASQUERADE) est automatiquement injectée dans before.rules pour que vos containers conservent un accès sortant (updates, API, etc.).
+>
+> Contrôle Total : Rien ne rentre sans votre accord explicite.
 
 Conséquence directe : Si vous lancez un container sur le port 8080, il restera invisible de l'extérieur par défaut. Pour l'ouvrir, vous devez le faire manuellement :
 

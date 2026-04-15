@@ -1,6 +1,6 @@
 **⚡ +60 bots bloqués en 24h sur un VPS standard - le tien est-il vraiment protégé ?**
 
-# 🔐 VPS-SECURE
+# VPS-SECURE
 
 **🔐 Sécurise ton serveur en moins de 15 min - honeypot, pare-feu, IPS, integrity monitoring. Une commande.** **Zéro compétence requise.**
 

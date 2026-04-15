@@ -1120,7 +1120,7 @@ SCRIPTWHITELIST=/usr/sbin/delgroup
 ALLOWHIDDENFILE=/etc/.resolv.conf.systemd-resolved.bak
 ALLOWHIDDENFILE=/etc/.updated
 ALLOWHIDDENFILE=/etc/.pwd.lock
-TMPDIR=/tmp
+TMPDIR=/var/lib/rkhunter/tmp
 # M1 : Transmettre alertes rkhunter à syslog (authpriv.warning)
 # Visible dans /var/log/auth.log — corrélable avec auditd
 USE_SYSLOG=authpriv.warning
@@ -1128,7 +1128,10 @@ USE_SYSLOG=authpriv.warning
 # (libs des containers marquées "(deleted)" dans /proc/maps — comportement normal overlay2)
 # Ce test est redondant avec AIDE — désactivé pour éliminer l'alert fatigue quotidienne
 DISABLE_TESTS=deleted_files
+WEB_CMD=""
 RKHEOF
+mkdir -p /var/lib/rkhunter/tmp
+chmod 700 /var/lib/rkhunter/tmp
 chmod 640 /etc/rkhunter.conf.local
 
 # Mettre à jour la base de données des signatures

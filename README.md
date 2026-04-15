@@ -95,7 +95,9 @@ Avant de commencer, tu as besoin de :
 > 👨‍💻 Développeur, Bêta-Testeur, Journaliste, Curieux ? [Contacte-moi pour un accès](https://tally.so/r/lblb0k) - ta clé unique sera envoyée en quelques minutes après acceptation de ta demande.
 
 
-💡 **Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd)**
+💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
+
+
 ---
 
 

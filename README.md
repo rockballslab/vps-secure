@@ -147,7 +147,7 @@ Récupère la clé publique en lançant cette commande - tu en auras besoin pend
 cat ~/.ssh/id_ed25519_vps.pub
 ```
 
-Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`) et colle-la dans le guide interactif.
+Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`) et colle-la dans le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html)
 
 ---
 

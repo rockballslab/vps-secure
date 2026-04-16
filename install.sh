@@ -1329,29 +1329,25 @@ if [[ -f "$PROPUPD_LOG" ]] && find "$PROPUPD_LOG" -mmin -1620 -quiet 2>/dev/null
 fi
 
 # ── auditd ──
-PRIV_COUNT=$(ausearch -k privilege_escalation --start today -i 2>/dev/null \
-    | grep -c "type=" || echo "0")
-DOCK_COUNT=$(ausearch -k docker_socket --start today -i 2>/dev/null \
-    | grep -c "type=" || echo "0")
-SSH_COUNT=$(ausearch -k sshd_config --start today -i 2>/dev/null \
-    | grep -c "type=" || echo "0")
+# Seuil : n'alerter que si AUDIT_TOTAL > 10 (quelques sudo normaux = bruit)
+# ET : détecter uniquement les vrais comportements anormaux
+
+PRIV_COUNT=$(ausearch -k privilege_escalation --start today -i 2>/dev/null | grep -c "type=" || echo "0")
+DOCK_COUNT=$(ausearch -k docker_socket --start today -i 2>/dev/null | grep -c "type=" || echo "0")
+SSH_COUNT=$(ausearch -k sshd_config --start today -i 2>/dev/null | grep -c "type=" || echo "0")
 AUDIT_TOTAL=$((PRIV_COUNT + DOCK_COUNT + SSH_COUNT))
 
-if [[ "$AUDIT_TOTAL" -gt 0 ]]; then
+# Seuil adaptatif : alerte si > 10 événements/jour (admin normal = 3-5 sudo max)
+AUDIT_THRESHOLD=10
+
+if [[ "$AUDIT_TOTAL" -gt "$AUDIT_THRESHOLD" ]]; then
     ISSUES=$((ISSUES + 1))
-    DETAILS+="🔴 auditd : ${AUDIT_TOTAL} événement(s) critique(s)
-"
-    [[ "$PRIV_COUNT" -gt 0 ]] && DETAILS+="  · Escalades de privilèges : ${PRIV_COUNT}
-"
-    [[ "$DOCK_COUNT" -gt 0 ]] && DETAILS+="  · Accès Docker socket : ${DOCK_COUNT}
-"
-    [[ "$SSH_COUNT"  -gt 0 ]] && DETAILS+="  · Modifications config SSH : ${SSH_COUNT}
-"
-    DETAILS+="  → Détail : sudo ausearch -k privilege_escalation --start today -i
-"
+    DETAILS+="🔴 auditd : ${AUDIT_TOTAL} événements suspects (seuil : ${AUDIT_THRESHOLD})\n"
+    DETAILS+="   Escalades privilèges : ${PRIV_COUNT} | Docker : ${DOCK_COUNT} | SSH config : ${SSH_COUNT}\n"
+elif [[ "$AUDIT_TOTAL" -gt 0 ]]; then
+    DETAILS+="ℹ️ auditd : ${AUDIT_TOTAL} événement(s) normal(aux) (admin quotidien)\n"
 else
-    DETAILS+="✅ auditd : aucun événement critique
-"
+    DETAILS+="✅ auditd : aucun événement suspect\n"
 fi
 
 # ── Endlessh (honeypot port 22) ──

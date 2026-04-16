@@ -4,317 +4,264 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🔐 vps-secure — Checklist pré-installation</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+  <title>🛡️ vps-secure — Guide Installation</title>
 
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #f0f4ff;
-      --bg2: #ffffff;
-      --bg3: #f7f9ff;
-      --border: #dde3f5;
-      --text: #0f172a;
-      --muted: #64748b;
-      --subtle: #94a3b8;
-      --blue: #2563eb;
-      --blue-l: #eff4ff;
-      --blue-b: #bfdbfe;
-      --green: #059669;
-      --green-l: #ecfdf5;
-      --green-b: #6ee7b7;
-      --red: #dc2626;
-      --orange: #ea580c;
-      --orange-l: #fff7ed;
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, .07), 0 1px 3px rgba(0, 0, 0, .04);
-      --shadow: 0 6px 24px rgba(0, 0, 0, .10), 0 2px 8px rgba(0, 0, 0, .05);
-      --shadow-lg: 0 12px 40px rgba(0, 0, 0, .16), 0 4px 12px rgba(0, 0, 0, .08);
+      --bg:     #080b0f;
+      --bg2:    #0e1318;
+      --bg3:    #141b22;
+      --bg4:    #1a2330;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --acid:   #00ff87;
+      --acid-dim: rgba(0,255,135,0.12);
+      --acid-border: rgba(0,255,135,0.3);
+      --text:   #e8edf2;
+      --muted:  #6b7a8d;
+      --subtle: #3d4e60;
+      --danger: #ff4d6d;
+      --warn:   #f59e0b;
+      --mono:   'JetBrains Mono', monospace;
+      --serif:  'DM Serif Display', serif;
+      --sans:   'DM Sans', sans-serif;
     }
 
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+      overflow-x: hidden;
       min-height: 100vh;
     }
 
-    /* HEADER */
-    .header {
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #0f172a 100%);
-      padding: 52px 24px 56px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .header::before {
+    /* Grid overlay */
+    body::after {
       content: '';
-      position: absolute;
+      position: fixed;
       inset: 0;
-      background: repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255, 255, 255, .012) 60px, rgba(255, 255, 255, .012) 61px), repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255, 255, 255, .012) 60px, rgba(255, 255, 255, .012) 61px);
+      background-image:
+        linear-gradient(rgba(0,255,135,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,135,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .header-glow {
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 3rem;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(8,11,15,0.9);
+    }
+    .logo {
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--acid);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 0.85rem;
+    }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .nav-tag {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+    .nav-tag::before { content: '●'; color: var(--acid); margin-right: 6px; animation: blink 2s infinite; }
+    @keyframes blink { 0%,100% { opacity:1 } 50% { opacity:.3 } }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 4rem 2rem 3rem;
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-glow {
       position: absolute;
-      top: -80px;
+      top: -60px;
       left: 50%;
       transform: translateX(-50%);
       width: 500px;
-      height: 280px;
-      background: radial-gradient(ellipse, rgba(99, 102, 241, .4) 0%, transparent 70%);
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(0,255,135,0.07) 0%, transparent 70%);
       pointer-events: none;
     }
-
-    .header-content {
-      position: relative;
-      z-index: 1;
-      max-width: 580px;
-      margin: 0 auto;
-    }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 3px;
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--acid);
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #a5b4fc;
-      border: 1px solid rgba(165, 180, 252, .3);
-      border-radius: 99px;
-      padding: 4px 14px;
-      margin-bottom: 22px;
-      background: rgba(99, 102, 241, .15);
+      margin-bottom: 1rem;
+      display: block;
     }
-
-    .tag::before {
-      content: '●';
-      font-size: 8px;
-      color: #6ee7b7;
-      animation: blink 2s infinite;
-    }
-
-    @keyframes blink {
-
-      0%,
-      100% {
-        opacity: 1
-      }
-
-      50% {
-        opacity: .3
-      }
-    }
-
-    .header h1 {
-      font-size: clamp(34px, 6vw, 54px);
-      font-weight: 800;
-      letter-spacing: -2.5px;
-      color: #fff;
-      margin-bottom: 12px;
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
       line-height: 1.05;
+      margin-bottom: 0.75rem;
     }
-
-    .header h1 em {
-      font-style: normal;
-      background: linear-gradient(135deg, #818cf8, #c4b5fd);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    h1 em {
+      font-style: italic;
+      color: var(--acid);
     }
-
-    .header-tagline {
-      color: #c7d2fe;
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 6px;
+    .hero-tagline {
+      font-family: var(--mono);
+      color: var(--acid);
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      opacity: 0.85;
     }
-
-    .header-sub {
-      color: #6ee7b7;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 24px;
-      letter-spacing: .2px;
+    .hero-sub {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 1.8rem;
     }
-
-    .header-stats {
+    .hero-stats {
       display: flex;
       justify-content: center;
       gap: 14px;
-      margin-bottom: 28px;
+      margin-bottom: 1.8rem;
       flex-wrap: wrap;
     }
-
-    .header-stat {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: #64748b;
-      background: rgba(255, 255, 255, .05);
-      border: 1px solid rgba(255, 255, 255, .08);
-      border-radius: 99px;
-      padding: 5px 12px;
-    }
-
-    .header-stat strong {
-      color: #e2e8f0;
+    .hero-stat {
+      font-family: var(--mono);
+      font-size: 1rem;
       font-weight: 700;
+      color: var(--bg);
+      background: var(--acid);
+      border: none;
+      border-radius: 8px;
+      padding: 14px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 160px;
+      box-shadow: 0 4px 24px rgba(0,255,135,0.25);
     }
-
+    .hero-stat .stat-icon { font-size: 1.6rem; line-height: 1; }
+    .hero-stat .stat-label { font-size: 0.95rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
     .btn-github {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      color: #a5b4fc;
-      font-size: 13px;
-      font-weight: 600;
+      gap: 7px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.75rem;
       text-decoration: none;
-      border: 1px solid rgba(165, 180, 252, .25);
-      border-radius: 99px;
-      padding: 6px 18px;
-      background: rgba(99, 102, 241, .12);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 16px;
+      background: var(--bg2);
       transition: all .2s;
     }
+    .btn-github:hover { border-color: var(--acid-border); color: var(--acid); }
 
-    .btn-github:hover {
-      background: rgba(99, 102, 241, .25);
-      border-color: rgba(165, 180, 252, .5);
-    }
-
-    /* PROTECTIONS */
+    /* ── PROTECTIONS ── */
     .protections-section {
-      background: linear-gradient(180deg, #131c30 0%, #1a2540 100%);
-      padding: 52px 24px 56px;
-      border-bottom: 1px solid rgba(255, 255, 255, .05);
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 3.5rem 2rem;
+      position: relative;
+      z-index: 1;
     }
-
-    .protections-inner {
-      max-width: 920px;
-      margin: 0 auto;
-    }
-
-    .section-label {
+    .protections-inner { max-width: 1000px; margin: 0 auto; }
+    .section-divider {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      margin-bottom: 10px;
+      gap: 16px;
+      margin-bottom: 0.75rem;
     }
-
-    .section-label-line {
-      flex: 1;
-      max-width: 80px;
-      height: 1px;
-      background: rgba(255, 255, 255, .1);
-    }
-
-    .section-label span {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #6366f1;
-    }
-
+    .divider-line { flex: 1; max-width: 80px; height: 1px; background: var(--border); }
     .section-title {
+      font-family: var(--serif);
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
       text-align: center;
-      margin-bottom: 6px;
-      font-size: 24px;
-      font-weight: 800;
-      color: #f1f5f9;
-      letter-spacing: -.5px;
+      margin-bottom: 0.4rem;
+      line-height: 1.15;
     }
-
     .section-sub {
       text-align: center;
-      margin-bottom: 32px;
-      font-size: 13px;
-      color: #475569;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      font-family: var(--mono);
     }
-
     .prot-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 8px;
     }
-
     .prot-card {
-      background: rgba(255, 255, 255, .04);
-      border: 1px solid rgba(255, 255, 255, .07);
-      border-radius: 12px;
-      padding: 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
       transition: background .2s, border-color .2s, transform .15s;
     }
-
     .prot-card:hover {
-      background: rgba(255, 255, 255, .07);
-      border-color: rgba(99, 102, 241, .35);
-      transform: translateY(-1px);
+      background: var(--bg4);
+      border-color: var(--acid-border);
+      transform: translateY(-2px);
     }
-
-    .prot-top {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
+    .prot-top { display: flex; align-items: center; gap: 8px; }
     .prot-num {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--mono);
       font-size: 9px;
       font-weight: 700;
-      color: #6366f1;
-      background: rgba(99, 102, 241, .15);
-      border: 1px solid rgba(99, 102, 241, .25);
-      border-radius: 5px;
+      color: var(--acid);
+      background: var(--acid-dim);
+      border: 1px solid var(--acid-border);
+      border-radius: 4px;
       padding: 2px 5px;
       flex-shrink: 0;
       letter-spacing: 1px;
     }
+    .prot-emoji { font-size: 15px; line-height: 1; }
+    .prot-name { font-size: 11.5px; font-weight: 700; color: var(--text); line-height: 1.2; flex: 1; }
+    .prot-desc { font-size: 10.5px; color: var(--muted); line-height: 1.55; }
 
-    .prot-emoji {
-      font-size: 16px;
-      line-height: 1;
-    }
-
-    .prot-name {
-      font-size: 12px;
-      font-weight: 700;
-      color: #e2e8f0;
-      line-height: 1.2;
-      flex: 1;
-    }
-
-    .prot-desc {
-      font-size: 11px;
-      color: #64748b;
-      line-height: 1.55;
-    }
-
-    /* STICKY */
+    /* ── STICKY SCORE ── */
     .sticky {
       position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(15, 23, 42, .93);
+      top: 57px;
+      z-index: 150;
+      background: rgba(8,11,15,0.95);
       backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255, 255, 255, .07);
+      border-bottom: 1px solid var(--border);
       padding: 12px 24px;
-      box-shadow: 0 2px 20px rgba(0, 0, 0, .3);
     }
-
     .score-inner {
       max-width: 780px;
       margin: 0 auto;
@@ -322,59 +269,66 @@
       align-items: center;
       gap: 18px;
     }
-
     .score-pct {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 34px;
+      font-family: var(--mono);
+      font-size: 32px;
       font-weight: 700;
-      min-width: 80px;
+      min-width: 76px;
       transition: color .4s;
+      color: var(--danger);
     }
-
-    .score-right {
-      flex: 1;
-    }
-
+    .score-right { flex: 1; }
     .bar-bg {
-      background: #1e293b;
+      background: var(--bg3);
       border-radius: 99px;
-      height: 8px;
+      height: 6px;
       overflow: hidden;
       margin-bottom: 5px;
-      border: 1px solid #334155;
+      border: 1px solid var(--border);
     }
-
     .bar-fill {
       height: 100%;
       border-radius: 99px;
-      transition: width .5s cubic-bezier(.4, 0, .2, 1), background .4s;
+      transition: width .5s cubic-bezier(.4,0,.2,1), background .4s;
+      background: var(--danger);
     }
-
     .score-sub {
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
-      color: #94a3b8;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
     }
+    .score-msg { font-weight: 600; }
 
-    .score-msg {
-      font-weight: 600;
+    /* ── LAUNCH BUTTON ── */
+    .sticky-launch {
+      max-width: 780px;
+      margin: 10px auto 0;
+      padding: 0 24px;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height .4s cubic-bezier(.4,0,.2,1), opacity .3s;
+      opacity: 0;
     }
-
-    /* LAUNCH */
+    .sticky-launch.visible {
+      max-height: 60px;
+      opacity: 1;
+    }
     .launch-wrap {
       max-width: 780px;
-      margin: 22px auto 0;
+      margin: 16px auto 0;
       padding: 0 24px;
+      position: relative;
+      z-index: 1;
     }
-
     .btn-launch {
       display: block;
       width: 100%;
-      padding: 16px 24px;
-      border-radius: 14px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 15px;
+      padding: 15px 24px;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 14px;
       font-weight: 700;
       letter-spacing: .5px;
       text-align: center;
@@ -382,102 +336,74 @@
       cursor: pointer;
       transition: all .3s;
     }
-
     .btn-launch.locked {
-      background: #e2e8f0;
-      color: #94a3b8;
-      border: 1.5px dashed #cbd5e1;
+      background: var(--bg3);
+      color: var(--subtle);
+      border: 1.5px dashed var(--border2);
       cursor: not-allowed;
     }
-
     .btn-launch.unlocked {
-      background: linear-gradient(135deg, #059669, #10b981);
-      color: #fff;
-      box-shadow: 0 4px 20px rgba(5, 150, 105, .3);
-      animation: glow-green 2.5s infinite;
+      background: var(--acid);
+      color: var(--bg);
+      box-shadow: 0 4px 24px rgba(0,255,135,0.25);
+      animation: glow-acid 2.5s infinite;
     }
-
     .btn-launch.unlocked:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(5, 150, 105, .4);
+      box-shadow: 0 8px 36px rgba(0,255,135,0.4);
+    }
+    @keyframes glow-acid {
+      0%,100% { box-shadow: 0 4px 24px rgba(0,255,135,0.25) }
+      50%      { box-shadow: 0 4px 36px rgba(0,255,135,0.45) }
     }
 
-    @keyframes glow-green {
-
-      0%,
-      100% {
-        box-shadow: 0 4px 20px rgba(5, 150, 105, .3)
-      }
-
-      50% {
-        box-shadow: 0 4px 32px rgba(5, 150, 105, .5)
-      }
-    }
-
-    /* MAIN */
+    /* ── MAIN CONTENT ── */
     main {
       max-width: 780px;
       margin: 0 auto;
-      padding: 32px 24px 16px;
+      padding: 28px 24px 12px;
+      position: relative;
+      z-index: 1;
     }
 
-    .step-section {
-      margin-bottom: 36px;
-    }
-
+    /* ── STEP SECTION ── */
+    .step-section { margin-bottom: 32px; }
     .step-header {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 14px;
+      gap: 14px;
+      margin-bottom: 12px;
       padding: 14px 18px;
       background: var(--bg2);
-      border-radius: 14px;
+      border-radius: 10px;
       border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
     }
-
     .step-bubble {
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 17px;
+      font-size: 15px;
       font-weight: 800;
       flex-shrink: 0;
-      color: #fff;
       position: relative;
     }
-
     .step-bubble::after {
       content: '';
       position: absolute;
       inset: -3px;
       border-radius: 50%;
       border: 2px solid currentColor;
-      opacity: .25;
+      opacity: .2;
     }
-
-    .step-text {
-      flex: 1;
-    }
-
-    .step-title {
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .step-sub {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
+    .step-text { flex: 1; }
+    .step-title { font-size: 14px; font-weight: 700; }
+    .step-sub { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--mono); }
     .step-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-family: var(--mono);
+      font-size: 11px;
       font-weight: 600;
       padding: 4px 12px;
       border-radius: 99px;
@@ -486,211 +412,144 @@
       color: var(--muted);
       border: 1px solid var(--border);
     }
-
     .step-badge.step-done {
-      background: var(--green-l);
-      color: var(--green);
-      border-color: var(--green-b);
+      background: var(--acid-dim);
+      color: var(--acid);
+      border-color: var(--acid-border);
     }
 
-    /* CARD */
+    /* ── PREREQ CARD ── */
     .prereq-card {
       background: var(--bg2);
       border: 1.5px solid var(--border);
-      border-radius: 14px;
+      border-radius: 10px;
       padding: 16px 18px;
       margin-bottom: 10px;
-      box-shadow: var(--shadow-sm);
-      transition: border-color .25s, box-shadow .25s;
+      transition: border-color .25s;
     }
-
-    .prereq-card:hover {
-      box-shadow: var(--shadow);
-    }
-
+    .prereq-card:hover { border-color: var(--border2); }
     .prereq-card.ok {
-      border-color: var(--green-b);
-      background: linear-gradient(135deg, #fff 75%, #f0fdf9 100%);
+      border-color: var(--acid-border);
+      background: linear-gradient(135deg, var(--bg2) 70%, rgba(0,255,135,0.04) 100%);
     }
-
     .card-top {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 12px;
     }
-
-    .card-icon {
-      font-size: 18px;
-      flex-shrink: 0;
-      line-height: 1;
-    }
-
-    .card-name {
-      font-size: 14px;
-      font-weight: 700;
-      flex: 1;
-      color: var(--text);
-    }
-
-    .card-badges {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
+    .card-icon { font-size: 17px; flex-shrink: 0; line-height: 1; }
+    .card-name { font-size: 13.5px; font-weight: 700; flex: 1; color: var(--text); }
+    .card-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .badge {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
-      border-radius: 6px;
+      border-radius: 4px;
       padding: 2px 8px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--mono);
       letter-spacing: .3px;
       white-space: nowrap;
     }
-
-    .badge-opt {
-      background: #f1f5f9;
-      color: var(--subtle);
-      border: 1px solid #e2e8f0;
-    }
-
-    .badge-req {
-      background: #fef2f2;
-      color: var(--red);
-      border: 1px solid #fca5a5;
-    }
+    .badge-opt { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+    .badge-req { background: rgba(255,77,109,0.12); color: var(--danger); border: 1px solid rgba(255,77,109,0.3); }
 
     /* HINT */
-    .card-hint-details {
-      margin-bottom: 10px;
-    }
-
+    .card-hint-details { margin-bottom: 10px; }
     .card-hint-details summary {
       cursor: pointer;
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--muted);
       font-weight: 600;
       display: inline-flex;
       align-items: center;
       gap: 5px;
       padding: 4px 10px;
-      border-radius: 8px;
+      border-radius: 6px;
       border: 1px solid var(--border);
       background: var(--bg3);
       list-style: none;
       transition: all .15s;
       user-select: none;
+      font-family: var(--mono);
     }
-
     .card-hint-details summary::-webkit-details-marker,
-    .card-hint-details summary::marker {
-      display: none;
-    }
-
+    .card-hint-details summary::marker { display: none; }
     .card-hint-details summary:hover {
-      border-color: var(--blue);
-      color: var(--blue);
-      background: var(--blue-l);
+      border-color: var(--acid-border);
+      color: var(--acid);
+      background: var(--acid-dim);
     }
-
     .card-hint-details[open] summary {
-      border-color: var(--blue);
-      color: var(--blue);
-      background: var(--blue-l);
+      border-color: var(--acid-border);
+      color: var(--acid);
+      background: var(--acid-dim);
       margin-bottom: 8px;
     }
-
     .card-hint {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--muted);
       line-height: 1.65;
-      padding: 10px 12px;
+      padding: 10px 14px;
       background: var(--bg3);
       border-radius: 8px;
-      border-left: 3px solid var(--blue-b);
-      font-family: 'JetBrains Mono', monospace;
+      border-left: 3px solid var(--acid-border);
+      font-family: var(--mono);
       white-space: pre-wrap;
     }
 
-    .card-link-row {
-      margin-bottom: 10px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
+    /* LINKS */
+    .card-link-row { margin-bottom: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
     .card-link {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
       padding: 5px 12px;
-      border-radius: 8px;
+      border-radius: 6px;
       text-decoration: none;
       cursor: pointer;
       border: 1.5px solid;
       transition: all .2s;
+      font-family: var(--mono);
     }
+    .card-link:hover { transform: translateY(-1px); }
+    .card-link svg { width: 11px; height: 11px; flex-shrink: 0; }
 
-    .card-link:hover {
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .card-link svg {
-      width: 12px;
-      height: 12px;
-      flex-shrink: 0;
-    }
-
-    .field-wrap {
-      display: flex;
-      gap: 8px;
-      align-items: stretch;
-    }
-
+    /* FIELD */
+    .field-wrap { display: flex; gap: 8px; align-items: stretch; }
     .field-input {
       flex: 1;
-      padding: 10px 13px;
+      padding: 10px 14px;
       background: var(--bg3);
       border: 1.5px solid var(--border);
-      border-radius: 9px;
+      border-radius: 7px;
       color: var(--text);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
+      font-family: var(--mono);
+      font-size: 12.5px;
       outline: none;
       transition: border-color .2s, background .2s;
       min-width: 0;
     }
-
-    .field-input::placeholder {
-      color: var(--subtle);
-    }
-
+    .field-input::placeholder { color: var(--subtle); }
     .field-input:focus {
-      border-color: var(--blue);
-      background: var(--bg2);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, .08);
+      border-color: var(--acid-border);
+      background: var(--bg4);
+      box-shadow: 0 0 0 3px rgba(0,255,135,0.06);
     }
-
     .field-input.ok {
-      border-color: var(--green-b);
-      background: var(--green-l);
+      border-color: var(--acid-border);
+      background: rgba(0,255,135,0.04);
     }
-
-    .btn-eye,
-    .btn-copy {
+    .btn-eye, .btn-copy {
       flex-shrink: 0;
       padding: 0 12px;
       height: 42px;
       border: 1.5px solid var(--border);
-      border-radius: 9px;
+      border-radius: 7px;
       background: var(--bg3);
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       transition: all .2s;
       display: flex;
@@ -698,518 +557,345 @@
       justify-content: center;
       min-width: 42px;
     }
+    .btn-eye:hover { border-color: var(--acid-border); color: var(--acid); background: var(--acid-dim); }
+    .btn-copy:hover { border-color: var(--acid-border); color: var(--acid); background: var(--acid-dim); }
+    .btn-copy.copied { border-color: var(--acid-border); color: var(--acid); background: var(--acid-dim); }
 
-    .btn-eye:hover {
-      border-color: var(--blue);
-      color: var(--blue);
-      background: var(--blue-l);
-    }
-
-    .btn-copy:hover {
-      border-color: var(--green);
-      color: var(--green);
-      background: var(--green-l);
-    }
-
-    .btn-copy.copied {
-      border-color: var(--green);
-      color: var(--green);
-      background: var(--green-l);
-    }
-
-    /* REFERRAL */
+    /* ── REFERRAL BANNER ── */
     .referral-banner {
-      background: linear-gradient(135deg, var(--orange-l), #fff7ed);
-      border: 1.5px solid #fed7aa;
-      border-radius: 12px;
-      padding: 14px 16px;
+      background: var(--bg3);
+      border: 1.5px solid rgba(245,158,11,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
       gap: 14px;
       flex-wrap: wrap;
     }
-
-    .referral-icon {
-      font-size: 26px;
-      flex-shrink: 0;
-    }
-
-    .referral-left {
-      flex: 1;
-      min-width: 160px;
-    }
-
-    .referral-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--orange);
-      margin-bottom: 2px;
-    }
-
-    .referral-sub {
-      font-size: 12px;
-      color: #92400e;
-      line-height: 1.4;
-    }
-
-    .referral-sub strong {
-      color: var(--orange);
-      font-family: 'JetBrains Mono', monospace;
-    }
-
+    .referral-icon { font-size: 24px; flex-shrink: 0; }
+    .referral-left { flex: 1; min-width: 160px; }
+    .referral-title { font-size: 13px; font-weight: 700; color: var(--warn); margin-bottom: 2px; }
+    .referral-sub { font-size: 11.5px; color: var(--muted); line-height: 1.4; font-family: var(--mono); }
+    .referral-sub strong { color: var(--warn); }
     .btn-referral {
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      padding: 9px 18px;
-      background: linear-gradient(135deg, #ea580c, #f97316);
-      color: #fff;
+      padding: 8px 18px;
+      background: var(--warn);
+      color: var(--bg);
       border: none;
-      border-radius: 99px;
-      font-size: 13px;
+      border-radius: 6px;
+      font-size: 12.5px;
       font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
       text-decoration: none;
       transition: all .2s;
-      box-shadow: 0 2px 8px rgba(234, 88, 12, .25);
+      font-family: var(--mono);
       flex-shrink: 0;
     }
+    .btn-referral:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
+    .btn-referral.copied { background: var(--acid); color: var(--bg); }
 
-    .btn-referral:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(234, 88, 12, .35);
-    }
-
-    .btn-referral.copied {
-      background: linear-gradient(135deg, var(--green), #10b981);
-    }
-
-    /* ACTIONS */
+    /* ── ACTIONS ROW ── */
     .actions {
       max-width: 780px;
       margin: 12px auto 0;
-      padding: 0 24px 52px;
+      padding: 0 24px 48px;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
     }
-
     .btn-sec {
       flex: 1;
       min-width: 140px;
       padding: 11px 16px;
       background: var(--bg2);
       border: 1.5px solid var(--border);
-      border-radius: 10px;
+      border-radius: 8px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
       transition: all .2s;
       text-align: center;
-      box-shadow: var(--shadow-sm);
+      font-family: var(--mono);
     }
+    .btn-sec:hover { border-color: var(--acid-border); color: var(--acid); background: var(--acid-dim); }
 
-    .btn-sec:hover {
-      border-color: var(--blue);
-      color: var(--blue);
-      background: var(--blue-l);
-    }
-
-    /* MODAL */
+    /* ── MODALS / OVERLAYS ── */
     .overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, .65);
-      backdrop-filter: blur(8px);
-      z-index: 200;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(10px);
+      z-index: 500;
       align-items: center;
       justify-content: center;
       padding: 24px;
     }
-
-    .overlay.open {
-      display: flex;
-    }
-
+    .overlay.open { display: flex; }
     .modal {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 20px 24px;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      padding: 24px;
       max-width: 560px;
       width: 100%;
-      box-shadow: var(--shadow-lg);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
       max-height: calc(100vh - 48px);
       overflow-y: auto;
     }
-
-    .modal-icon {
-      font-size: 26px;
-      margin-bottom: 0;
-      display: inline;
-      margin-right: 6px;
-    }
-
+    .modal-icon { font-size: 24px; margin-right: 6px; display: inline; }
     .modal h2 {
-      font-size: 19px;
-      font-weight: 800;
+      font-family: var(--serif);
+      font-size: 1.5rem;
       margin-bottom: 4px;
       color: var(--text);
       display: inline;
     }
+    .modal-header { margin-bottom: 8px; }
+    .modal p { color: var(--muted); font-size: 13px; line-height: 1.55; margin-bottom: 12px; }
 
-    .modal-header {
-      margin-bottom: 4px;
-    }
-
-    .modal p {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-      margin-bottom: 10px;
-    }
-
+    /* CMD BLOCKS */
     .cmd-block {
-      background: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 10px;
-      padding: 9px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
       margin-bottom: 8px;
       cursor: pointer;
       transition: border-color .2s;
     }
-
-    .cmd-block:hover {
-      border-color: #059669;
-    }
-
+    .cmd-block:hover { border-color: var(--acid-border); }
     .cmd-label {
-      font-size: 10px;
+      font-size: 9.5px;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: #64748b;
+      color: var(--muted);
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--mono);
     }
-
-    .cmd-hint {
-      font-size: 10px;
-      color: #475569;
-    }
-
+    .cmd-hint { font-size: 9.5px; color: var(--subtle); }
     .cmd-code {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--mono);
       font-size: 12px;
-      color: #6ee7b7;
-      line-height: 1.5;
+      color: var(--acid);
+      line-height: 1.55;
     }
-
     .modal-note {
-      font-size: 11px;
+      font-size: 11.5px;
       color: var(--muted);
       background: var(--bg3);
       border-radius: 8px;
-      padding: 7px 10px;
-      margin-bottom: 10px;
-      line-height: 1.5;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      line-height: 1.55;
       border: 1px solid var(--border);
+      font-family: var(--mono);
     }
-
-    .modal-note strong {
-      color: var(--text);
-    }
-
+    .modal-note strong { color: var(--text); }
     .modal-note code {
-      font-family: 'JetBrains Mono', monospace;
-      background: #e2e8f0;
+      font-family: var(--mono);
+      background: var(--bg4);
       padding: 1px 5px;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 11px;
+      color: var(--acid);
     }
 
+    /* MODAL VALUES */
     .modal-val-row {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 5px 0;
-      border-bottom: 1px solid #f1f5f9;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
     }
-
-    .modal-val-row:last-child {
-      border-bottom: none;
-    }
-
+    .modal-val-row:last-child { border-bottom: none; }
     .modal-val-label {
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
-      color: #64748b;
+      color: var(--muted);
       min-width: 130px;
       flex-shrink: 0;
+      font-family: var(--mono);
     }
-
     .modal-val-value {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--mono);
       font-size: 11px;
-      color: #0f172a;
+      color: var(--text);
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-
-    .modal-val-value.secret {
-      letter-spacing: 3px;
-      color: #94a3b8;
-      font-size: 10px;
-    }
-
+    .modal-val-value.secret { letter-spacing: 3px; color: var(--muted); font-size: 9px; }
     .modal-val-copy {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 5px;
       padding: 3px 8px;
-      font-size: 11px;
+      font-size: 10.5px;
       cursor: pointer;
-      color: #475569;
+      color: var(--muted);
       font-weight: 600;
       flex-shrink: 0;
       transition: all .15s;
+      font-family: var(--mono);
     }
-
-    .modal-val-copy:hover {
-      background: #e0f2fe;
-      border-color: #7dd3fc;
-      color: #0369a1;
-    }
-
-    .modal-val-copy.copied {
-      background: #dcfce7;
-      border-color: #86efac;
-      color: #15803d;
-    }
-
+    .modal-val-copy:hover { border-color: var(--acid-border); color: var(--acid); background: var(--acid-dim); }
+    .modal-val-copy.copied { border-color: var(--acid-border); color: var(--acid); background: var(--acid-dim); }
     .modal-dashboard-btn {
       display: flex;
       align-items: center;
       gap: 8px;
       width: 100%;
       padding: 10px 14px;
-      background: var(--blue-l);
-      border: 1.5px solid var(--blue-b);
-      border-radius: 10px;
-      color: var(--blue);
-      font-size: 13px;
+      background: var(--acid-dim);
+      border: 1.5px solid var(--acid-border);
+      border-radius: 8px;
+      color: var(--acid);
+      font-size: 12.5px;
       font-weight: 700;
       text-decoration: none;
       transition: all .2s;
+      font-family: var(--mono);
+      cursor: pointer;
     }
-
-    .modal-dashboard-btn:hover {
-      background: #dbeafe;
-      border-color: #93c5fd;
-    }
-
+    .modal-dashboard-btn:hover { background: rgba(0,255,135,0.2); }
     .btn-close {
       padding: 10px 24px;
       background: var(--bg3);
       border: 1.5px solid var(--border);
-      border-radius: 9px;
+      border-radius: 7px;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 600;
       cursor: pointer;
       transition: all .2s;
+      font-family: var(--mono);
     }
-
-    .btn-close:hover {
-      border-color: var(--muted);
-      color: var(--text);
-    }
-
+    .btn-close:hover { border-color: var(--border2); color: var(--text); }
     .btn-danger {
       padding: 10px 24px;
-      background: linear-gradient(135deg, #dc2626, #ef4444);
-      border: none;
-      border-radius: 9px;
-      color: #fff;
-      font-size: 14px;
+      background: rgba(255,77,109,0.15);
+      border: 1.5px solid rgba(255,77,109,0.4);
+      border-radius: 7px;
+      color: var(--danger);
+      font-size: 13.5px;
       font-weight: 700;
       cursor: pointer;
       transition: all .2s;
-      box-shadow: 0 2px 8px rgba(220, 38, 38, .25);
+      font-family: var(--mono);
     }
+    .btn-danger:hover { background: rgba(255,77,109,0.25); transform: translateY(-1px); }
 
-    .btn-danger:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(220, 38, 38, .35);
-    }
-
+    /* ── FOOTER ── */
     footer {
       text-align: center;
       padding: 20px;
-      font-size: 12px;
-      color: #475569;
-      border-top: 1px solid rgba(255, 255, 255, .06);
-      background: #0f172a;
+      font-size: 11.5px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: var(--bg2);
+      font-family: var(--mono);
+      position: relative;
+      z-index: 1;
     }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--acid); }
 
+    /* ── STEP COLORS (dynamic) ── */
+    /* Used inline via JS */
+
+    /* ── RESPONSIVE ── */
     @media (max-width:640px) {
-      .referral-banner {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .btn-referral {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .prot-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .header-stats {
-        gap: 8px;
-      }
-
-      .modal {
-        padding: 24px 18px;
-      }
+      nav { padding: 1rem 1.5rem; }
+      .hero { padding: 2.5rem 1.5rem 2rem; }
+      .referral-banner { flex-direction: column; align-items: flex-start; }
+      .btn-referral { width: 100%; justify-content: center; }
+      .prot-grid { grid-template-columns: 1fr 1fr; }
     }
-
     @media (max-width:380px) {
-      .prot-grid {
-        grid-template-columns: 1fr;
-      }
+      .prot-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="header">
-    <div class="header-glow"></div>
-    <div class="header-content">
-      <div class="tag">Guide Installation· v2.4.1</div>
-      <h1>🔐 <em>VPS SECURE</em></h1>
-      <p class="header-tagline">Fais de ton serveur une forteresse</p>
-      <p class="header-sub">Le guide complet étape par étape SIMPLISSIME</p>
-      <div class="header-stats">
-        <div class="header-stat">🛡️ <strong>1 commande</div>
-        <div class="header-stat">⏱️ <strong>moins de 15 min</div>
-      </div>
-      <a href="https://github.com/rockballslab/vps-secure" target="_blank" rel="noopener" class="btn-github">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
-        </svg>
-        rockballslab / vps-secure
-      </a>
+  <!-- NAV -->
+  <nav>
+    <a href="https://github.com/rockballslab/vps-secure" class="logo">vps-secure</a>
+    <div class="nav-right">
+      <span class="nav-tag">Guide Installation · v2.4.1</span>
     </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <span class="section-label">// Guide d'installation VPS-SECURE</span>
+    <h1>Checklist<br><em>pré-installation</em></h1>
+    <p class="hero-tagline">Suis les étapes dans l'ordre. Lance.</p>
+
+    <div class="hero-stats">
+      <div class="hero-stat"><span class="stat-icon">🛡️</span><span class="stat-label">1 commande</span></div>
+      <div class="hero-stat"><span class="stat-icon">⏱️</span><span class="stat-label">- 15 min</span></div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;font-family:var(--mono);">En savoir plus sur le projet VPS-SECURE</p>
+    <a href="https://github.com/rockballslab/vps-secure" target="_blank" rel="noopener" class="btn-github">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      rockballslab / vps-secure
+    </a>
   </div>
 
+  <!-- PROTECTIONS -->
   <div class="protections-section">
     <div class="protections-inner">
-      <div class="section-label">
-        <div class="section-label-line"></div>
-        <span>ce que VPS SECURE fait</span>
-        <div class="section-label-line"></div>
+      <div class="section-divider">
+        <div class="divider-line"></div>
+        <span class="section-label" style="margin:0">// ce que VPS SECURE fait</span>
+        <div class="divider-line"></div>
       </div>
-      <div class="section-title">15 étapes automatiques</div>
+      <div class="section-title">15 étapes <em style="font-style:italic;color:var(--acid)">automatiques</em></div>
       <div class="section-sub">Zéro compétence technique requise — une commande suffit</div>
       <div class="prot-grid">
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">01</span><span class="prot-emoji">👤</span><span
-              class="prot-name">vpsadmin</span></div>
-          <div class="prot-desc">Compte dédié créé, connexion root désactivée.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">02</span><span class="prot-emoji">🔑</span><span
-              class="prot-name">SSH port 2222</span></div>
-          <div class="prot-desc">Port 22 abandonné. Clé physique uniquement, mot de passe désactivé.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">03</span><span class="prot-emoji">🌐</span><span
-              class="prot-name">DNS over TLS</span></div>
-          <div class="prot-desc">Activé avant tout téléchargement — élimine la fenêtre de DNS poisoning.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">04</span><span class="prot-emoji">🛡️</span><span
-              class="prot-name">CrowdSec</span></div>
-          <div class="prot-desc">Bannit les IP malveillantes. GPG vérifié — intégrité garantie.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">05</span><span class="prot-emoji">🔥</span><span
-              class="prot-name">UFW + NAT Docker</span></div>
-          <div class="prot-desc">Tout bloqué sauf 2222/80/443. Containers avec internet, ports sous contrôle.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">06</span><span class="prot-emoji">🐋</span><span
-              class="prot-name">Docker Engine</span></div>
-          <div class="prot-desc">Docker + Compose v2 prêts. Ne bypasse pas UFW.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">07</span><span class="prot-emoji">🔄</span><span
-              class="prot-name">Auto-updates</span></div>
-          <div class="prot-desc">Patches de sécurité Ubuntu chaque nuit. Silencieux.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">08</span><span class="prot-emoji">⚙️</span><span
-              class="prot-name">Kernel hardening</span></div>
-          <div class="prot-desc">26 paramètres : spoofing, SYN flood, ASLR, ptrace, perf restreint.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">09</span><span class="prot-emoji">📋</span><span
-              class="prot-name">auditd</span></div>
-          <div class="prot-desc">Journalise SSH, sudo, Docker, crontabs et /etc/hosts.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">10</span><span class="prot-emoji">💾</span><span
-              class="prot-name">Swap 2 GB</span></div>
-          <div class="prot-desc">Mémoire virtuelle d'urgence. Évite les crashs RAM.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">11</span><span class="prot-emoji">🔍</span><span
-              class="prot-name">rkhunter</span></div>
-          <div class="prot-desc">Scan rootkits quotidien à 04h00 — indépendant de Telegram.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">12</span><span class="prot-emoji">🚫</span><span
-              class="prot-name">Services inutiles</span></div>
-          <div class="prot-desc">avahi, cups, bluetooth, ModemManager désactivés.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">13</span><span class="prot-emoji">📱</span><span
-              class="prot-name">Alertes Telegram</span></div>
-          <div class="prot-desc">Rapport quotidien 07h00 + alerte à chaque connexion SSH.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">14</span><span class="prot-emoji">🍯</span><span
-              class="prot-name">Endlessh</span></div>
-          <div class="prot-desc">Honeypot port 22 — bots piégés des heures, paralysés.</div>
-        </div>
-        <div class="prot-card">
-          <div class="prot-top"><span class="prot-num">15</span><span class="prot-emoji">🔐</span><span
-              class="prot-name">AIDE</span></div>
-          <div class="prot-desc">Hash SHA512 de tous les binaires. Scan 03h00 — toute modification détectée.</div>
-        </div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">01</span><span class="prot-emoji">👤</span><span class="prot-name">vpsadmin</span></div><div class="prot-desc">Compte dédié créé, connexion root désactivée.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">02</span><span class="prot-emoji">🔑</span><span class="prot-name">SSH port 2222</span></div><div class="prot-desc">Port 22 abandonné. Clé physique uniquement, mot de passe désactivé.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">03</span><span class="prot-emoji">🌐</span><span class="prot-name">DNS over TLS</span></div><div class="prot-desc">Activé avant tout téléchargement — élimine la fenêtre de DNS poisoning.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">04</span><span class="prot-emoji">🛡️</span><span class="prot-name">CrowdSec</span></div><div class="prot-desc">Bannit les IP malveillantes. GPG vérifié — intégrité garantie.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">05</span><span class="prot-emoji">🔥</span><span class="prot-name">UFW + NAT Docker</span></div><div class="prot-desc">Tout bloqué sauf 2222/80/443. Containers avec internet, ports sous contrôle.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">06</span><span class="prot-emoji">🐋</span><span class="prot-name">Docker Engine</span></div><div class="prot-desc">Docker + Compose v2 prêts. Ne bypasse pas UFW.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">07</span><span class="prot-emoji">🔄</span><span class="prot-name">Auto-updates</span></div><div class="prot-desc">Patches de sécurité Ubuntu chaque nuit. Silencieux.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">08</span><span class="prot-emoji">⚙️</span><span class="prot-name">Kernel hardening</span></div><div class="prot-desc">26 paramètres : spoofing, SYN flood, ASLR, ptrace, perf restreint.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">09</span><span class="prot-emoji">📋</span><span class="prot-name">auditd</span></div><div class="prot-desc">Journalise SSH, sudo, Docker, crontabs et /etc/hosts.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">10</span><span class="prot-emoji">💾</span><span class="prot-name">Swap 2 GB</span></div><div class="prot-desc">Mémoire virtuelle d'urgence. Évite les crashs RAM.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">11</span><span class="prot-emoji">🔍</span><span class="prot-name">rkhunter</span></div><div class="prot-desc">Scan rootkits quotidien à 04h00 — indépendant de Telegram.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">12</span><span class="prot-emoji">🚫</span><span class="prot-name">Services inutiles</span></div><div class="prot-desc">avahi, cups, bluetooth, ModemManager désactivés.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">13</span><span class="prot-emoji">📱</span><span class="prot-name">Alertes Telegram</span></div><div class="prot-desc">Rapport quotidien 07h00 + alerte à chaque connexion SSH.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">14</span><span class="prot-emoji">🍯</span><span class="prot-name">Endlessh</span></div><div class="prot-desc">Honeypot port 22 — bots piégés des heures, paralysés.</div></div>
+        <div class="prot-card"><div class="prot-top"><span class="prot-num">15</span><span class="prot-emoji">🛡️</span><span class="prot-name">AIDE</span></div><div class="prot-desc">Hash SHA512 de tous les binaires. Scan 03h00 — toute modification détectée.</div></div>
       </div>
     </div>
   </div>
 
+  <!-- STICKY SCORE + LAUNCH -->
   <div class="sticky">
     <div class="score-inner">
       <div class="score-pct" id="score-pct">0%</div>
       <div class="score-right">
         <div class="bar-bg">
-          <div class="bar-fill" id="bar" style="width:0%;background:#dc2626"></div>
+          <div class="bar-fill" id="bar" style="width:0%"></div>
         </div>
         <div class="score-sub">
           <span id="score-count">0 / 4 prérequis</span>
@@ -1217,377 +903,353 @@
         </div>
       </div>
     </div>
+    <div class="sticky-launch" id="sticky-launch">
+      <button class="btn-launch locked" id="btn-launch" onclick="openModal()">
+        🔒 &nbsp; Complète les 5 prérequis pour déverrouiller
+      </button>
+    </div>
   </div>
 
-  <div class="launch-wrap">
-    <button class="btn-launch locked" id="btn-launch" onclick="openModal()">
-      🔒 &nbsp; Complète les 4 prérequis pour déverrouiller
-    </button>
-  </div>
-
+  <!-- MAIN CHECKLIST -->
   <main id="main"></main>
 
-  <div class="launch-wrap" style="margin-top:8px;">
-    <button class="btn-launch locked" id="btn-launch-bottom" onclick="openModal()">
-      🔒 &nbsp; Complète les 4 prérequis pour déverrouiller
-    </button>
-  </div>
-
+  <!-- ACTIONS -->
   <div class="actions">
     <button class="btn-sec" onclick="exportTxt()">💾 Exporter config (.txt)</button>
     <button class="btn-sec" onclick="exportPdf()">🖨️ Exporter config (.pdf)</button>
     <button class="btn-sec" onclick="resetAll()">🗑️ Tout effacer</button>
   </div>
 
+  <!-- MODAL LAUNCH -->
   <div class="overlay" id="modal" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-header"><span class="modal-icon">🚀</span>
-        <h2>C'est parti !</h2>
-      </div>
+      <div class="modal-header"><span class="modal-icon">🚀</span><h2>C'est parti !</h2></div>
       <p>Tu as tout ce qu'il faut. Lance le script depuis ton terminal.</p>
       <div class="modal-note" style="margin-bottom:12px;">
         💻 <strong>Ouvrir un terminal :</strong><br>
-        Mac → Terminal.app ou iTerm2&nbsp;&nbsp;·&nbsp;&nbsp;Windows → Windows Terminal&nbsp;&nbsp;·&nbsp;&nbsp;
+        Mac → Terminal.app ou iTerm2&nbsp;&nbsp;·&nbsp;&nbsp;Windows → Windows Terminal
       </div>
-      <!-- Section 1 : Connexion Root -->
+      <!-- 1: Connexion Root -->
       <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:6px;">
         <div class="cmd-label">
           <span style="display:flex;align-items:center;gap:8px;">
-            <span
-              style="background:#2563eb;color:#fff;font-size:12px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">1</span>
+            <span style="background:var(--acid);color:var(--bg);font-size:11px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);">1</span>
             Connexion root — 1 seule fois
           </span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
         <div class="cmd-code">ssh root@<span id="modal-ip">IP_DU_VPS</span></div>
       </div>
-      <div id="modal-values-block-pwd"
-        style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px;margin-bottom:10px;">
-        <div
-          style="font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px;">
-          📋 Valeur demandée par le script</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin:-2px 0 6px;padding:0 2px;">⚠️ Si le terminal affiche <span style="color:var(--acid)">Are you sure you want to continue? (yes/no)</span> → tape <span style="color:var(--acid)">yes</span> puis Entrée.</div>
+      <div id="modal-values-block-pwd" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:10px;">
+        <div style="font-size:9px;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">📋 Valeurs demandées par le script</div>
         <div id="modal-val-vps_pwd" class="modal-val-row"></div>
       </div>
-      <!-- Section 2 : install-secure.sh -->
+      <!-- 2: install-secure.sh -->
       <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:6px;">
         <div class="cmd-label">
           <span style="display:flex;align-items:center;gap:8px;">
-            <span
-              style="background:#ea580c;color:#fff;font-size:12px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">2</span>
+            <span style="background:var(--warn);color:var(--bg);font-size:11px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);">2</span>
             install-secure.sh — en root (~10-15 min)
           </span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
-        <div class="cmd-code">bash <(curl -fsSL
-            https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh)</div>
+        <div class="cmd-code">bash &lt;(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh)</div>
+      </div>
+      <div id="modal-values-block" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:10px;">
+        <div style="font-size:9px;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">📋 Valeurs demandées par le script</div>
+        <div id="modal-val-licence_key" class="modal-val-row"></div>
+        <div id="modal-val-ssh_pub" class="modal-val-row"></div>
+        <div style="font-size:9px;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:var(--subtle);margin-top:6px;margin-bottom:4px;">Optionnel mais recommandé</div>
+        <div id="modal-val-tg_token" class="modal-val-row"></div>
+        <div id="modal-val-tg_chatid" class="modal-val-row"></div>
+      </div>
+      <!-- 3: Connexion après install -->
+      <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:6px;">
+        <div class="cmd-label">
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span style="background:var(--acid);color:var(--bg);font-size:11px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);">3</span>
+            Connexion après installation — en vpsadmin
+          </span>
+          <span class="cmd-hint">clic pour copier</span>
         </div>
-        <div id="modal-values-block"
-          style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px;margin-bottom:10px;">
-          <div
-            style="font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px;">
-            📋 Valeurs demandées par le script</div>
-          <div id="modal-val-ssh_pub" class="modal-val-row"></div>
-          <div
-            style="font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-top:6px;margin-bottom:4px;">
-            Optionnel mais recommandé</div>
-          <div id="modal-val-tg_token" class="modal-val-row"></div>
-          <div id="modal-val-tg_chatid" class="modal-val-row"></div>
+        <div class="cmd-code" id="modal-reconnect-cmd">ssh vpsadmin@<span id="modal-ip2">IP_DU_VPS</span> -p 2222 -i ~/.ssh/id_ed25519_vps</div>
+      </div>
+      <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:14px;">
+        <div class="cmd-label">
+          <span>Après reconnexion — vérification</span>
+          <span class="cmd-hint">clic pour copier</span>
         </div>
-        <!-- Section 3 : Connexion après installation -->
-        <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:6px;">
-          <div class="cmd-label">
-            <span style="display:flex;align-items:center;gap:8px;">
-              <span
-                style="background:#059669;color:#fff;font-size:12px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">3</span>
-              Connexion après installation — en vpsadmin
-            </span>
-            <span class="cmd-hint">clic pour copier</span>
-          </div>
-          <div class="cmd-code" id="modal-reconnect-cmd">ssh vpsadmin@<span id="modal-ip2">IP_DU_VPS</span> -p 2222 -i
-            ~/.ssh/id_ed25519_vps</div>
-        </div>
-        <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:12px;">
-          <div class="cmd-label">
-            <span>Après reconnexion — vérification</span>
-            <span class="cmd-hint">clic pour copier</span>
-          </div>
-          <div class="cmd-code">sudo vps-secure-verify</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div id="modal-dashboard-link" style="display:none;flex:1;"></div>
-          <button class="btn-close" onclick="closeModal();resetAll()" style="flex-shrink:0;">Fermer</button>
-        </div>
+        <div class="cmd-code">sudo vps-secure-verify</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div id="modal-dashboard-link" style="display:none;flex:1;"></div>
+        <button class="btn-close" onclick="closeModal();resetAll()" style="flex-shrink:0;">Fermer</button>
       </div>
     </div>
+  </div>
 
-    <footer>vps-secure · github.com/rockballslab/vps-secure · Fichier local — aucune connexion réseau</footer>
+  <footer>vps-secure · github.com/rockballslab/vps-secure · Fichier local — aucune connexion réseau</footer>
 
-    <script>
-      const REFERRAL = "https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1";
-      const STEPS = [
-        { id: 0, color: "#2563eb", bg: "linear-gradient(135deg,#2563eb,#4f46e5)", label: "Avant de lancer install-secure.sh", sub: "À préparer sur ton ordinateur" },
-        { id: 1, color: "#ea580c", bg: "linear-gradient(135deg,#ea580c,#f97316)", label: "Pendant install-secure.sh", sub: "Obligatoires : mot de passe root + clé SSH — Telegram est optionnel" },
-        { id: 2, color: "#059669", bg: "linear-gradient(135deg,#059669,#10b981)", label: "Après install-secure.sh", sub: "Optionnel : Stockage des accès dashboard" },
-      ];
-      const LINKS = {
-        vps_cmd: [],
-        ssh_pub: [{ label: "📖 Générer une clé SSH (guide)", url: "https://docs.github.com/fr/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent", style: "blue" }],
-        tg_token: [{ label: "💬 Ouvrir @BotFather", url: "https://t.me/BotFather", style: "blue" }],
-        tg_chatid: [{ label: "💬 Ouvrir @userinfobot", url: "https://t.me/userinfobot", style: "blue" }],
-      };
-      const LINK_STYLES = {
-        blue: { bg: "#eff6ff", border: "#93c5fd", color: "#1d4ed8" },
-        orange: { bg: "#fff7ed", border: "#fdba74", color: "#c2410c" },
-        purple: { bg: "#f5f3ff", border: "#c4b5fd", color: "#6d28d9" },
-        muted: { bg: "#f8fafc", border: "#cbd5e1", color: "#475569" },
-        green: { bg: "#f0fdf4", border: "#86efac", color: "#15803d" },
-      };
-      const PREREQS = [
-        { id: "vps_cmd", step: 0, req: true, secret: false, name: "VPS commandé (Ubuntu 24.04 LTS)", cat: "VPS", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "ex: Hostinger KVM2 commandé le 04/04/2026", hint: "OS obligatoire : Ubuntu 24.04 LTS\nRécupère l'IP et le mot de passe root dans le dashboard Hostinger après provisioning." },
-        { id: "vps_ip", step: 0, req: true, secret: false, name: "IP du VPS", cat: "VPS", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "ex: 95.123.45.67", hint: "Dashboard de ton hébergeur → IP publique du VPS\nNote-la ici — elle sera affichée dans la commande de connexion." },
-        { id: "vps_pwd", step: 1, req: true, secret: true, name: "Mot de passe root VPS", cat: "VPS", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "mot de passe root fourni par l'hébergeur", hint: "Fourni par email ou dans le dashboard après provisioning.\nUtilisé une seule fois pour : ssh root@IP_DU_VPS\nAprès install-secure.sh, la connexion root par mot de passe est désactivée." },
-        { id: "ssh_pub", step: 1, req: true, secret: false, name: "Clé SSH publique (.pub)", cat: "SSH", catBg: "#f0fdf4", catBorder: "#86efac", catColor: "#15803d", ph: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5...", hint: "Générer sur ton ordinateur (Mac/Linux/Windows) :\n  ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_vps\n\nRécupérer la clé PUBLIQUE (avec .pub) :\n  cat ~/.ssh/id_ed25519_vps.pub\n\nNe JAMAIS coller la clé privée (sans .pub) !" },
-        { id: "tg_token", step: 1, req: false, secret: true, name: "Token bot Telegram", cat: "Telegram", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "123456789:AAFxxxxxxxxxxxxxxxxx", hint: "Pour recevoir un rapport de sécurité quotidien + alerte SSH.\n@BotFather → /newbot → copie le token.\nOptional — le script fonctionne parfaitement sans." },
-        { id: "tg_chatid", step: 1, req: false, secret: false, name: "Chat ID Telegram", cat: "Telegram", catBg: "#eff6ff", catBorder: "#93c5fd", catColor: "#1d4ed8", ph: "987654321", hint: "Ton identifiant Telegram personnel.\n@userinfobot → /start → copie le champ 'Id'." },
-        { id: "dash_url", step: 2, req: false, secret: false, name: "Adresse du Dashboard", cat: "Admin", catBg: "#f5f3ff", catBorder: "#c4b5fd", catColor: "#6d28d9", ph: "ex: https://dashboard.mon-domaine.com", hint: "L'URL que vous utiliserez pour accéder à votre interface d'administration après configuration.\nPrérequis : un enregistrement DNS A pointant sur l'IP de ton VPS" },
-        { id: "dash_pwd", step: 2, req: false, secret: true, name: "Mot de passe du dashboard", cat: "Admin", catBg: "#f5f3ff", catBorder: "#c4b5fd", catColor: "#6d28d9", ph: "mot de passe ultra-sécurisé", hint: "Générer en un clic :<br><br>💻 Windows (PowerShell) :<div class='cmd-block' style='margin:5px 0' onclick='copyBlock(this)'><div class='cmd-code'>[Convert]::ToBase64String((1..24 | % { [byte](Get-Random -Min 0 -Max 256) }))</div></div>🍎 Mac / Linux / Git Bash :<div class='cmd-block' style='margin:5px 0' onclick='copyBlock(this)'><div class='cmd-code'>openssl rand -base64 32</div></div>" },
-      ];
+  <script>
+    const REFERRAL = "https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1";
+    const STEPS = [
+      { id: 0, color: var_acid(), bg: "linear-gradient(135deg,#00ff87,#00cc6a)", label: "Avant de lancer install-secure.sh", sub: "À préparer sur ton ordinateur" },
+      { id: 1, color: "#f59e0b", bg: "linear-gradient(135deg,#f59e0b,#fbbf24)", label: "Pendant install-secure.sh", sub: "Obligatoires : mot de passe root + clé SSH — Telegram est optionnel" },
+      { id: 2, color: "#00ff87", bg: "linear-gradient(135deg,#00ff87,#00cc6a)", label: "Après install-secure.sh", sub: "Optionnel : Stockage des accès dashboard" },
+    ];
 
-      let vals = {}, showSecret = {};
-      const save = () => { try { localStorage.setItem("vps_secure_v1", JSON.stringify(vals)); } catch (e) { } };
-      const isOk = id => (vals[id] || "").trim().length > 0;
-      const esc = s => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    function var_acid() { return "#00ff87"; }
 
-      function makeLinkHTML(id) {
-        const links = LINKS[id]; if (!links || !links.length) return "";
-        const items = links.map(l => { const s = LINK_STYLES[l.style] || LINK_STYLES.blue; return `<a class="card-link" href="${l.url}" target="_blank" rel="noopener" style="background:${s.bg};border-color:${s.border};color:${s.color}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${l.label}</a>`; }).join("");
-        return `<div class="card-link-row">${items}</div>`;
-      }
+    const LINKS = {
+      vps_cmd: [],
+      ssh_pub: [{ label: "📖 Générer une clé SSH (guide)", url: "https://docs.github.com/fr/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent", style: "acid" }],
+      tg_token: [{ label: "💬 Ouvrir @BotFather", url: "https://t.me/BotFather", style: "acid" }],
+      tg_chatid: [{ label: "💬 Ouvrir @userinfobot", url: "https://t.me/userinfobot", style: "acid" }],
+    };
+    const LINK_STYLES = {
+      acid:   { bg: "rgba(0,255,135,0.08)", border: "rgba(0,255,135,0.3)", color: "#00ff87" },
+      orange: { bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.3)", color: "#f59e0b" },
+      purple: { bg: "rgba(139,92,246,0.08)", border: "rgba(139,92,246,0.3)", color: "#a78bfa" },
+      muted:  { bg: "#141b22", border: "rgba(255,255,255,0.07)", color: "#6b7a8d" },
+      blue:   { bg: "rgba(0,255,135,0.08)", border: "rgba(0,255,135,0.3)", color: "#00ff87" },
+      green:  { bg: "rgba(0,255,135,0.08)", border: "rgba(0,255,135,0.3)", color: "#00ff87" },
+    };
+    const PREREQS = [
+      { id: "vps_cmd",  step: 0, req: true,  secret: false, name: "VPS commandé (Ubuntu 24.04 LTS)", cat: "VPS",      catBg: "rgba(0,255,135,0.08)",    catBorder: "rgba(0,255,135,0.3)",    catColor: "#00ff87",  ph: "ex: Hostinger KVM2 commandé le 04/04/2026",            hint: "OS obligatoire : Ubuntu 24.04 LTS\nRécupère l'IP et le mot de passe root dans le dashboard Hostinger après provisioning." },
+      { id: "vps_ip",   step: 0, req: true,  secret: false, name: "IP du VPS",                      cat: "VPS",      catBg: "rgba(0,255,135,0.08)",    catBorder: "rgba(0,255,135,0.3)",    catColor: "#00ff87",  ph: "ex: 95.123.45.67",                                    hint: "Dashboard de ton hébergeur → IP publique du VPS\nNote-la ici — elle sera affichée dans la commande de connexion." },
+      { id: "vps_pwd",  step: 1, req: true,  secret: true,  name: "Mot de passe root VPS",          cat: "VPS",      catBg: "rgba(0,255,135,0.08)",    catBorder: "rgba(0,255,135,0.3)",    catColor: "#00ff87",  ph: "mot de passe root fourni par l'hébergeur",            hint: "Fourni par email ou dans le dashboard après provisioning.\nUtilisé une seule fois pour : ssh root@IP_DU_VPS\nAprès install-secure.sh, la connexion root par mot de passe est désactivée." },
+      { id: "licence_key", step: 1, req: true, secret: true, name: "Clé d'activation VPS-SECURE",   cat: "Licence",  catBg: "rgba(0,255,135,0.08)",    catBorder: "rgba(0,255,135,0.3)",    catColor: "#00ff87",  ph: "XXXX-XXXX-XXXX-XXXX",                                hint: "Reçue par email après ton achat.\nDemandée une seule fois au début de install-secure.sh." },
+      { id: "ssh_pub",  step: 1, req: true,  secret: false, name: "Clé SSH publique (.pub)",        cat: "SSH",      catBg: "rgba(245,158,11,0.08)",   catBorder: "rgba(245,158,11,0.3)",   catColor: "#f59e0b",  ph: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5...",               hint: "Générer sur ton ordinateur (Mac/Linux/Windows) :\n  ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_vps\n\nRécupérer la clé PUBLIQUE (avec .pub) :\n  cat ~/.ssh/id_ed25519_vps.pub\n\nNe JAMAIS coller la clé privée (sans .pub) !" },
+      { id: "tg_token", step: 1, req: false, secret: true,  name: "Token bot Telegram",            cat: "Telegram", catBg: "rgba(99,179,237,0.08)",   catBorder: "rgba(99,179,237,0.3)",   catColor: "#63b3ed",  ph: "123456789:AAFxxxxxxxxxxxxxxxxx",                    hint: "Pour recevoir un rapport de sécurité quotidien + alerte SSH.\n@BotFather → /newbot → copie le token.\nOptional — le script fonctionne parfaitement sans." },
+      { id: "tg_chatid",step: 1, req: false, secret: false, name: "Chat ID Telegram",              cat: "Telegram", catBg: "rgba(99,179,237,0.08)",   catBorder: "rgba(99,179,237,0.3)",   catColor: "#63b3ed",  ph: "987654321",                                         hint: "Ton identifiant Telegram personnel.\n@userinfobot → /start → copie le champ 'Id'." },
+      { id: "dash_url", step: 2, req: false, secret: false, name: "Adresse du Dashboard",          cat: "Admin",    catBg: "rgba(139,92,246,0.08)",   catBorder: "rgba(139,92,246,0.3)",   catColor: "#a78bfa",  ph: "ex: https://dashboard.mon-domaine.com",             hint: "L'URL que vous utiliserez pour accéder à votre interface d'administration après configuration.\nPrérequis : un enregistrement DNS A pointant sur l'IP de ton VPS" },
+      { id: "dash_pwd", step: 2, req: false, secret: true,  name: "Mot de passe du dashboard",    cat: "Admin",    catBg: "rgba(139,92,246,0.08)",   catBorder: "rgba(139,92,246,0.3)",   catColor: "#a78bfa",  ph: "mot de passe ultra-sécurisé",                       hint: "Générer en un clic :<br><br>💻 Windows (PowerShell) :<div class='cmd-block' style='margin:5px 0' onclick='copyBlock(this)'><div class='cmd-code'>[Convert]::ToBase64String((1..24 | % { [byte](Get-Random -Min 0 -Max 256) }))</div></div>🍎 Mac / Linux / Git Bash :<div class='cmd-block' style='margin:5px 0' onclick='copyBlock(this)'><div class='cmd-code'>openssl rand -base64 32</div></div>" },
+    ];
 
-      function buildUI() {
-        try { vals = JSON.parse(localStorage.getItem("vps_secure_v1") || "{}"); } catch (e) { }
-        const main = document.getElementById("main"); main.innerHTML = "";
-        STEPS.forEach((step, si) => {
-          const ps = PREREQS.filter(p => p.step === step.id);
-          const mandInStep = ps.filter(p => p.req);
-          const okMandN = mandInStep.filter(p => isOk(p.id)).length;
-          const done = mandInStep.length > 0 && okMandN === mandInStep.length;
-          const sec = document.createElement("div"); sec.className = "step-section";
-          sec.innerHTML = `<div class="step-header"><div class="step-bubble" style="background:${step.bg}"><span style="color:#fff">${si + 1}</span></div><div class="step-text"><div class="step-title" style="color:${step.color}">${step.label}</div><div class="step-sub">${step.sub}</div></div><div class="step-badge ${done ? "step-done" : ""}" id="sc-${step.id}">${okMandN} / ${mandInStep.length}</div></div>`;
-          ps.forEach(p => {
-            const ok = isOk(p.id); const masked = p.secret && !showSecret[p.id];
-            const reqBadge = p.req ? `<span class="badge badge-req">obligatoire</span>` : `<span class="badge badge-opt">optionnel</span>`;
-            const referralHTML = p.id === "vps_cmd" ? `<div class="referral-banner"><div class="referral-icon">🎁</div><div class="referral-left"><div class="referral-title">20% de réduction sur Hostinger</div><div class="referral-sub">Via le lien partenaire · Code : <strong>WP7SERVERWR1</strong></div></div><button class="btn-referral" id="btn-ref" onclick="openHostinger()">🔗 Commander avec -20%</button></div>` : "";
-            const card = document.createElement("div"); card.className = "prereq-card" + (ok ? " ok" : ""); card.id = "card-" + p.id;
-            card.innerHTML = `<div class="card-top"><div class="card-icon" id="icon-${p.id}">${ok ? "✅" : "⚪"}</div><div class="card-name">${p.name}</div><div class="card-badges"><span class="badge" style="background:${p.catBg};border:1px solid ${p.catBorder};color:${p.catColor}">${p.cat}</span>${reqBadge}</div></div>${referralHTML}<details class="card-hint-details"><summary>ℹ️ Comment faire ?</summary><div class="card-hint">${p.hint}</div></details>${makeLinkHTML(p.id)}<div class="field-wrap"><input class="field-input${ok ? " ok" : ""}" id="input-${p.id}" type="${masked ? "password" : "text"}" placeholder="${esc(p.ph)}" value="${esc(vals[p.id] || "")}" oninput="onInput('${p.id}',this.value)" autocomplete="off" spellcheck="false"/>${p.secret ? `<button class="btn-eye" id="eye-${p.id}" onclick="toggleEye('${p.id}')" title="Afficher/masquer">👁</button>` : ""}<button class="btn-copy" id="copy-${p.id}" onclick="copyOne('${p.id}')" title="Copier">📋</button></div>`;
-            sec.appendChild(card);
-          });
-          main.appendChild(sec);
+    let vals = {}, showSecret = {};
+    const save = () => { try { localStorage.setItem("vps_secure_v1", JSON.stringify(vals)); } catch(e) {} };
+    const isOk = id => (vals[id] || "").trim().length > 0;
+    const esc = s => String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+    function makeLinkHTML(id) {
+      const links = LINKS[id]; if (!links || !links.length) return "";
+      const items = links.map(l => {
+        const s = LINK_STYLES[l.style] || LINK_STYLES.acid;
+        return `<a class="card-link" href="${l.url}" target="_blank" rel="noopener" style="background:${s.bg};border-color:${s.border};color:${s.color}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${l.label}</a>`;
+      }).join("");
+      return `<div class="card-link-row">${items}</div>`;
+    }
+
+    function buildUI() {
+      try { vals = JSON.parse(localStorage.getItem("vps_secure_v1") || "{}"); } catch(e) {}
+      const main = document.getElementById("main"); main.innerHTML = "";
+      STEPS.forEach((step, si) => {
+        const ps = PREREQS.filter(p => p.step === step.id);
+        const mandInStep = ps.filter(p => p.req);
+        const okMandN = mandInStep.filter(p => isOk(p.id)).length;
+        const done = mandInStep.length > 0 && okMandN === mandInStep.length;
+        const sec = document.createElement("div"); sec.className = "step-section";
+        sec.innerHTML = `<div class="step-header"><div class="step-bubble" style="background:${step.bg};color:var(--bg)"><span style="color:var(--bg);font-family:var(--mono);font-size:14px;font-weight:800;">${si+1}</span></div><div class="step-text"><div class="step-title" style="color:${step.color}">${step.label}</div><div class="step-sub">${step.sub}</div></div><div class="step-badge ${done ? "step-done" : ""}" id="sc-${step.id}">${okMandN} / ${mandInStep.length}</div></div>`;
+        ps.forEach(p => {
+          const ok = isOk(p.id); const masked = p.secret && !showSecret[p.id];
+          const reqBadge = p.req ? `<span class="badge badge-req">obligatoire</span>` : `<span class="badge badge-opt">optionnel</span>`;
+          const referralHTML = p.id === "vps_cmd" ? `<div class="referral-banner"><div class="referral-icon">🎁</div><div class="referral-left"><div class="referral-title">20% de réduction sur Hostinger</div><div class="referral-sub">Via le lien partenaire · Code : <strong>WP7SERVERWR1</strong></div></div><button class="btn-referral" id="btn-ref" onclick="openHostinger()">🔗 Commander avec -20%</button></div>` : "";
+          const card = document.createElement("div"); card.className = "prereq-card" + (ok ? " ok" : ""); card.id = "card-" + p.id;
+          card.innerHTML = `<div class="card-top"><div class="card-icon" id="icon-${p.id}">${ok ? "✅" : "⚪"}</div><div class="card-name">${p.name}</div><div class="card-badges"><span class="badge" style="background:${p.catBg};border:1px solid ${p.catBorder};color:${p.catColor}">${p.cat}</span>${reqBadge}</div></div>${referralHTML}<details class="card-hint-details"><summary>ℹ️ Comment faire ?</summary><div class="card-hint">${p.hint}</div></details>${makeLinkHTML(p.id)}<div class="field-wrap"><input class="field-input${ok ? " ok" : ""}" id="input-${p.id}" type="${masked ? "password" : "text"}" placeholder="${esc(p.ph)}" value="${esc(vals[p.id] || "")}" oninput="onInput('${p.id}',this.value)" autocomplete="off" spellcheck="false"/>${p.secret ? `<button class="btn-eye" id="eye-${p.id}" onclick="toggleEye('${p.id}')" title="Afficher/masquer">👁</button>` : ""}<button class="btn-copy" id="copy-${p.id}" onclick="copyOne('${p.id}')" title="Copier">📋</button></div>`;
+          sec.appendChild(card);
         });
-        updateScore();
-      }
+        main.appendChild(sec);
+      });
+      updateScore();
+    }
 
-      function openHostinger() {
-        window.open(REFERRAL, "_blank");
-        const btn = document.getElementById("btn-ref");
-        if (btn) { btn.textContent = "✅ Lien ouvert !"; btn.className = "btn-referral copied"; setTimeout(() => { btn.textContent = "🔗 Commander avec -20%"; btn.className = "btn-referral"; }, 2500); }
-      }
+    function openHostinger() {
+      window.open(REFERRAL, "_blank");
+      const btn = document.getElementById("btn-ref");
+      if (btn) { btn.textContent = "✅ Lien ouvert !"; btn.className = "btn-referral copied"; setTimeout(() => { btn.textContent = "🔗 Commander avec -20%"; btn.className = "btn-referral"; }, 2500); }
+    }
 
-      function onInput(id, val) {
-        vals[id] = val; save(); const ok = isOk(id);
-        document.getElementById("card-" + id).className = "prereq-card" + (ok ? " ok" : "");
-        document.getElementById("icon-" + id).textContent = ok ? "✅" : "⚪";
-        const inp = document.getElementById("input-" + id); if (inp) inp.className = "field-input" + (ok ? " ok" : "");
-        if (id === "vps_ip" && val.trim()) { const ip = val.trim();["modal-ip", "modal-ip2"].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = ip; }); }
-        updateScore();
-      }
+    function onInput(id, val) {
+      vals[id] = val; save(); const ok = isOk(id);
+      document.getElementById("card-" + id).className = "prereq-card" + (ok ? " ok" : "");
+      document.getElementById("icon-" + id).textContent = ok ? "✅" : "⚪";
+      const inp = document.getElementById("input-" + id); if (inp) inp.className = "field-input" + (ok ? " ok" : "");
+      if (id === "vps_ip" && val.trim()) { const ip = val.trim(); ["modal-ip","modal-ip2"].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = ip; }); }
+      updateScore();
+    }
 
-      function toggleEye(id) {
-        showSecret[id] = !showSecret[id];
-        const inp = document.getElementById("input-" + id); const btn = document.getElementById("eye-" + id);
-        if (inp) inp.type = showSecret[id] ? "text" : "password";
-        if (btn) btn.textContent = showSecret[id] ? "🙈" : "👁";
-      }
+    function toggleEye(id) {
+      showSecret[id] = !showSecret[id];
+      const inp = document.getElementById("input-" + id); const btn = document.getElementById("eye-" + id);
+      if (inp) inp.type = showSecret[id] ? "text" : "password";
+      if (btn) btn.textContent = showSecret[id] ? "🙈" : "👁";
+    }
 
-      function copyOne(id) {
-        const val = (vals[id] || "").trim();
-        if (!val) { flashCopy("copy-" + id, "❌", false); return; }
-        navigator.clipboard.writeText(val).then(() => flashCopy("copy-" + id, "✅", true));
-      }
+    function copyOne(id) {
+      const val = (vals[id] || "").trim();
+      if (!val) { flashCopy("copy-" + id, "❌", false); return; }
+      navigator.clipboard.writeText(val).then(() => flashCopy("copy-" + id, "✅", true));
+    }
 
-      function flashCopy(btnId, icon, ok) {
-        const btn = document.getElementById(btnId); if (!btn) return;
-        const orig = btn.textContent; btn.textContent = icon; btn.className = "btn-copy" + (ok ? " copied" : "");
-        setTimeout(() => { btn.textContent = orig; btn.className = "btn-copy"; }, 1500);
-      }
+    function flashCopy(btnId, icon, ok) {
+      const btn = document.getElementById(btnId); if (!btn) return;
+      const orig = btn.textContent; btn.textContent = icon; btn.className = "btn-copy" + (ok ? " copied" : "");
+      setTimeout(() => { btn.textContent = orig; btn.className = "btn-copy"; }, 1500);
+    }
 
-      function updateScore() {
-        const mand = PREREQS.filter(p => p.req);
-        const okCnt = mand.filter(p => isOk(p.id)).length;
-        const score = Math.round(okCnt / mand.length * 100);
-        const color = score === 100 ? "#059669" : score >= 50 ? "#d97706" : "#dc2626";
-        document.getElementById("score-pct").textContent = score + "%";
-        document.getElementById("score-pct").style.color = color;
-        document.getElementById("score-count").textContent = okCnt + " / " + mand.length + " prérequis";
-        document.getElementById("bar").style.width = score + "%";
-        document.getElementById("bar").style.background = color;
-        const msg = document.getElementById("score-msg");
-        if (score === 100) { msg.textContent = "🎉 Prêt !"; msg.style.color = "#059669"; }
-        else { const r = mand.length - okCnt; msg.textContent = r + " restant" + (r > 1 ? "s" : ""); msg.style.color = "#64748b"; }
-        const btn = document.getElementById("btn-launch");
-        if (score === 100) { btn.className = "btn-launch unlocked"; btn.disabled = false; btn.textContent = "🚀   Lancer install-secure.sh"; }
-        else { btn.className = "btn-launch locked"; btn.disabled = true; const r = mand.length - okCnt; btn.textContent = "🔒   " + r + " prérequis restant" + (r > 1 ? "s" : ""); }
-        const btnBottom = document.getElementById("btn-launch-bottom");
-        if (btnBottom) { btnBottom.className = btn.className; btnBottom.disabled = btn.disabled; btnBottom.textContent = btn.textContent; }
-        STEPS.forEach(s => {
-          const el = document.getElementById("sc-" + s.id); if (!el) return;
-          const sp = PREREQS.filter(p => p.step === s.id && p.req);
-          const dn = sp.filter(p => isOk(p.id)).length;
-          el.textContent = dn + " / " + sp.length; el.className = "step-badge" + (sp.length > 0 && dn === sp.length ? " step-done" : "");
-        });
-        const ip = (vals["vps_ip"] || "").trim();
-        if (ip) { ["modal-ip", "modal-ip2"].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = ip; }); }
-      }
+    function updateScore() {
+      const mand = PREREQS.filter(p => p.req);
+      const okCnt = mand.filter(p => isOk(p.id)).length;
+      const score = Math.round(okCnt / mand.length * 100);
+      const color = score === 100 ? "#00ff87" : score >= 50 ? "#f59e0b" : "#ff4d6d";
+      document.getElementById("score-pct").textContent = score + "%";
+      document.getElementById("score-pct").style.color = color;
+      document.getElementById("score-count").textContent = okCnt + " / " + mand.length + " prérequis";
+      document.getElementById("bar").style.width = score + "%";
+      document.getElementById("bar").style.background = color;
+      const msg = document.getElementById("score-msg");
+      if (score === 100) { msg.textContent = "🎉 Prêt !"; msg.style.color = "#00ff87"; }
+      else { const r = mand.length - okCnt; msg.textContent = r + " restant" + (r > 1 ? "s" : ""); msg.style.color = "#6b7a8d"; }
+      const btn = document.getElementById("btn-launch");
+      if (score === 100) { btn.className = "btn-launch unlocked"; btn.disabled = false; btn.textContent = "🚀   Lancer install-secure.sh"; }
+      else { btn.className = "btn-launch locked"; btn.disabled = true; const r = mand.length - okCnt; btn.textContent = "🔒   " + r + " prérequis restant" + (r > 1 ? "s" : ""); }
+      const sl = document.getElementById("sticky-launch");
+      if (sl) sl.className = score === 100 ? "sticky-launch visible" : "sticky-launch";
+      STEPS.forEach(s => {
+        const el = document.getElementById("sc-" + s.id); if (!el) return;
+        const sp = PREREQS.filter(p => p.step === s.id && p.req);
+        const dn = sp.filter(p => isOk(p.id)).length;
+        el.textContent = dn + " / " + sp.length; el.className = "step-badge" + (sp.length > 0 && dn === sp.length ? " step-done" : "");
+      });
+      const ip = (vals["vps_ip"] || "").trim();
+      if (ip) { ["modal-ip","modal-ip2"].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = ip; }); }
+    }
 
-      const MODAL_VALS = [
-        { id: "vps_pwd", label: "Mot de passe root", secret: true },
-        { id: "ssh_pub", label: "Clé SSH publique", secret: false },
-        { id: "tg_token", label: "Token Telegram", secret: true },
-        { id: "tg_chatid", label: "Chat ID Telegram", secret: false },
-      ];
+    const MODAL_VALS = [
+      { id: "vps_pwd",     label: "Mot de passe root",              secret: true  },
+      { id: "licence_key", label: "Clé d'activation",               secret: true  },
+      { id: "ssh_pub",     label: "Clé SSH publique",               secret: false },
+      { id: "tg_token",    label: "Token Telegram",                 secret: true  },
+      { id: "tg_chatid",   label: "Chat ID Telegram",               secret: false },
+    ];
 
-      function copyModalVal(id) {
-        const val = (vals[id] || "").trim();
-        if (!val) return;
-        navigator.clipboard.writeText(val).then(() => {
-          const btn = document.getElementById("mvcopy-" + id);
-          if (!btn) return;
-          btn.textContent = "✅ Copié"; btn.className = "modal-val-copy copied";
-          setTimeout(() => { btn.textContent = "📋 Copier"; btn.className = "modal-val-copy"; }, 1800);
-        });
-      }
+    function copyModalVal(id) {
+      const val = (vals[id] || "").trim(); if (!val) return;
+      navigator.clipboard.writeText(val).then(() => {
+        const btn = document.getElementById("mvcopy-" + id); if (!btn) return;
+        btn.textContent = "✅ Copié"; btn.className = "modal-val-copy copied";
+        setTimeout(() => { btn.textContent = "📋 Copier"; btn.className = "modal-val-copy"; }, 1800);
+      });
+    }
 
-      function openModal() {
-        const mand = PREREQS.filter(p => p.req);
-        if (mand.filter(p => isOk(p.id)).length < mand.length) return;
+    function openModal() {
+      const mand = PREREQS.filter(p => p.req);
+      if (mand.filter(p => isOk(p.id)).length < mand.length) return;
+      MODAL_VALS.forEach(mv => {
+        const row = document.getElementById("modal-val-" + mv.id); if (!row) return;
+        const val = (vals[mv.id] || "").trim();
+        if (!val) { row.style.display = "none"; return; }
+        row.style.display = "flex";
+        const display = mv.secret ? "••••••••••••" : (val.length > 38 ? val.slice(0,36) + "…" : val);
+        row.innerHTML = `<span class="modal-val-label">${mv.label}</span><span class="modal-val-value${mv.secret ? " secret" : ""}" title="${mv.secret ? "" : esc(val)}">${esc(display)}</span><button class="modal-val-copy" id="mvcopy-${mv.id}" onclick="copyModalVal('${mv.id}')">📋 Copier</button>`;
+      });
+      const dashUrl = (vals["dash_url"] || "").trim();
+      const dashBlock = document.getElementById("modal-dashboard-link");
+      if (dashUrl) {
+        dashBlock.style.display = "flex";
+        dashBlock.innerHTML = `<button class="modal-dashboard-btn" onclick="openDashConfirm('${esc(dashUrl)}')">🖥️ Ouvrir mon dashboard <span style="font-size:11px;font-weight:400;margin-left:auto;opacity:.7">${esc(dashUrl)}</span></button>`;
+      } else { dashBlock.style.display = "none"; }
+      document.getElementById("modal").className = "overlay open";
+    }
+    function closeModal() { document.getElementById("modal").className = "overlay"; }
 
-        // Populate copyable values
-        MODAL_VALS.forEach(mv => {
-          const row = document.getElementById("modal-val-" + mv.id);
-          if (!row) return;
-          const val = (vals[mv.id] || "").trim();
-          if (!val) { row.style.display = "none"; return; }
-          row.style.display = "flex";
-          const display = mv.secret ? "••••••••••••" : (val.length > 38 ? val.slice(0, 36) + "…" : val);
-          row.innerHTML = `<span class="modal-val-label">${mv.label}</span><span class="modal-val-value${mv.secret ? " secret" : ""}" title="${mv.secret ? "" : esc(val)}">${esc(display)}</span><button class="modal-val-copy" id="mvcopy-${mv.id}" onclick="copyModalVal('${mv.id}')">📋 Copier</button>`;
-        });
+    function copyBlock(el) {
+      const txt = el.querySelector(".cmd-code").innerText;
+      navigator.clipboard.writeText(txt).then(() => {
+        const hint = el.querySelector(".cmd-hint"); const orig = el.style.borderColor;
+        el.style.borderColor = "#00ff87";
+        if (hint) { hint.textContent = "✅ Copié !"; hint.style.color = "#00ff87"; }
+        setTimeout(() => { el.style.borderColor = orig; if (hint) { hint.textContent = "clic pour copier"; hint.style.color = ""; } }, 1800);
+      });
+    }
 
-        // Conditional dashboard link
-        const dashUrl = (vals["dash_url"] || "").trim();
-        const dashBlock = document.getElementById("modal-dashboard-link");
-        if (dashUrl) {
-          dashBlock.style.display = "flex";
-          dashBlock.innerHTML = `<button class="modal-dashboard-btn" onclick="openDashConfirm('${esc(dashUrl)}')">🖥️ Ouvrir mon dashboard <span style="font-size:11px;font-weight:400;margin-left:auto;opacity:.7">${esc(dashUrl)}</span></button>`;
-        } else {
-          dashBlock.style.display = "none";
-        }
+    function resetAll() { document.getElementById("overlay-reset").classList.add("open"); }
+    function cancelReset() { document.getElementById("overlay-reset").classList.remove("open"); }
+    function confirmReset() { document.getElementById("overlay-reset").classList.remove("open"); vals = {}; showSecret = {}; try { localStorage.removeItem("vps_secure_v1"); } catch(e) {} buildUI(); }
 
-        document.getElementById("modal").className = "overlay open";
-      }
-      function closeModal() { document.getElementById("modal").className = "overlay"; }
+    function exportTxt() {
+      const ip = (vals["vps_ip"] || "").trim() || "À renseigner";
+      const pub = (vals["ssh_pub"] || "").trim() || "À renseigner";
+      const dashUrl = (vals["dash_url"] || "").trim() || "Non renseigné";
+      const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
+      const date = new Date().toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit", year:"numeric" });
+      const lines = ["vps-secure — Configuration VPS","================================",`Date         : ${date}`,"",`IP du VPS    : ${ip}`,`Clé SSH pub  : ${pub}`,"","================================","Accès Dashboard :",`URL          : ${dashUrl}`,`Mot de passe : ${dashPwd}`,"","================================","⚠️  Mot de passe root VPS non exporté (sécurité).","","================================","Connexion root (1 seule fois) :",`  ssh root@${ip}`,"","Lancer l'installation :"," curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh","  chmod +x install-secure.sh && sudo ./install-secure.sh","","Connexion après installation :",`  ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps`,"","================================","github.com/rockballslab/vps-secure"];
+      const blob = new Blob([lines.join("\n")], { type:"text/plain;charset=utf-8" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `vps-secure-config-${date.replace(/\//g,"-")}.txt`; a.click(); URL.revokeObjectURL(a.href);
+    }
 
-      function copyBlock(el) {
-        const txt = el.querySelector(".cmd-code").innerText;
-        navigator.clipboard.writeText(txt).then(() => {
-          const hint = el.querySelector(".cmd-hint"); const orig = el.style.borderColor;
-          el.style.borderColor = "#059669";
-          if (hint) { hint.textContent = "✅ Copié !"; hint.style.color = "#6ee7b7"; }
-          setTimeout(() => { el.style.borderColor = orig; if (hint) { hint.textContent = "clic pour copier"; hint.style.color = ""; } }, 1800);
-        });
-      }
+    function exportPdf() {
+      const ip = (vals["vps_ip"] || "").trim() || "À renseigner";
+      const pub = (vals["ssh_pub"] || "").trim() || "À renseigner";
+      const dashUrl = (vals["dash_url"] || "").trim() || "Non renseigné";
+      const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
+      const date = new Date().toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit", year:"numeric" });
+      const win = window.open("","_blank");
+      win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>vps-secure — Config ${date}</title><style>body{font-family:'Courier New',monospace;font-size:13px;color:#0f172a;padding:40px;max-width:680px;margin:0 auto}h1{font-size:20px;font-weight:800;margin-bottom:4px}.sub{color:#64748b;font-size:12px;margin-bottom:24px}table{width:100%;border-collapse:collapse;margin-bottom:24px}td{padding:8px 12px;border:1px solid #e2e8f0;vertical-align:top}td:first-child{font-weight:700;width:140px;background:#f8fafc;white-space:nowrap}.cmd{background:#0f172a;color:#00ff87;border-radius:8px;padding:14px 16px;margin-bottom:12px;font-size:12px;line-height:1.8}.label{font-weight:700;font-size:11px;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}.warn{background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:24px}footer{margin-top:32px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style></head><body><h1>🛡️ vps-secure — Configuration VPS</h1><div class="sub">Généré le ${date} · github.com/rockballslab/vps-secure</div><div class="label">Informations VPS</div><table><tr><td>IP du VPS</td><td>${ip}</td></tr><tr><td>Clé SSH publique</td><td style="word-break:break-all;font-size:11px;">${pub}</td></tr><tr><td>Utilisateur créé</td><td>vpsadmin</td></tr><tr><td>Port SSH</td><td>2222</td></tr></table><div class="label">Accès Dashboard (Optionnel)</div><table><tr><td>URL Dashboard</td><td>${dashUrl}</td></tr><tr><td>Mot de passe</td><td>${dashPwd}</td></tr></table><div class="warn">⚠️ Mot de passe root VPS non exporté pour des raisons de sécurité.</div><div class="label">Commandes</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">① INSTALLATION — en root</div>ssh root@${ip}<br>curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh<br>chmod +x install-secure.sh &amp;&amp; sudo ./install-secure.sh</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">② CONNEXION APRÈS INSTALLATION — en vpsadmin</div>ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps</div><footer>vps-secure · github.com/rockballslab/vps-secure</footer></body></html>`);
+      win.document.close(); win.focus(); setTimeout(() => { win.print(); }, 400);
+    }
 
-      function resetAll() { document.getElementById("overlay-reset").classList.add("open"); }
-      function cancelReset() { document.getElementById("overlay-reset").classList.remove("open"); }
-      function confirmReset() { document.getElementById("overlay-reset").classList.remove("open"); vals = {}; showSecret = {}; try { localStorage.removeItem("vps_secure_v1"); } catch (e) { } buildUI(); }
+    let _pendingDashUrl = "";
+    function openDashConfirm(url) {
+      _pendingDashUrl = url;
+      const pwd = (vals["dash_pwd"] || "").trim();
+      const pwdRow = document.getElementById("dash-pwd-row");
+      if (pwd) {
+        pwdRow.style.display = "flex";
+        pwdRow.innerHTML = `<span class="modal-val-label">Mot de passe</span><span class="modal-val-value secret" title="">••••••••••••</span><button class="modal-val-copy" id="mvcopy-dash_pwd" onclick="copyModalVal('dash_pwd')">📋 Copier</button>`;
+      } else { pwdRow.style.display = "none"; }
+      document.getElementById("overlay-dash-confirm").classList.add("open");
+    }
+    function closeDashConfirm() { document.getElementById("overlay-dash-confirm").classList.remove("open"); }
+    function confirmDashOpen() { closeDashConfirm(); if (_pendingDashUrl) window.open(_pendingDashUrl,"_blank"); }
 
-      function exportTxt() {
-        const ip = (vals["vps_ip"] || "").trim() || "À renseigner";
-        const pub = (vals["ssh_pub"] || "").trim() || "À renseigner";
-        const dashUrl = (vals["dash_url"] || "").trim() || "Non renseigné";
-        const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
-        const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
-        const lines = ["vps-secure — Configuration VPS", "================================", `Date         : ${date}`, "", `IP du VPS    : ${ip}`, `Clé SSH pub  : ${pub}`, "", "================================", "Accès Dashboard :", `URL          : ${dashUrl}`, `Mot de passe : ${dashPwd}`, "", "================================", "⚠️  Mot de passe root VPS non exporté (sécurité).", "", "================================", "Connexion root (1 seule fois) :", `  ssh root@${ip}`, "", "Lancer l'installation :", "  curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh", "  chmod +x install-secure.sh && sudo ./install-secure.sh", "", "Connexion après installation :", `  ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps`, "", "================================", "github.com/rockballslab/vps-secure"];
-        const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `vps-secure-config-${date.replace(/\//g, "-")}.txt`; a.click(); URL.revokeObjectURL(a.href);
-      }
+    buildUI();
+  </script>
 
-      function exportPdf() {
-        const ip = (vals["vps_ip"] || "").trim() || "À renseigner";
-        const pub = (vals["ssh_pub"] || "").trim() || "À renseigner";
-        const dashUrl = (vals["dash_url"] || "").trim() || "Non renseigné";
-        const dashPwd = (vals["dash_pwd"] || "").trim() || "Non renseigné";
-        const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
-        const win = window.open("", "_blank");
-        win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>vps-secure — Config ${date}</title><style>body{font-family:'Courier New',monospace;font-size:13px;color:#0f172a;padding:40px;max-width:680px;margin:0 auto}h1{font-size:20px;font-weight:800;margin-bottom:4px}.sub{color:#64748b;font-size:12px;margin-bottom:24px}table{width:100%;border-collapse:collapse;margin-bottom:24px}td{padding:8px 12px;border:1px solid #e2e8f0;vertical-align:top}td:first-child{font-weight:700;width:140px;background:#f8fafc;white-space:nowrap}.cmd{background:#0f172a;color:#6ee7b7;border-radius:8px;padding:14px 16px;margin-bottom:12px;font-size:12px;line-height:1.8}.label{font-weight:700;font-size:11px;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}.warn{background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:24px}footer{margin-top:32px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8}</style></head><body><h1>🔐 vps-secure — Configuration VPS</h1><div class="sub">Généré le ${date} · github.com/rockballslab/vps-secure</div><div class="label">Informations VPS</div><table><tr><td>IP du VPS</td><td>${ip}</td></tr><tr><td>Clé SSH publique</td><td style="word-break:break-all;font-size:11px;">${pub}</td></tr><tr><td>Utilisateur créé</td><td>vpsadmin</td></tr><tr><td>Port SSH</td><td>2222</td></tr></table><div class="label">Accès Dashboard (Optionnel)</div><table><tr><td>URL Dashboard</td><td>${dashUrl}</td></tr><tr><td>Mot de passe</td><td>${dashPwd}</td></tr></table><div class="warn">⚠️ Mot de passe root VPS non exporté pour des raisons de sécurité.</div><div class="label">Commandes</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">① INSTALLATION — en root</div>ssh root@${ip}<br>curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh<br>chmod +x install-secure.sh &amp;&amp; sudo ./install-secure.sh</div><div class="cmd"><div style="color:#94a3b8;font-size:10px;margin-bottom:6px;">② CONNEXION APRÈS INSTALLATION — en vpsadmin</div>ssh vpsadmin@${ip} -p 2222 -i ~/.ssh/id_ed25519_vps</div><footer>vps-secure · github.com/rockballslab/vps-secure</footer></body></html>`);
-        win.document.close(); win.focus(); setTimeout(() => { win.print(); }, 400);
-      }
-
-      let _pendingDashUrl = "";
-      function openDashConfirm(url) {
-        _pendingDashUrl = url;
-        const pwd = (vals["dash_pwd"] || "").trim();
-        const pwdRow = document.getElementById("dash-pwd-row");
-        if (pwd) {
-          pwdRow.style.display = "flex";
-          pwdRow.innerHTML = `<span class="modal-val-label">Mot de passe</span><span class="modal-val-value secret" title="">••••••••••••</span><button class="modal-val-copy" id="mvcopy-dash_pwd" onclick="copyModalVal('dash_pwd')">📋 Copier</button>`;
-        } else {
-          pwdRow.style.display = "none";
-        }
-        document.getElementById("overlay-dash-confirm").classList.add("open");
-      }
-      function closeDashConfirm() { document.getElementById("overlay-dash-confirm").classList.remove("open"); }
-      function confirmDashOpen() {
-        closeDashConfirm();
-        if (_pendingDashUrl) window.open(_pendingDashUrl, "_blank");
-      }
-
-      buildUI();
-    </script>
-    <div class="overlay" id="overlay-reset" onclick="if(event.target===this)cancelReset()">
-      <div class="modal" style="max-width:420px;text-align:center;">
-        <div class="modal-icon">🗑️</div>
-        <h2>Tout effacer ?</h2>
-        <p>Toutes les valeurs saisies seront supprimées localement. Cette action est irréversible.</p>
-        <div style="display:flex;gap:10px;justify-content:center;">
-          <button class="btn-close" onclick="cancelReset()">Annuler</button>
-          <button class="btn-danger" onclick="confirmReset()">Oui, tout effacer</button>
-        </div>
+  <!-- RESET MODAL -->
+  <div class="overlay" id="overlay-reset" onclick="if(event.target===this)cancelReset()">
+    <div class="modal" style="max-width:420px;text-align:center;">
+      <div class="modal-icon">🗑️</div>
+      <h2>Tout effacer ?</h2>
+      <p>Toutes les valeurs saisies seront supprimées localement. Cette action est irréversible.</p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+        <button class="btn-close" onclick="cancelReset()">Annuler</button>
+        <button class="btn-danger" onclick="confirmReset()">Oui, tout effacer</button>
       </div>
     </div>
-    <div class="overlay" id="overlay-dash-confirm" onclick="if(event.target===this)closeDashConfirm()">
-      <div class="modal" style="max-width:500px;">
-        <div class="modal-icon">🖥️</div>
-        <h2>Dashboard installé ?</h2>
-        <p style="margin-bottom:16px;">Avant d'ouvrir ton dashboard, assure-toi d'avoir lancé ce script d'installation spécifique.
-        </p>
-        <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:16px;">
-          <div class="cmd-label">
-            <span>install-dashboard-secure.sh — en vpsadmin</span>
-            <span class="cmd-hint">clic pour copier</span>
-          </div>
-          <div class="cmd-code">bash <(curl -fsSL
-              https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)</div>
-          </div>
-          <div id="dash-pwd-row"
-            style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:16px;">
-          </div>
-          <div style="display:flex;gap:10px;">
-            <button class="btn-close" onclick="closeDashConfirm()" style="flex:1;">Non, pas encore</button>
-            <button class="btn-launch unlocked" onclick="confirmDashOpen()"
-              style="flex:1;padding:10px 16px;font-size:14px;animation:none;">Oui, ouvrir →</button>
-          </div>
+  </div>
+
+  <!-- DASHBOARD CONFIRM MODAL -->
+  <div class="overlay" id="overlay-dash-confirm" onclick="if(event.target===this)closeDashConfirm()">
+    <div class="modal" style="max-width:500px;">
+      <div class="modal-icon">🖥️</div>
+      <h2>Dashboard installé ?</h2>
+      <p style="margin-bottom:16px;">Avant d'ouvrir ton dashboard, assure-toi d'avoir lancé ce script d'installation spécifique.</p>
+      <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:16px;">
+        <div class="cmd-label">
+          <span>install-dashboard-secure.sh — en vpsadmin</span>
+          <span class="cmd-hint">clic pour copier</span>
         </div>
+        <div class="cmd-code">bash &lt;(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)</div>
       </div>
+      <div id="dash-pwd-row" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-close" onclick="closeDashConfirm()" style="flex:1;">Non, pas encore</button>
+        <button class="btn-launch unlocked" onclick="confirmDashOpen()" style="flex:1;padding:10px 16px;font-size:13px;animation:none;border-radius:7px;">Oui, ouvrir →</button>
+      </div>
+    </div>
+  </div>
+
 </body>
-
 </html>

@@ -1892,6 +1892,8 @@ exit 0
 AIDESMART
 chmod 700 /usr/local/bin/vps-secure-aide-check.sh
 log_success "Script vps-secure-aide-check.sh installé."
+chattr +i /usr/local/bin/vps-secure-aide-check.sh
+log_success "vps-secure-aide-check.sh protégé en écriture (chattr +i — issue #6)."
 
 # Cron quotidien AIDE à 01h00 UTC (4h avant le rapport Telegram de 07h00 UTC)
 # Le résultat est lu par vps-secure-check.sh pour le rapport Telegram
@@ -1902,7 +1904,9 @@ cat > /etc/cron.d/aide-daily << 'AIDECRONEOF'
 0 1 * * * root /usr/local/bin/vps-secure-aide-check.sh
 AIDECRONEOF
 chmod 644 /etc/cron.d/aide-daily
-rm -f /etc/cron.d/vps-secure-aide  # supprime doublon éventuel d'un run précédent
+chattr +i /etc/cron.d/aide-daily
+log_success "/etc/cron.d/aide-daily protégé en écriture (chattr +i — issue #6)."
+rm -f /etc/cron.d/vps-secure-aide
 
 # Rotation des logs AIDE (évite accumulation sur 1 an)
 cat > /etc/logrotate.d/aide-daily << 'LOGROTEOF'
@@ -1955,6 +1959,8 @@ REBASEEOF
 chmod 750 /usr/local/bin/vps-secure-aide-rebase
 chown root:sudo /usr/local/bin/vps-secure-aide-rebase
 log_success "Commande vps-secure-aide-rebase disponible (sudo vps-secure-aide-rebase)."
+chattr +i /usr/local/bin/vps-secure-aide-rebase
+log_success "vps-secure-aide-rebase protégé en écriture (chattr +i — issue #6)."
 
 # ============================================================
 # Installation de vps-secure-stats

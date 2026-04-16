@@ -1396,7 +1396,8 @@ else
             # Double vérification via dpkg.log (couvre unattended-upgrades post-01h UTC)
             APT_ACTIVITY=$(awk -v cutoff="$(date -d '12 hours ago' '+%Y-%m-%d %H:%M:%S')" \
                 '$0 > cutoff && / status installed / {count++} END {print count+0}' \
-                /var/log/dpkg.log 2>/dev/null || echo "0")
+                /var/log/dpkg.log 2>/dev/null | tr -d '[:space:]')
+                APT_ACTIVITY="${APT_ACTIVITY:-0}"
             if [[ "$APT_ACTIVITY" -gt 0 ]]; then
                 DETAILS+="ℹ️ AIDE — ${APT_ACTIVITY} pkg(s) via apt après le scan. OK si attendu — rebase : sudo vps-secure-aide-rebase
 "

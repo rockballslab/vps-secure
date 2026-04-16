@@ -187,17 +187,17 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 > C'est la commande recommandée - elle garantit que le script n'a pas été altéré.
 
 
-Le script est interactif. Il te pose **2 questions obligatoires** :
+Le script est interactif. Il te pose **3 questions obligatoires** au début de l'installation :
 
-1. Ta clé SSH publique (colle le contenu de `id_ed25519_vps.pub`)
-2. Confirme que la connexion fonctionne depuis un 2ème terminal
+1. Ta clé d'activation (reçue par mail)
+2. Ta clé SSH publique (colle le contenu de `id_ed25519_vps.pub`)
+3. Confirme que la connexion fonctionne depuis un 2ème terminal
 
 Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 
-
-Aide toi du guide interactif pour copier-coller facilement les valeurs demandées
-
-Ouvrir le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html) 
+> [!TIP]
+> Le guide interactif te permet de copier-coller chaque valeur sans erreur — utilise-le.
+> [Ouvrir le Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html)
 
 
  <p align="left">

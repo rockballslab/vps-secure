@@ -90,6 +90,11 @@ bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système, 
 </p>
 
 
+<p align="center">
+  <img src="./screenshots/sticker1.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
+</p>
+
+
 ---
 
 
@@ -106,11 +111,6 @@ Avant de commencer et de lancer le script, tu as besoin de :
 > 🔑 Ce script nécessite une licence - [disponible ici](https://vps-secure.aiforceone.fr/offre.html) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
 >
 > 👨‍💻 Tu souhaites contribuer et auditer le code ? [Contacte-moi pour un accès Bêta](https://tally.so/r/lblb0k) - ta clé d'activation unique sera envoyée en quelques minutes.
-
-
-<p align="center">
-  <img src="./screenshots/sticker1.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
-</p>
 
 
 ---

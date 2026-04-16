@@ -183,18 +183,16 @@ if [[ -x /usr/local/bin/voidlink-detect ]] && [[ -f /etc/cron.d/voidlink-detect 
     if [[ -f /var/log/voidlink-detect.log ]]; then
         VOIDLINK_LAST=$(tail -1 /var/log/voidlink-detect.log 2>/dev/null \
             | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' || echo "jamais")
-        VOIDLINK_RESULT=$(tail -1 /var/log/voidlink-detect.log 2>/dev/null \
-            | grep -q "OK" && echo "OK" || echo "ALERTE")
-        if [[ "$VOIDLINK_RESULT" == "OK" ]]; then
-            echo -e "  ${VERT}[PASS]${RESET} voidlink-detect  : installé · scan 02h30 UTC · dernier : ${VOIDLINK_LAST} · OK"
+        if tail -1 /var/log/voidlink-detect.log 2>/dev/null | grep -q " OK$"; then
+            _pass "voidlink-detect" "installé · scan 02h30 UTC · dernier : ${VOIDLINK_LAST} · OK"
         else
-            echo -e "  ${ROUGE}[FAIL]${RESET} voidlink-detect  : ALERTE détectée — sudo /usr/local/bin/voidlink-detect"
+            _fail "voidlink-detect" "ALERTE détectée — sudo /usr/local/bin/voidlink-detect"
         fi
     else
-        echo -e "  ${VERT}[PASS]${RESET} voidlink-detect  : installé · scan 02h30 UTC · pas encore exécuté"
+        _pass "voidlink-detect" "installé · scan 02h30 UTC · pas encore exécuté"
     fi
 else
-    echo -e "  ${ROUGE}[FAIL]${RESET} voidlink-detect  : absent — relancer install.sh v2.4.2"
+    _fail "voidlink-detect" "absent — relancer install.sh v2.4.2"
 fi
 
 # ── auditd ─────────────────────────────────────────────────────

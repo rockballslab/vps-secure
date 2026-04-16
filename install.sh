@@ -1122,11 +1122,13 @@ mkdir -p /var/lib/rkhunter/tmp
 chmod 700 /var/lib/rkhunter/tmp
 chmod 640 /etc/rkhunter.conf.local
 
-# Mettre à jour la base de données des signatures
-if ! rkhunter --update --nocolors > /dev/null 2>&1; then
-    log_warn "rkhunter --update échoué (réseau ou serveur upstream indisponible) — signatures potentiellement obsolètes."
-    log_warn "  Mise à jour manuelle : sudo rkhunter --update"
-fi
+# rkhunter --update : volontairement omis (fix #42)
+# Raisons :
+#   1. WEB_CMD="" dans rkhunter.conf.local désactive les requêtes HTTP (sécurité — CIS 1.x)
+#   2. Upstream SourceForge rkhunter 1.4.6 abandonné depuis 2018 — téléchargement échoue systématiquement
+# Protection réelle = baseline --propupd (hashes binaires installés) — créée ci-dessous
+log_info "  Signatures rkhunter : base v1.4.6 intégrée (rootkits classiques couverts)."
+log_info "  Baseline binaires   : création via --propupd en cours..."
 
 # Construire la baseline (empreinte initiale du système — état "sain")
 rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : peut échouer si des fichiers sont verrouillés — non bloquant, scan quotidien continuera
@@ -1394,10 +1396,20 @@ else
             DETAILS+="ℹ️ AIDE — apt a mis à jour ~${DPKG_PKG_COUNT} pkg(s). OK si attendu — validez : aide --update
 "
         else
-            DETAILS+="🚨 AIDE — MODIFICATIONS INATTENDUES
-  → Détail : sudo aide --check --config /etc/aide/aide.conf
+            # Fix #44 : context file absent — apt a peut-être tourné APRÈS le scan AIDE (01h UTC)
+            # Double vérification via dpkg.log (couvre unattended-upgrades post-01h UTC)
+            APT_ACTIVITY=$(awk -v cutoff="$(date -d '12 hours ago' '+%Y-%m-%d %H:%M:%S')" \
+                '$0 > cutoff && / status installed / {count++} END {print count+0}' \
+                /var/log/dpkg.log 2>/dev/null || echo "0")
+            if [[ "$APT_ACTIVITY" -gt 0 ]]; then
+                DETAILS+="ℹ️ AIDE — ${APT_ACTIVITY} pkg(s) via apt après le scan. OK si attendu — rebase : sudo vps-secure-aide-rebase
 "
-            ISSUES=$(( ISSUES + 1 ))
+            else
+                DETAILS+="🚨 AIDE — MODIFICATIONS INATTENDUES (aucune activité apt)
+  → Vérifier : sudo aide --check --config /etc/aide/aide.conf
+"
+                ISSUES=$(( ISSUES + 1 ))
+            fi
         fi
     else
         DETAILS+="✅ AIDE OK
@@ -1838,23 +1850,9 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/var/lib/docker/overlay2/
 AIDEEXCLEOF
 
-# Initialisation de la baseline (peut prendre 1-2 min — hash de tous les binaires)
-log_info "Création de la baseline AIDE — peut prendre 2 à 5 minutes selon la taille du disque..."
-log_info "  (le script continue automatiquement)"
-DEBIAN_FRONTEND=noninteractive aideinit -y -f 2>/dev/null || \
-    aide --init --config /etc/aide/aide.conf 2>/dev/null || true
+# AIDE --init : déplacé en fin de script (issue #43)
+# La baseline est construite APRÈS logrotate, dashboard et tous les fichiers VPS-SECURE
 
-if [[ -f /var/lib/aide/aide.db.new ]]; then
-    cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
-    chmod 600 /var/lib/aide/aide.db
-    chattr +i /var/lib/aide/aide.db
-    rm -f /var/lib/aide/aide.db.new
-    log_success "Baseline AIDE créée — état sain du système enregistré (protégée en écriture)."
-else
-    log_warn "Baseline AIDE non créée automatiquement."
-    log_warn "  Lance manuellement après installation :"
-    log_warn "  sudo DEBIAN_FRONTEND=noninteractive aideinit -y -f && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db && sudo chattr +i /var/lib/aide/aide.db && sudo rm -f /var/lib/aide/aide.db.new"
-fi
 
 # Mise à jour baseline rkhunter — _aide user/group créés par AIDE absent de la baseline initiale (étape 11)
 rkhunter --propupd --nocolors > /dev/null 2>&1 || true  # optionnel : non bloquant
@@ -1935,7 +1933,30 @@ log_success "AIDE configuré — scan quotidien à 01h00 UTC (03h00 Paris)."
 log_info "  Base de référence : /var/lib/aide/aide.db"
 log_info "  Log quotidien     : /var/log/aide-daily.log"
 log_info "  Scanner manuellement : sudo aide --check"
-log_info "  Après mise à jour OS : sudo chattr -i /var/lib/aide/aide.db && sudo aide --update --config /etc/aide/aide.conf && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db && sudo chattr +i /var/lib/aide/aide.db && sudo rm -f /var/lib/aide/aide.db.new"
+log_info "  Après mise à jour OS : sudo vps-secure-aide-rebase"
+
+# Script vps-secure-aide-rebase — rebase baseline AIDE post-apt (fix #44)
+cat > /usr/local/bin/vps-secure-aide-rebase << 'REBASEEOF'
+#!/bin/bash
+# vps-secure-aide-rebase — Rebase la baseline AIDE après un apt upgrade
+# Usage : sudo vps-secure-aide-rebase
+[[ "$EUID" -ne 0 ]] && { echo "❌ Utiliser : sudo vps-secure-aide-rebase"; exit 1; }
+echo "🔄 Rebase baseline AIDE en cours (~2-3 min)..."
+chattr -i /var/lib/aide/aide.db 2>/dev/null || true
+aide --update --config /etc/aide/aide.conf > /dev/null 2>&1 || true
+if [[ -f /var/lib/aide/aide.db.new ]]; then
+    cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+    chmod 600 /var/lib/aide/aide.db
+    chattr +i /var/lib/aide/aide.db
+    rm -f /var/lib/aide/aide.db.new
+    echo "✅ Baseline AIDE mise à jour. Demain matin : 0 alerte si système intact."
+else
+    echo "❌ Échec — vérifier : sudo aide --config-check"; exit 1
+fi
+REBASEEOF
+chmod 750 /usr/local/bin/vps-secure-aide-rebase
+chown root:sudo /usr/local/bin/vps-secure-aide-rebase
+log_success "Commande vps-secure-aide-rebase disponible (sudo vps-secure-aide-rebase)."
 
 # ============================================================
 # Installation de vps-secure-stats
@@ -2145,6 +2166,36 @@ echo -e "${R}"
 MOTDEOF
 chmod +x /etc/update-motd.d/00-vps-secure
 log_success "MOTD personnalisé installé — affiché à chaque connexion SSH."
+
+# ════════════════════════════════════════════════════════════════════
+# ÉTAPE FINALE — Baseline AIDE (système entièrement configuré)
+# Doit être LA DERNIÈRE opération : logrotate, dashboard et tous les
+# fichiers VPS-SECURE sont écrits AVANT cette baseline.
+# ════════════════════════════════════════════════════════════════════
+log_info "Construction baseline AIDE — peut prendre 2 à 5 minutes..."
+log_info "  (tous les fichiers VPS-SECURE sont maintenant inclus dans la référence)"
+
+# Supprimer l'ancienne baseline si re-installation
+if [[ -f /var/lib/aide/aide.db ]]; then
+    chattr -i /var/lib/aide/aide.db 2>/dev/null || true  # optionnel : db peut ne pas avoir chattr +i si installation partielle
+    rm -f /var/lib/aide/aide.db
+fi
+
+DEBIAN_FRONTEND=noninteractive aideinit -y -f 2>/dev/null || \
+    aide --init --config /etc/aide/aide.conf 2>/dev/null || true  # optionnel : fallback si aideinit absent
+
+if [[ -f /var/lib/aide/aide.db.new ]]; then
+    cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+    chmod 600 /var/lib/aide/aide.db
+    chattr +i /var/lib/aide/aide.db
+    rm -f /var/lib/aide/aide.db.new
+    log_success "Baseline AIDE construite — système complet inclus (logrotate, dashboard, scripts)."
+    log_info "  Fichier protégé en écriture (chattr +i) — 0 alerte AIDE demain matin."
+else
+    log_warn "Baseline AIDE non créée — lancer manuellement :"
+    log_warn "  sudo aideinit -y -f && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db"
+    log_warn "  sudo chattr +i /var/lib/aide/aide.db && sudo rm -f /var/lib/aide/aide.db.new"
+fi
 
 # Résumé final
 # ============================================================

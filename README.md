@@ -77,11 +77,11 @@ bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système, 
 | 8 | Kernel hardening | 33 paramètres : réseau (spoofing, SYN flood, ICMP, redirections sécurisées) + ASLR + protection ptrace + core dumps désactivés + perf events restreints |
 | 9 | **auditd** | Journalise tout : SSH, sudo, Docker, fichiers sensibles, crontabs (vecteur de persistence) et `/etc/hosts` (MITM DNS local) |
 | 10 | Swap 2 GB | Mémoire virtuelle d'urgence - évite les crashs |
-| 11 | **rkhunter** | Scanne les backdoors et rootkits. Scan quotidien automatique à **00h00 UTC (02h00 Paris)** — indépendant de Telegram |
+| 11 | **rkhunter** | Scanne les backdoors et rootkits. Scan quotidien automatique à **00h00 UTC (02h00 Paris)** - indépendant de Telegram |
 | 12 | Désactivation des services inutiles | avahi, cups, bluetooth, ModemManager désactivés - chaque service actif = surface d'attaque (CIS 2.x). Ctrl-Alt-Delete masqué (DISA STIG) |
 | 13 | Alertes **Telegram** | Rapport de sécurité quotidien + Alerte immédiate à chaque connexion SSH |
 | 14 | **Endlessh** (honeypot port 22) | SSH est sur le port 2222 - le port 22 est libre. Endlessh le capture et maintient les bots connectés des heures en leur envoyant un banner SSH infini. Ils ne peuvent pas attaquer ailleurs pendant ce temps |
-| 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 — toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram. Après une mise à jour OS, relancer la baseline manuellement (commande fournie). |
+| 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 - toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram. Après une mise à jour OS, relancer la baseline manuellement (commande fournie). |
 
 
 
@@ -103,7 +103,7 @@ Avant de commencer et de lancer le script, tu as besoin de :
 
 
 > [!NOTE]
-> 🔑 Ce script nécessite une licence au lancement — [disponible ici](https://vps-secure.aiforceone.fr/offre.html) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
+> 🔑 Ce script nécessite une licence au lancement - [disponible ici](https://vps-secure.aiforceone.fr/offre.html) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
 >
 > 👨‍💻 Tu souhaites contribuer et auditer le code ? [Contacte-moi pour un accès Bêta](https://tally.so/r/lblb0k) - ta clé d'activation unique sera envoyée en quelques minutes.
 
@@ -122,7 +122,7 @@ Avant de commencer et de lancer le script, tu as besoin de :
 
 Avant de commencer, ouvre le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html) et suis les indications pas à pas.
 
-Il te permet de centraliser l'IP de ton VPS et toutes les infos demandées pendant l'installation — zéro copier-coller raté.
+Il te permet de centraliser l'IP de ton VPS et toutes les infos demandées pendant l'installation - zéro copier-coller raté.
 
 > [!TIP]
 > Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
@@ -377,7 +377,7 @@ sudo ufw allow 8080/tcp comment 'Mon application'
 
 Un VPS nu est une cible. VPS-Secure le transforme en serveur durci, surveillé et exploitable en production, avec un niveau de finition rarement proposé dans un script public.
 
-VPS-Secure ne “garantit” pas une sécurité absolue — aucun outil sérieux ne peut le faire. En revanche, il automatise un durcissement complet et avancé d’Ubuntu 24.04 LTS, en appliquant une grande partie des contrôles pertinents des référentiels **CIS Benchmark Level 1** et **DISA STIG**, tout en restant utilisable sur un VPS classique.
+VPS-Secure ne “garantit” pas une sécurité absolue - aucun outil sérieux ne peut le faire. En revanche, il automatise un durcissement complet et avancé d’Ubuntu 24.04 LTS, en appliquant une grande partie des contrôles pertinents des référentiels **CIS Benchmark Level 1** et **DISA STIG**, tout en restant utilisable sur un VPS classique.
 
 
 | Standard | Ce que c'est |

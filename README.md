@@ -453,29 +453,38 @@ sudo vps-secure-stats
 
 ---
 
+### 📊 État du système
+
+```text
 ╔══════════════════════════════════════════════════════╗
-║          vps-secure - Tableau de bord                ║
+║           vps-secure - Tableau de bord               ║
 ╚══════════════════════════════════════════════════════╝
 monvps · 13/04/2026 07:00
+
 🍯 HONEYPOT (Endlessh)          actif
 Bots piégés (24h)     : 247
 Bots piégés (total)   : 1834
+
 🛡️  CROWDSEC                     actif
 IP bannies actives    : 97
 Alertes (24h)         : 12
+
 🔥 PARE-FEU (UFW)
 Blocages totaux       : 4521
+
 📋 AUDIT (auditd)
 Escalades privilèges  : 1247 aujourd'hui
+
 🔍 ROOTKITS (rkhunter)          OK
 Dernier scan          : 2026-04-05 04:00:01
+
 🔐 INTÉGRITÉ (AIDE)
 Dernier scan          : Aucune modification
+
 💻 SYSTÈME
 Uptime                : 3 weeks, 2 days
 Charge                : 0.08, 0.12, 0.09
 Mémoire               : 1.2Gi / 3.8Gi
-
 
 
 > [!NOTE]

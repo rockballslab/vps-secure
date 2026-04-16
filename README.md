@@ -5,7 +5,7 @@
 **🔐 Sécurise ton serveur en moins de 15 min - honeypot, pare-feu, IPS, integrity monitoring. Une commande.** **Zéro compétence requise.**
 
 
-> "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un VPS, et que tu tiens à tes données, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**
+> "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un VPS, et que tu tiens à tes données, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**"
 
 
 **15 minutes**, une seule commande pour que ton serveur devienne une **Forteresse** prête à accueillir tes services en toute sérennité.
@@ -22,7 +22,7 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 Un VPS nu ou configuré par défaut est une cible facile, visible et attaquable en quelques minutes.
 
-**VPS-Secure** n’est pas un simple script d’installation : c’est une fondation de sécurité ultra robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.**
+**VPS-Secure** n’est pas un simple script d’installation : c’est une fondation de sécurité ultra robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.
 
 
 <p align="center">
@@ -292,7 +292,6 @@ Aucune action requise.
 
 Si une anomalie est détectée dans le rapport quotidien, le message inclut le détail et la commande exacte pour réparer.
 
-> Tu as passé cette étape ? Relance `./install.sh` pour la configurer plus tard.
 
 ---
 
@@ -328,7 +327,7 @@ Le script te demande un domaine et un mot de passe que tu dois créer. Ton mot d
 > Prérequis :
 > 
 > un enregistrement DNS A pointant sur l'IP de ton VPS · Explications complémentaires dans le guide.
-> pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`)
+> pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`
 
 
  <p align="center">
@@ -361,8 +360,9 @@ Ce Dashboard comprend:
 
 ---
 
-## [!WARNING] 🔒 Docker & Firewall :** Le "UFW Bypass" corrigé
-
+> [!WARNING]
+> 🔒 **Docker & Firewall : Le "UFW Bypass" corrigé**
+>
 > Par défaut, Docker manipule iptables et ignore totalement les règles de votre pare-feu (UFW), exposant vos ports directement sur le web. Ce script corrige cette faille critique présente sur la quasi-totalité des installations standards.
 >
 > Le correctif : Le script désactive la gestion automatique d'iptables par le démon Docker (iptables: false).
@@ -445,67 +445,51 @@ Le script ne devine pas tes noms de domaine. Pour mettre tes propres sites en HT
 ## Commandes utiles après installation
 
 ```bash
+# Vérifier l'installation complète (12 checks)
+sudo vps-secure-verify
+```
+
+```bash
 # Tableau de bord de sécurité instantané
 sudo vps-secure-stats
 ```
 
-```
 ╔══════════════════════════════════════════════════════╗
 ║          vps-secure - Tableau de bord                ║
 ╚══════════════════════════════════════════════════════╝
-  monvps · 05/04/2026 07:00
-
-  🍯 HONEYPOT (Endlessh)          actif
-     Bots piégés (24h)     : 247
-     Bots piégés (total)   : 1834
-
-  🛡️  CROWDSEC                     actif
-     IP bannies actives    : 97
-     Alertes (24h)         : 12
-
-  🔥 PARE-FEU (UFW)
-     Blocages totaux       : 4521
-
-  📋 AUDIT (auditd)
-     Escalades privilèges  : 1247 aujourd'hui
-
-  🔍 ROOTKITS (rkhunter)          OK
-     Dernier scan          : 2026-04-05 04:00:01
-
-  🔐 INTÉGRITÉ (AIDE)
-     Dernier scan          : Aucune modification
-
-  💻 SYSTÈME
-     Uptime                : 3 weeks, 2 days
-     Charge                : 0.08, 0.12, 0.09
-     Mémoire               : 1.2Gi / 3.8Gi
-```
-
+monvps · 05/04/2026 07:00
+🍯 HONEYPOT (Endlessh)          actif
+Bots piégés (24h)     : 247
+Bots piégés (total)   : 1834
+🛡️  CROWDSEC                     actif
+IP bannies actives    : 97
+Alertes (24h)         : 12
+🔥 PARE-FEU (UFW)
+Blocages totaux       : 4521
+📋 AUDIT (auditd)
+Escalades privilèges  : 1247 aujourd'hui
+🔍 ROOTKITS (rkhunter)          OK
+Dernier scan          : 2026-04-05 04:00:01
+🔐 INTÉGRITÉ (AIDE)
+Dernier scan          : Aucune modification
+💻 SYSTÈME
+Uptime                : 3 weeks, 2 days
+Charge                : 0.08, 0.12, 0.09
+Mémoire               : 1.2Gi / 3.8Gi
 
 > ⓘ Le jour de l'installation, les escalades de privilèges affichent un nombre élevé (1000+).
 > C'est normal - le script install.sh tourne en root et chaque commande système est auditée.
 > Dès le lendemain, le compteur reflète uniquement tes actions réelles.
 
-
-# Autres commandes utiles après installation
-
+---
 
 ```bash
-# Pour l'ego-boost du matin
-sudo vps-secure-stats
-```
-```bash
-# Pour installer une app
+# Ouvrir un port pour une app (ex: n8n sur 8080)
 sudo ufw allow 8080/tcp
 ```
-```bash
-#Après une mise à jour
-sudo vps-secure-aide-check.sh
-```
-
 
 ```bash
-#Voir les alertes CrowdSec (dernières 24h)
+# Voir les alertes CrowdSec (dernières 24h)
 sudo cscli alerts list --since 24h
 ```
 
@@ -517,7 +501,7 @@ sudo aureport --summary
 ```
 
 ```bash
-# Lancer un scan de rootkits
+# Lancer un scan de rootkits manuellement
 sudo rkhunter --check --report-warnings-only
 ```
 
@@ -527,13 +511,18 @@ sudo cat /var/log/rkhunter-cron.log
 ```
 
 ```bash
-# Statut du pare-feu
-sudo ufw status verbose
+# Honeypot Endlessh - logs en direct
+sudo docker logs -f endlessh
 ```
 
 ```bash
 # Vérifier les ports exposés par Docker
 sudo docker ps --format "table {{.Names}}\t{{.Ports}}"
+```
+
+```bash
+# Statut du pare-feu
+sudo ufw status verbose
 ```
 
 ```bash
@@ -548,24 +537,13 @@ sudo cat /etc/cron.d/vps-secure  # vérifier
 ```
 
 ```bash
-# Honeypot Endlessh - logs en direct
-sudo docker logs -f endlessh
-```
-
-```bash
-# AIDE - baseline protégée en écriture — déprotéger avant mise à jour, reprotéger après
-# (fait automatiquement par le script ci-dessous)
 # AIDE - lancer un scan d'intégrité manuellement
-sudo aide --check --config /etc/aide/aide.conf
+sudo /usr/local/bin/vps-secure-aide-check.sh
 ```
 
 ```bash
-# AIDE - mettre à jour la baseline après une mise à jour OS majeure (upgrade de version)
-sudo chattr -i /var/lib/aide/aide.db \
-  && sudo aide --update --config /etc/aide/aide.conf \
-  && sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db \
-  && sudo chattr +i /var/lib/aide/aide.db \
-  && sudo rm -f /var/lib/aide/aide.db.new
+# AIDE - mettre à jour la baseline après un apt upgrade (packages mis à jour)
+sudo vps-secure-aide-rebase
 ```
 
 ```bash
@@ -574,13 +552,8 @@ cat /var/cache/vps-secure/security-stats.json
 ```
 
 ```bash
-# Vérifier si rkhunter a été mis à jour par apt (nouvelle feature v2.4.0)
+# Vérifier si rkhunter a été mis à jour par apt
 sudo cat /var/log/rkhunter-propupd.log
-```
-
-```bash
-# Lancer le smart-check AIDE manuellement (smart-check v3)
-sudo /usr/local/bin/vps-secure-aide-check.sh
 ```
 
 ---

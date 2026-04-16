@@ -422,11 +422,13 @@ En pratique, cela correspond à une bonne hygiène d’administration système.
 
 - 🐳 **Docker** implique une élévation de privilèges : comme vpsadmin peut lancer Docker, il a potentiellement un niveau de contrôle très élevé sur le serveur. C’est normal : c’est le compromis nécessaire pour gérer facilement des containers sur un VPS.
 
-> ⚠️ La règle d'or : Protège ta clé SSH !
-> Celui qui possède la clé privée SSH de vpsadmin possède en pratique l’accès d’administration au serveur.
+
+> [!WARNING]
+> **La règle d'or : Protège ta clé SSH !**
+> Celui qui possède la clé privée SSH de vpsadmin possède en pratique l'accès d'administration au serveur.
 > - Ne stocke jamais cette clé privée sur un cloud public.
 > - Ne la partage jamais.
-> - Utilise une machine de confiance pour les accès d’administration.
+> - Utilise une machine de confiance pour les accès d'administration.
 
 ---
 

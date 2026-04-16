@@ -632,8 +632,8 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(10px);
+      background: rgba(15,23,42,0.65);
+      backdrop-filter: blur(8px);
       z-index: 500;
       align-items: center;
       justify-content: center;
@@ -641,75 +641,76 @@
     }
     .overlay.open { display: flex; }
     .modal {
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid #dde3f5;
+      border-radius: 18px;
       padding: 24px;
       max-width: 560px;
       width: 100%;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.16), 0 4px 12px rgba(0,0,0,0.08);
       max-height: calc(100vh - 48px);
       overflow-y: auto;
     }
     .modal-icon { font-size: 24px; margin-right: 6px; display: inline; }
     .modal h2 {
-      font-family: var(--serif);
-      font-size: 1.5rem;
+      font-family: var(--sans);
+      font-size: 1.3rem;
+      font-weight: 800;
       margin-bottom: 4px;
-      color: var(--text);
+      color: #0f172a;
       display: inline;
     }
     .modal-header { margin-bottom: 8px; }
-    .modal p { color: var(--muted); font-size: 13px; line-height: 1.55; margin-bottom: 12px; }
+    .modal p { color: #64748b; font-size: 13px; line-height: 1.55; margin-bottom: 12px; font-weight: 600; }
 
     /* CMD BLOCKS */
     .cmd-block {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
       padding: 10px 14px;
       margin-bottom: 8px;
       cursor: pointer;
       transition: border-color .2s;
     }
-    .cmd-block:hover { border-color: var(--acid-border); }
+    .cmd-block:hover { border-color: #059669; }
     .cmd-label {
       font-size: 9.5px;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: var(--muted);
+      color: #64748b;
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-family: var(--mono);
     }
-    .cmd-hint { font-size: 9.5px; color: var(--subtle); }
+    .cmd-hint { font-size: 9.5px; color: #475569; }
     .cmd-code {
       font-family: var(--mono);
       font-size: 12px;
-      color: var(--acid);
+      color: #6ee7b7;
       line-height: 1.55;
     }
     .modal-note {
       font-size: 11.5px;
-      color: var(--muted);
-      background: var(--bg3);
+      color: #64748b;
+      background: #f7f9ff;
       border-radius: 8px;
       padding: 8px 12px;
       margin-bottom: 12px;
       line-height: 1.55;
-      border: 1px solid var(--border);
+      border: 1px solid #dde3f5;
       font-family: var(--mono);
     }
-    .modal-note strong { color: var(--text); }
+    .modal-note strong { color: #0f172a; }
     .modal-note code {
       font-family: var(--mono);
-      background: var(--bg4);
+      background: #e2e8f0;
       padding: 1px 5px;
       border-radius: 4px;
       font-size: 11px;
-      color: var(--acid);
+      color: #0f172a;
     }
 
     /* MODAL VALUES */
@@ -718,13 +719,13 @@
       align-items: center;
       gap: 10px;
       padding: 6px 0;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #f1f5f9;
     }
     .modal-val-row:last-child { border-bottom: none; }
     .modal-val-label {
       font-size: 10.5px;
       font-weight: 700;
-      color: var(--muted);
+      color: #64748b;
       min-width: 130px;
       flex-shrink: 0;
       font-family: var(--mono);
@@ -732,38 +733,38 @@
     .modal-val-value {
       font-family: var(--mono);
       font-size: 11px;
-      color: var(--text);
+      color: #0f172a;
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .modal-val-value.secret { letter-spacing: 3px; color: var(--muted); font-size: 9px; }
+    .modal-val-value.secret { letter-spacing: 3px; color: #94a3b8; font-size: 9px; }
     .modal-val-copy {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 5px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
       padding: 3px 8px;
       font-size: 10.5px;
       cursor: pointer;
-      color: var(--muted);
+      color: #475569;
       font-weight: 600;
       flex-shrink: 0;
       transition: all .15s;
       font-family: var(--mono);
     }
-    .modal-val-copy:hover { border-color: var(--acid-border); color: var(--acid); background: var(--acid-dim); }
-    .modal-val-copy.copied { border-color: var(--acid-border); color: var(--acid); background: var(--acid-dim); }
+    .modal-val-copy:hover { background: #e0f2fe; border-color: #7dd3fc; color: #0369a1; }
+    .modal-val-copy.copied { background: #dcfce7; border-color: #86efac; color: #15803d; }
     .modal-dashboard-btn {
       display: flex;
       align-items: center;
       gap: 8px;
       width: 100%;
       padding: 10px 14px;
-      background: var(--acid-dim);
-      border: 1.5px solid var(--acid-border);
-      border-radius: 8px;
-      color: var(--acid);
+      background: #eff6ff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: 10px;
+      color: #2563eb;
       font-size: 12.5px;
       font-weight: 700;
       text-decoration: none;
@@ -771,33 +772,34 @@
       font-family: var(--mono);
       cursor: pointer;
     }
-    .modal-dashboard-btn:hover { background: rgba(0,255,135,0.2); }
+    .modal-dashboard-btn:hover { background: #dbeafe; border-color: #93c5fd; }
     .btn-close {
       padding: 10px 24px;
-      background: var(--bg3);
-      border: 1.5px solid var(--border);
-      border-radius: 7px;
-      color: var(--muted);
+      background: #f7f9ff;
+      border: 1.5px solid #dde3f5;
+      border-radius: 9px;
+      color: #64748b;
       font-size: 13.5px;
       font-weight: 600;
       cursor: pointer;
       transition: all .2s;
       font-family: var(--mono);
     }
-    .btn-close:hover { border-color: var(--border2); color: var(--text); }
+    .btn-close:hover { border-color: #94a3b8; color: #0f172a; }
     .btn-danger {
       padding: 10px 24px;
-      background: rgba(255,77,109,0.15);
-      border: 1.5px solid rgba(255,77,109,0.4);
-      border-radius: 7px;
-      color: var(--danger);
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      border: none;
+      border-radius: 9px;
+      color: #fff;
       font-size: 13.5px;
       font-weight: 700;
       cursor: pointer;
       transition: all .2s;
+      box-shadow: 0 2px 8px rgba(220,38,38,0.25);
       font-family: var(--mono);
     }
-    .btn-danger:hover { background: rgba(255,77,109,0.25); transform: translateY(-1px); }
+    .btn-danger:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(220,38,38,0.35); }
 
     /* ── FOOTER ── */
     footer {
@@ -940,27 +942,27 @@
         </div>
         <div class="cmd-code">ssh root@<span id="modal-ip">IP_DU_VPS</span></div>
       </div>
-      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin:-2px 0 6px;padding:0 2px;">⚠️ Si le terminal affiche <span style="color:var(--acid)">Are you sure you want to continue? (yes/no)</span> → tape <span style="color:var(--acid)">yes</span> puis Entrée.</div>
-      <div id="modal-values-block-pwd" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:10px;">
-        <div style="font-size:9px;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">📋 Valeurs demandées par le script</div>
+      <div style="font-family:var(--mono);font-size:10px;color:#64748b;margin:-2px 0 6px;padding:0 2px;">⚠️ Si le terminal affiche <span style="color:#2563eb">Are you sure you want to continue? (yes/no)</span> → tape <span style="color:#2563eb">yes</span> puis Entrée.</div>
+      <div id="modal-values-block-pwd" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin-bottom:10px;">
+        <div style="font-size:9px;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px;">📋 Valeurs demandées par le script</div>
         <div id="modal-val-vps_pwd" class="modal-val-row"></div>
       </div>
       <!-- 2: install-secure.sh -->
       <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:6px;">
         <div class="cmd-label">
           <span style="display:flex;align-items:center;gap:8px;">
-            <span style="background:var(--warn);color:var(--bg);font-size:11px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);">2</span>
+            <span style="background:#ea580c;color:#fff;font-size:11px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);">2</span>
             install-secure.sh — en root (~10-15 min)
           </span>
           <span class="cmd-hint">clic pour copier</span>
         </div>
         <div class="cmd-code">bash &lt;(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh)</div>
       </div>
-      <div id="modal-values-block" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:10px;">
-        <div style="font-size:9px;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">📋 Valeurs demandées par le script</div>
+      <div id="modal-values-block" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin-bottom:10px;">
+        <div style="font-size:9px;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px;">📋 Valeurs demandées par le script</div>
         <div id="modal-val-licence_key" class="modal-val-row"></div>
         <div id="modal-val-ssh_pub" class="modal-val-row"></div>
-        <div style="font-size:9px;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:var(--subtle);margin-top:6px;margin-bottom:4px;">Optionnel mais recommandé</div>
+        <div style="font-size:9px;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-top:6px;margin-bottom:4px;">Optionnel mais recommandé</div>
         <div id="modal-val-tg_token" class="modal-val-row"></div>
         <div id="modal-val-tg_chatid" class="modal-val-row"></div>
       </div>
@@ -968,7 +970,7 @@
       <div class="cmd-block" onclick="copyBlock(this)" style="margin-bottom:6px;">
         <div class="cmd-label">
           <span style="display:flex;align-items:center;gap:8px;">
-            <span style="background:var(--acid);color:var(--bg);font-size:11px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);">3</span>
+            <span style="background:#059669;color:#fff;font-size:11px;font-weight:800;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);">3</span>
             Connexion après installation — en vpsadmin
           </span>
           <span class="cmd-hint">clic pour copier</span>
@@ -1243,7 +1245,7 @@
         </div>
         <div class="cmd-code">bash &lt;(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)</div>
       </div>
-      <div id="dash-pwd-row" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;"></div>
+      <div id="dash-pwd-row" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;margin-bottom:16px;"></div>
       <div style="display:flex;gap:10px;">
         <button class="btn-close" onclick="closeDashConfirm()" style="flex:1;">Non, pas encore</button>
         <button class="btn-launch unlocked" onclick="confirmDashOpen()" style="flex:1;padding:10px 16px;font-size:13px;animation:none;border-radius:7px;">Oui, ouvrir →</button>

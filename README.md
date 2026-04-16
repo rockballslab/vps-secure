@@ -202,7 +202,7 @@ Ouvrir le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/gui
 
 
  <p align="left">
-  <img src="./screenshots/install_helper.png" alt="Guide Installation" width="50%">
+  <img src="./screenshots/install_helper.png" alt="Guide Installation" width="100%">
 </p>
 
 

@@ -234,6 +234,13 @@ AllowAgentForwarding no
 AllowTcpForwarding no
 PermitTunnel no
 
+# Désactivation GSSAPI — CVE-2026-3497 (CVSS 8.2, pre-auth heap corruption)
+# GSSAPI = Kerberos enterprise, jamais utilisé sur un VPS standalone
+GSSAPIAuthentication no
+GSSAPIKeyExchange no
+GSSAPICleanupCredentials no
+GSSAPIStrictAcceptorCheck yes
+
 # Restreindre le host key du serveur à Ed25519 (CIS L1 — plus moderne que RSA/ECDSA)
 # Note : PubkeyAcceptedAlgorithms n'est PAS restreint — le script accepte les clés RSA client.
 HostKeyAlgorithms ssh-ed25519

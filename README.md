@@ -147,7 +147,7 @@ Récupère la clé publique en lançant cette commande - tu en auras besoin pend
 cat ~/.ssh/id_ed25519_vps.pub
 ```
 
-Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`) et colle-la dans le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html)
+Copie la ligne qui s'affiche (elle commence par `ssh-ed25519`) et colle-la dans le [Guide d'installation](https://vps-secure.aiforceone.fr/guide.html)
 
 ---
 
@@ -196,9 +196,9 @@ Le script est interactif. Il te pose **3 questions obligatoires** au début de l
 Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 
 > [!TIP]
-> Le guide interactif te permet de copier-coller chaque valeur sans erreur — utilise-le.
+> Le guide interactif te guide étape par étape. Il te permet de copier-coller chaque valeur sans erreur — utilise-le.
 > 
-> [Ouvrir le Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html)
+> [Ouvrir le Guide d'installation](https://vps-secure.aiforceone.fr/guide.html)
 
 
  <p align="left">

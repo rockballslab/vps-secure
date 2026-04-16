@@ -583,9 +583,9 @@ sudo cat /var/log/voidlink-detect.log
 
 ## Compatibilité
 
-Testé et vérifié le 15 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2, KVM4, KVM8
+Testé et vérifié le 16 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2
 
-Installation complète et 100% fonctionnelle en 13 min
+Installation complète et 100% fonctionnelle en 13 min 50s
 
 ---
 

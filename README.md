@@ -120,13 +120,12 @@ Avant de commencer et de lancer le script, tu as besoin de :
 
 ### Étape 0 - Utilise le guide interactif (recommandé)
 
-Avant de commencer, ouvre le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html) et suit les indications pas à pas.
+Avant de commencer, ouvre le [Guide d'installation interactif](https://vps-secure.aiforceone.fr/guide.html) et suis les indications pas à pas.
 
-Ce guide te permet de noter l'IP de ton VPS et toutes les infos qui te seront demandées pendant l'installation en UN SEUL ENDROIT localement.
+Il te permet de centraliser l'IP de ton VPS et toutes les infos demandées pendant l'installation — zéro copier-coller raté.
 
-
-💡 Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
-
+> [!TIP]
+> Pas encore de VPS ? [-20% sur Hostinger avec le code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · ou · [20€ offerts sur Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
 
 ---
 

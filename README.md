@@ -486,10 +486,8 @@ Uptime                : 3 weeks, 2 days
 Charge                : 0.08, 0.12, 0.09
 Mémoire               : 1.2Gi / 3.8Gi
 
----
 
 > [!NOTE]
->
 > Le jour de l'installation, les escalades de privilèges affichent un nombre élevé (1000+).
 >
 > C'est normal - le script install.sh tourne en root et chaque commande système est auditée.

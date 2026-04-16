@@ -102,9 +102,10 @@ Avant de commencer et de lancer le script, tu as besoin de :
 - ✅ Une **clé SSH** générée sur ton ordinateur
 
 
+> [!NOTE]
 > 🔑 Ce script nécessite une licence au lancement — [disponible ici](https://vps-secure.aiforceone.fr/offre.html) - **OFFRE DE LANCEMENT 47€** au lieu de 97€ avec le code **REDUC50**
 >
-> 👨‍💻 Tu souhaites contribuer et auditer le code ? Postule à la Bêta. [Contacte-moi pour un accès Bêta](https://tally.so/r/lblb0k) - ta clé d'activation unique sera envoyée en quelques minutes après acceptation de ta demande.
+> 👨‍💻 Tu souhaites contribuer et auditer le code ? [Contacte-moi pour un accès Bêta](https://tally.so/r/lblb0k) - ta clé d'activation unique sera envoyée en quelques minutes.
 
 
 <p align="center">
@@ -161,18 +162,16 @@ Remplace `IP_DU_VPS` par l'IP que tu as notée dans le guide interactif.
 
 Le serveur va te demander un mot de passe - c'est le mot de passe root fourni par ton hébergeur par email après provisioning.
 
-> 💡 C'est la seule fois où ce mot de passe est utilisé. Après l'installation, la connexion root par mot de passe est définitivement désactivée.
+> [!TIP]
+> C'est la seule fois où ce mot de passe est utilisé. Après l'installation, la connexion root par mot de passe est définitivement désactivée.
 
 
 
-💡 *Pour info: si tu as déjà utilisé cette IP (rebuild VPS précédent), supprime l'ancienne clé connue :*
-```bash
-ssh-keygen -R IP_DU_VPS
-```
-Puis
-```bash
-ssh root@IP_DU_VPS
-```
+> [!TIP]
+> Si tu as déjà utilisé cette IP (rebuild VPS précédent), supprime l'ancienne clé connue avant de te connecter :
+> ```bash
+> ssh-keygen -R IP_DU_VPS
+> ```
 
 ---
 
@@ -184,7 +183,8 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
   && sudo ./install-secure.sh
 ```
 
-> 🔐 **`install-secure.sh`** vérifie la signature GPG de `install.sh` avant de le lancer.
+> [!IMPORTANT]
+> **`install-secure.sh`** vérifie la signature GPG de `install.sh` avant de le lancer.
 > C'est la commande recommandée - elle garantit que le script n'a pas été altéré.
 
 
@@ -299,19 +299,15 @@ Si une anomalie est détectée dans le rapport quotidien, le message inclut le d
 
 ## Connexion rapide
 
-Ajoute ceci sur **ton ordinateur** dans `~/.ssh/config` :
-```
-Host monvps
-    HostName IP_DU_VPS
-    User vpsadmin
-    Port 2222
-    IdentityFile ~/.ssh/id_ed25519_vps
-```
-
-Ensuite tu te connectes avec juste :
-```bash
-ssh monvps
-```
+> [!TIP]
+> Ajoute ceci sur **ton ordinateur** dans `~/.ssh/config` pour te connecter avec juste `ssh monvps` :
+> ```
+> Host monvps
+>     HostName IP_DU_VPS
+>     User vpsadmin
+>     Port 2222
+>     IdentityFile ~/.ssh/id_ed25519_vps
+> ```
 
 
 ## Dashboard de monitoring (optionnel mais fortement recommandé)
@@ -324,10 +320,9 @@ bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main
 
 Le script te demande un domaine et un mot de passe que tu dois créer. Ton mot de passe sera sauvegardé dans `~/vps-monitor/.env`.
  
-> Prérequis :
-> 
-> un enregistrement DNS A pointant sur l'IP de ton VPS · Explications complémentaires dans le guide.
-> pour générer un mot de passe sécurisé depuis ton terminal ou ton serveur : `openssl rand -base64 32`
+> [!NOTE]
+> **Prérequis :** un enregistrement DNS A pointant sur l'IP de ton VPS.
+> Pour générer un mot de passe sécurisé : `openssl rand -base64 32`
 
 
  <p align="center">
@@ -479,7 +474,8 @@ Uptime                : 3 weeks, 2 days
 Charge                : 0.08, 0.12, 0.09
 Mémoire               : 1.2Gi / 3.8Gi
 
-> ⓘ Le jour de l'installation, les escalades de privilèges affichent un nombre élevé (1000+).
+> [!NOTE]
+> Le jour de l'installation, les escalades de privilèges affichent un nombre élevé (1000+).
 > C'est normal - le script install.sh tourne en root et chaque commande système est auditée.
 > Dès le lendemain, le compteur reflète uniquement tes actions réelles.
 

@@ -1002,7 +1002,7 @@ AUDITEOF
 
 # Rotation des logs audit (éviter de remplir le disque)
 if [[ -d /etc/audit/auditd.conf.d ]]; then
-    cat > /etc/audit/auditd.conf.d/vps-secure.conf << 'AUDITCONFEOF'
+cat > /etc/audit/auditd.conf.d/vps-secure.conf << 'AUDITCONFEOF'
 max_log_file = 50
 num_logs = 5
 space_left_action = ROTATE

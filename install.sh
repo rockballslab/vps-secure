@@ -1033,6 +1033,93 @@ else
     log_warn "Auditd installé mais règles non chargées — vérifie : auditctl -l"
 fi
 
+# ── voidlink-detect (issue #46) ──────────────────────────────────────────
+cat > /usr/local/bin/voidlink-detect << 'VOIDLINKEOF'
+#!/usr/bin/env bash
+set -uo pipefail
+ALERTS=()
+
+for pid_dir in /proc/[0-9]*/; do
+    pid="${pid_dir%/}"; pid="${pid##*/}"
+    [[ -d "/proc/${pid}" ]] || continue
+    comm=$(cat "/proc/${pid}/comm" 2>/dev/null) || continue
+    if ! ps -p "$pid" > /dev/null 2>&1; then
+        [[ -d "/proc/${pid}" ]] || continue
+        ALERTS+=("PROCESSUS CACHÉ : PID ${pid} (${comm})")
+    fi
+done
+
+LSMOD_NAMES=$(lsmod 2>/dev/null | awk 'NR>1 {print $1}' | sort)
+while IFS= read -r mod; do
+    echo "$LSMOD_NAMES" | grep -qx "$mod" && continue
+    case "$mod" in
+        kernel|parameters|uevent_seqnum|version|srcversion|holders|notes|sections|initrd|refcnt) continue ;;
+    esac
+    ALERTS+=("MODULE CACHÉ : ${mod} présent dans /sys/module mais absent de lsmod")
+done < <(ls /sys/module/ 2>/dev/null | sort)
+
+WHITELIST_PATTERNS=("^/sys/fs/bpf/tc/" "^/sys/fs/bpf/cgroup/" "^/sys/fs/bpf/crowdsec" "^/sys/fs/bpf/xdp/")
+if [[ -d /sys/fs/bpf ]]; then
+    while IFS= read -r pin; do
+        whitelisted=0
+        for pattern in "${WHITELIST_PATTERNS[@]}"; do
+            [[ "$pin" =~ $pattern ]] && { whitelisted=1; break; }
+        done
+        [[ $whitelisted -eq 1 ]] || ALERTS+=("MAP eBPF SUSPECTE : ${pin}")
+    done < <(find /sys/fs/bpf -type f 2>/dev/null || true)
+fi
+
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+if [[ ${#ALERTS[@]} -eq 0 ]]; then
+    echo "[${TIMESTAMP}] voidlink-detect : OK"
+    exit 0
+fi
+echo "[${TIMESTAMP}] voidlink-detect : ⚠️ ${#ALERTS[@]} ALERTE(S)"
+for alert in "${ALERTS[@]}"; do echo "  → ${alert}"; done
+
+CONFIG="/etc/vps-secure/telegram.conf"
+if [[ -f "$CONFIG" ]]; then
+    TELEGRAM_TOKEN=$(grep '^TELEGRAM_TOKEN=' "$CONFIG" | cut -d'"' -f2)
+    TELEGRAM_CHAT_ID=$(grep '^TELEGRAM_CHAT_ID=' "$CONFIG" | cut -d'"' -f2)
+    if [[ -n "$TELEGRAM_TOKEN" ]] && [[ -n "$TELEGRAM_CHAT_ID" ]]; then
+        HOST=$(hostname)
+        MSG="🚨 voidlink-detect ALERTE sur ${HOST}
+📅 ${TIMESTAMP}
+⚠️ ${#ALERTS[@]} anomalie(s) :
+$(printf '  → %s\n' "${ALERTS[@]}")"
+        CURLCFG=$(mktemp); chmod 600 "$CURLCFG"
+        printf 'url = "https://api.telegram.org/bot%s/sendMessage"\ndata = "chat_id=%s"\n' \
+            "$TELEGRAM_TOKEN" "$TELEGRAM_CHAT_ID" > "$CURLCFG"
+        curl -s --config "$CURLCFG" --data-urlencode "text=${MSG}" > /dev/null 2>&1
+        rm -f "$CURLCFG"
+    fi
+fi
+exit 2
+VOIDLINKEOF
+
+chmod 700 /usr/local/bin/voidlink-detect
+chattr +i /usr/local/bin/voidlink-detect
+
+echo "30 2 * * * root /usr/local/bin/voidlink-detect >> /var/log/voidlink-detect.log 2>&1" \
+    > /etc/cron.d/voidlink-detect
+chmod 644 /etc/cron.d/voidlink-detect
+
+cat > /etc/logrotate.d/voidlink-detect << 'LOGROTEOF'
+/var/log/voidlink-detect.log {
+    weekly
+    rotate 8
+    compress
+    missingok
+    notifempty
+    create 640 root root
+}
+LOGROTEOF
+
+log_success "voidlink-detect installé — scan quotidien 02h30 UTC."
+log_info "  Script   : /usr/local/bin/voidlink-detect"
+log_info "  Log      : /var/log/voidlink-detect.log"
+log_info "  Tester   : sudo /usr/local/bin/voidlink-detect"
+
 # ============================================================
 # Étape 10 : Swap
 # ============================================================

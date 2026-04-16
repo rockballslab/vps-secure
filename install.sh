@@ -1305,7 +1305,7 @@ fi
 RKHUNTER_LOG=$(mktemp /tmp/rkhunter-XXXXXX.log)
 trap 'rm -f "$RKHUNTER_LOG"' EXIT
 rkhunter --check --sk --report-warnings-only --nocolors > "$RKHUNTER_LOG" 2>&1
-RK_WARNINGS=$(grep -c "Warning" "$RKHUNTER_LOG" 2>/dev/null || echo "0")
+RK_WARNINGS=$(grep -c "Warning" "$RKHUNTER_LOG" 2>/dev/null || true); RK_WARNINGS="${RK_WARNINGS:-0}"
 
 if [[ "$RK_WARNINGS" -gt 0 ]]; then
     ISSUES=$((ISSUES + 1))
@@ -1332,9 +1332,9 @@ fi
 # Seuil : n'alerter que si AUDIT_TOTAL > 10 (quelques sudo normaux = bruit)
 # ET : détecter uniquement les vrais comportements anormaux
 
-PRIV_COUNT=$(ausearch -k privilege_escalation --start today -i 2>/dev/null | grep -c "type=" || echo "0")
-DOCK_COUNT=$(ausearch -k docker_socket --start today -i 2>/dev/null | grep -c "type=" || echo "0")
-SSH_COUNT=$(ausearch -k sshd_config --start today -i 2>/dev/null | grep -c "type=" || echo "0")
+PRIV_COUNT=$(ausearch -k privilege_escalation --start today -i 2>/dev/null | grep -c "type=" || true); PRIV_COUNT="${PRIV_COUNT:-0}"
+DOCK_COUNT=$(ausearch -k docker_socket --start today -i 2>/dev/null | grep -c "type=" || true); DOCK_COUNT="${DOCK_COUNT:-0}"
+SSH_COUNT=$(ausearch -k sshd_config --start today -i 2>/dev/null | grep -c "type=" || true); SSH_COUNT="${SSH_COUNT:-0}"
 AUDIT_TOTAL=$((PRIV_COUNT + DOCK_COUNT + SSH_COUNT))
 
 # Seuil adaptatif : alerte si > 10 événements/jour (admin normal = 3-5 sudo max)

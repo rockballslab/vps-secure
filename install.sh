@@ -982,21 +982,14 @@ cat > /etc/audit/rules.d/vps-secure.rules << 'AUDITEOF'
 -w /etc/hosts -p wa -k hosts
 
 # ── Anti-VoidLink (issue #46) ────────────────────────────────────────────
-# Chargement LKM via syscall direct — bypass les file watches sur insmod/rmmod
 -a always,exit -F arch=b64 -S init_module -S finit_module -S delete_module -F auid!=-1 -k kernel_module_load
 -a always,exit -F arch=b32 -S init_module -S finit_module -S delete_module -F auid!=-1 -k kernel_module_load
-
-# Syscall bpf() par users non-root — chargement programmes eBPF suspects
 -a always,exit -F arch=b64 -S bpf -F auid>=1000 -F auid!=4294967295 -k suspicious_bpf
-
-# Exécution fileless — memfd_create + execveat (IOC rootkits LKM/eBPF)
--a always,exit -F arch=b64 -S memfd_create -k fileless_exec
--a always,exit -F arch=b64 -S execveat -k fileless_exec
-
-# Maps eBPF pinned dans /sys/fs/bpf
+-a always,exit -F arch=b64 -S memfd_create -F auid>=1000 -F auid!=4294967295 -k fileless_exec
+-a always,exit -F arch=b64 -S execveat -F auid>=1000 -F auid!=4294967295 -k fileless_exec
+-a always,exit -F arch=b64 -S bpf -F a0=8 -k bpf_obj_pin
+-a always,exit -F arch=b64 -S bpf -F a0=7 -k bpf_obj_get
 -w /sys/fs/bpf -p wa -k bpf_pinned_maps
-
-# Règles immuables (reboot requis pour modifier)
 -e 2
 AUDITEOF
 

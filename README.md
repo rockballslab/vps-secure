@@ -201,7 +201,7 @@ Et **1 question optionnelle** à la fin : configurer les alertes Telegram.
 
 
  <p align="left">
-  <img src="./screenshots/install_helper.png" alt="Guide Installation" width="100%">
+  <img src="./screenshots/install_helper.png" alt="Guide Installation" width="70%">
 </p>
 
 

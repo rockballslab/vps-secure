@@ -18,7 +18,7 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 ---
 
-## 🛡️ Pourquoi c'est indispensable ?
+## 🛡️ Pourquoi choisir ce script ?
 
 Un VPS nu ou configuré par défaut est une cible facile, visible et attaquable en quelques minutes.
 

@@ -927,6 +927,7 @@ cat > /etc/audit/rules.d/vps-secure.rules << 'AUDITEOF'
 
 -D
 -b 8192
+-r 200
 
 # Fichiers d'authentification et d'identité
 -w /etc/passwd  -p wa -k identity
@@ -980,6 +981,21 @@ cat > /etc/audit/rules.d/vps-secure.rules << 'AUDITEOF'
 # /etc/hosts — redirection DNS locale (MITM)
 -w /etc/hosts -p wa -k hosts
 
+# ── Anti-VoidLink (issue #46) ────────────────────────────────────────────
+# Chargement LKM via syscall direct — bypass les file watches sur insmod/rmmod
+-a always,exit -F arch=b64 -S init_module -S finit_module -S delete_module -F auid!=-1 -k kernel_module_load
+-a always,exit -F arch=b32 -S init_module -S finit_module -S delete_module -F auid!=-1 -k kernel_module_load
+
+# Syscall bpf() par users non-root — chargement programmes eBPF suspects
+-a always,exit -F arch=b64 -S bpf -F auid>=1000 -F auid!=4294967295 -k suspicious_bpf
+
+# Exécution fileless — memfd_create + execveat (IOC rootkits LKM/eBPF)
+-a always,exit -F arch=b64 -S memfd_create -k fileless_exec
+-a always,exit -F arch=b64 -S execveat -k fileless_exec
+
+# Maps eBPF pinned dans /sys/fs/bpf
+-w /sys/fs/bpf -p wa -k bpf_pinned_maps
+
 # Règles immuables (reboot requis pour modifier)
 -e 2
 AUDITEOF
@@ -990,9 +1006,10 @@ if [[ -d /etc/audit/auditd.conf.d ]]; then
 max_log_file = 50
 num_logs = 5
 space_left_action = ROTATE
-admin_space_left_action = ROTATE
+admin_space_left_action = SUSPEND
 disk_full_action = ROTATE
 disk_error_action = SYSLOG
+backlog_wait_time = 60000
 AUDITCONFEOF
 else
     sed -i 's/^max_log_file .*/max_log_file = 50/'         /etc/audit/auditd.conf 2>/dev/null || true  # optionnel : clé absente si auditd.conf.d est utilisé (branche précédente)

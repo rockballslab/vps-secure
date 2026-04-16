@@ -736,6 +736,7 @@ if ! command -v docker &>/dev/null; then
     cat > /etc/docker/daemon.json << 'DOCKEREOF'
 {
   "iptables": false,
+  "live-restore": true,
   "log-driver": "json-file",
   "log-opts": {"max-size": "10m", "max-file": "3"}
 }
@@ -753,6 +754,18 @@ if docker compose version &>/dev/null; then
 else
     log_error "Docker Compose v2 non disponible. Vérifie l'installation Docker."
     exit 1
+fi
+
+# ── Vérification version minimum Docker (issue #49) ──────────────────────
+DOCKER_MIN_VERSION="29.3.1"
+version_lt() { printf '%s\n%s\n' "$1" "$2" | sort -V -C; }
+DOCKER_INSTALLED_VERSION=$(docker --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+' | head -1)
+if [ -n "$DOCKER_INSTALLED_VERSION" ] && version_lt "$DOCKER_INSTALLED_VERSION" "$DOCKER_MIN_VERSION"; then
+    log_warn "Docker $DOCKER_INSTALLED_VERSION < $DOCKER_MIN_VERSION — mise à jour..."
+    apt-get install -y -qq --only-upgrade docker-ce docker-ce-cli containerd.io
+    log_success "Docker mis à jour : $(docker --version)"
+else
+    log_success "Docker version OK : $DOCKER_INSTALLED_VERSION ≥ $DOCKER_MIN_VERSION"
 fi
 
 # ── Règle NAT Docker dans UFW (CRITIQUE avec iptables:false) ──
@@ -824,6 +837,36 @@ UNATTEOF
 systemctl enable unattended-upgrades
 systemctl restart unattended-upgrades
 log_success "Patches de sécurité automatiques activés."
+
+# ── Blacklist snapd (issue #51 — CVE-2026-3888 LPE CVSS 7.8) ─────────────
+if dpkg -l snapd 2>/dev/null | grep -q '^ii'; then
+    log_warn "snapd détecté — suppression (CVE-2026-3888)..."
+    apt-get purge -y -qq snapd
+    rm -rf /snap /var/snap /var/lib/snapd 2>/dev/null || true
+    log_success "snapd supprimé."
+fi
+
+cat > /etc/apt/preferences.d/99-no-snapd << 'SNAPEOF'
+# vps-secure — Blacklist snapd (CVE-2026-3888 LPE CVSS 7.8)
+Package: snapd
+Pin: release *
+Pin-Priority: -1
+SNAPEOF
+chmod 644 /etc/apt/preferences.d/99-no-snapd
+apt-mark hold snapd 2>/dev/null || true
+log_success "snapd blacklisté : Pin-Priority: -1 + apt-mark hold (CVE-2026-3888)."
+
+# Extension unattended-upgrades → Docker CE (issue #49)
+# Prérequis : "live-restore": true dans daemon.json (Étape 6) — daemon restart sans kill containers
+cat > /etc/apt/apt.conf.d/52docker-upgrade << 'DOCKERUPDEOF'
+// vps-secure — Auto-upgrade Docker CE
+// Prérequis : live-restore=true dans /etc/docker/daemon.json
+Unattended-Upgrade::Origins-Pattern {
+    "origin=Docker,suite=noble";
+};
+Unattended-Upgrade::Automatic-Reboot "false";
+DOCKERUPDEOF
+log_success "Auto-upgrade Docker CE activé (52docker-upgrade) — live-restore: true actif."
 
 # ============================================================
 # Étape 8 : Durcissement du noyau Linux (sysctl)
@@ -918,6 +961,22 @@ if [[ "$SYSCTL_ERRORS" -gt 0 ]]; then
     log_warn "  Vérifie l'intégralité : sudo sysctl --system 2>&1 | grep '^sysctl:'"
 else
     log_success "Noyau durci — anti-spoofing, SYN flood, ICMP, dmesg/kptr/eBPF restreints, forwarding Docker OK."
+fi
+
+# ── AppArmor userns (issue #48) — CIS compliance, Ubuntu 24.04 defaults explicites ──
+if sysctl -n kernel.apparmor_restrict_unprivileged_userns &>/dev/null; then
+    cat >> /etc/sysctl.d/99-vps-secure.conf << 'AAEOF'
+
+# AppArmor userns restriction (CIS compliance — défaut Ubuntu 24.04 rendu explicite)
+# Remplace kernel.unprivileged_userns_clone (Debian-only, absent Ubuntu)
+# Docker non impacté (containers tournent sous profil docker-default)
+kernel.apparmor_restrict_unprivileged_userns = 1
+kernel.apparmor_restrict_unprivileged_unconfined = 1
+AAEOF
+    sysctl -p /etc/sysctl.d/99-vps-secure.conf >/dev/null 2>&1
+    log_success "AppArmor userns restriction : ancré dans 99-vps-secure.conf (CIS compliance)."
+else
+    log_warn "AppArmor userns sysctl non disponible sur ce kernel — skipped."
 fi
 
 # ============================================================

@@ -456,7 +456,7 @@ sudo vps-secure-stats
 ╔══════════════════════════════════════════════════════╗
 ║          vps-secure - Tableau de bord                ║
 ╚══════════════════════════════════════════════════════╝
-monvps · 05/04/2026 07:00
+monvps · 13/04/2026 07:00
 🍯 HONEYPOT (Endlessh)          actif
 Bots piégés (24h)     : 247
 Bots piégés (total)   : 1834
@@ -475,6 +475,7 @@ Dernier scan          : Aucune modification
 Uptime                : 3 weeks, 2 days
 Charge                : 0.08, 0.12, 0.09
 Mémoire               : 1.2Gi / 3.8Gi
+
 
 
 > [!NOTE]

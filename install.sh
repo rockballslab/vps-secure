@@ -1824,7 +1824,7 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/etc/vps-secure/known-ips\.conf$
 !/etc/update-motd\.d/
 !/etc/cron\.d/vps-secure
-!/etc/cron\.d/aide-daily
+!/etc/cron\.d/vps-secure-aide
 !/etc/systemd/system/motd-news\.timer$
 !/etc/systemd/system/update-notifier-motd\.timer$
 !/^/$
@@ -1895,13 +1895,13 @@ log_success "Script vps-secure-aide-check.sh installé."
 
 # Cron quotidien AIDE à 01h00 UTC (4h avant le rapport Telegram de 07h00 UTC)
 # Le résultat est lu par vps-secure-check.sh pour le rapport Telegram
-cat > /etc/cron.d/aide-daily << 'AIDECRONEOF'
+cat > /etc/cron.d/vps-secure-aide << 'AIDECRONEOF'
 # vps-secure — AIDE integrity check quotidien à 01h00 UTC (03h00 Paris)
 # Résultat lu par vps-secure-check.sh pour le rapport Telegram 07h00 UTC (09h00 Paris CEST)
 # Exit code AIDE (bitmask) : 0=OK · 1=ajouts · 2=suppressions · 4=modifications · 7=les trois · 8+=erreur technique
 0 1 * * * root /usr/local/bin/vps-secure-aide-check.sh
 AIDECRONEOF
-chmod 644 /etc/cron.d/aide-daily
+chmod 644 /etc/cron.d/vps-secure-aide
 
 # Rotation des logs AIDE (évite accumulation sur 1 an)
 cat > /etc/logrotate.d/aide-daily << 'LOGROTEOF'

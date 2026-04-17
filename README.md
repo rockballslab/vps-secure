@@ -22,13 +22,12 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 Un serveur nu ou configuré par défaut est une cible facile, visible et attaquable en quelques minutes.
 
+**VPS-Secure** n’est pas un simple script d’installation : c’est une fondation de sécurité ultra robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.
+
 
 <p align="center">
   <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
-
-
-**VPS-Secure** n’est pas un simple script d’installation : c’est une fondation de sécurité ultra robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.
 
 
 ---
@@ -584,9 +583,9 @@ sudo cat /var/log/voidlink-detect.log
 
 ## Compatibilité
 
-Testé et vérifié le 16 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2
+Testé et vérifié le 17 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2
 
-Installation complète et 100% fonctionnelle en 13 min 50s
+Installation complète et 100% fonctionnelle en **13 min**
 
 ---
 

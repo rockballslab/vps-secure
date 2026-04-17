@@ -363,6 +363,7 @@ apt-get install -y -qq \
     unzip jq htop ncdu tree openssl python3
     debsums apt-show-versions acct sysstat
     libpam-pwquality
+DEBIAN_FRONTEND=noninteractive pam-auth-update --force 2>/dev/null || true
 log_success "Système mis à jour."
 
 systemctl enable --now acct 2>/dev/null || true
@@ -1059,9 +1060,9 @@ log_success "PASS_MIN_DAYS=7 configuré (login.defs)."
 
 # AUTH-9230 + AUTH-9229 — Password hashing rounds (Lynis 3.1.6)
 grep -q "^SHA_CRYPT_MIN_ROUNDS" /etc/login.defs \
-  || echo "SHA_CRYPT_MIN_ROUNDS 5000" >> /etc/login.defs
+  || echo "SHA_CRYPT_MIN_ROUNDS 65536" >> /etc/login.defs
 grep -q "^SHA_CRYPT_MAX_ROUNDS" /etc/login.defs \
-  || echo "SHA_CRYPT_MAX_ROUNDS 50000" >> /etc/login.defs
+  || echo "SHA_CRYPT_MAX_ROUNDS 65536" >> /etc/login.defs
 log_success "Password hashing rounds configurés (AUTH-9229/9230)."
 
 
@@ -2446,6 +2447,8 @@ fi
 
 # FINT-4402 — SHA512 ajouté aux checksums AIDE (Lynis 3.1.6)
 grep -q "sha512" /etc/aide/aide.conf \
+  || printf "\n# FINT-4402 — SHA512 (Lynis 3.1.6)\nCONTENT_LYNIS = sha256+sha512+p+i+n+u+g+s+m+ftype\n" \
+     >> /etc/aide/aide.conf
   || sed -i 's/sha256/sha256+sha512/g' /etc/aide/aide.conf 2>/dev/null || true
 log_success "AIDE checksums : sha256+sha512 (FINT-4402)."
 

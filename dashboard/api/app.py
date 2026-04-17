@@ -375,8 +375,13 @@ def get_aide() -> dict:
             exit_code = int(f.read().strip())
         if exit_code == 0:
             status = "clean"
-        elif (exit_code & 7) != 0 and (exit_code & 56) == 0:
-            status = "changes"
+        elif (exit_code & 56) != 0:
+            status = "unknown"
+        elif (exit_code & 7) != 0:
+            if os.path.exists("/var/log/aide-daily.exit.context"):
+                status = "rebase"    # apt a tourné — rebase attendu
+            else:
+                status = "changes"   # aucune activité apt — suspect
         else:
             status = "unknown"
     except Exception:

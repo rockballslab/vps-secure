@@ -991,6 +991,22 @@ kernel.unprivileged_bpf_disabled = 1
 # Port non-privilégié minimum abaissé à 22 — requis pour Endlessh (honeypot port 22)
 net.ipv4.ip_unprivileged_port_start = 22
 
+
+# ── KRNL-6000 — sysctl manquants Lynis 3.1.6 ──────────────────
+# TTY line discipline — désactive autoload modules TTY inutiles (VPS)
+dev.tty.ldisc_autoload = 0
+# FIFOs — protection renforcée niveau 2 (CIS)
+fs.protected_fifos = 2
+# Core dumps — inclure PID dans le nom de fichier
+kernel.core_uses_pid = 1
+# SysRq — désactivé sur VPS (pas d'accès physique clavier)
+kernel.sysrq = 0
+# Log martians — journaliser les paquets à adresse source impossible
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.conf.default.log_martians = 1
+# NOTE : kernel.modules_disabled=1 et net.ipv4.conf.all.forwarding=0
+#        intentionnellement exclus — Docker dépendant
+
 SYSEOF
 
 SYSCTL_OUTPUT=$(sysctl --system 2>&1)

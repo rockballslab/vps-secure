@@ -223,7 +223,7 @@ LogLevel VERBOSE
 Banner /etc/issue.net
 
 MaxAuthTries 3
-MaxSessions 3
+MaxSessions 2
 MaxStartups 10:30:60
 LoginGraceTime 30
 ClientAliveInterval 300
@@ -247,7 +247,14 @@ HostKeyAlgorithms ssh-ed25519
 SSHEOF
 
 # Bannière légale
-echo "Authorized users only. All activity is monitored and logged." > /etc/issue.net
+cat > /etc/issue.net << 'BANNER'
+*************************************************************
+*  AUTHORIZED ACCESS ONLY                                   *
+*  All activity is monitored and logged.                    *
+*  Unauthorized access will be prosecuted.                  *
+*************************************************************
+BANNER
+cp /etc/issue.net /etc/issue
 
 # Valider la config AVANT de redémarrer
 if ! sshd -t 2>/dev/null; then
@@ -354,7 +361,11 @@ apt-get install -y -qq \
     curl wget gnupg lsb-release ca-certificates \
     apt-transport-https software-properties-common \
     unzip jq htop ncdu tree openssl python3
+    debsums apt-show-versions acct sysstat
 log_success "Système mis à jour."
+
+systemctl enable --now acct 2>/dev/null || true
+systemctl enable --now sysstat 2>/dev/null || true
 
 # Sécuriser /tmp (CIS Benchmark L1)
 if ! grep -q "tmpfs /tmp" /etc/fstab; then

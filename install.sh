@@ -2323,7 +2323,7 @@ if [[ -f /var/log/aide-daily.exit ]]; then
         # C2 : erreurs techniques testées AVANT les modifications (évite faux positifs bitmask)
         AIDE_STATUS="${JAUNE}Erreur technique AIDE (exit ${AIDE_EXIT}) — sudo aide --check 2>&1 | tail -5${RESET}"
     elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]]; then
-        AIDE_STATUS="${ROUGE}Modifications détectées (exit ${AIDE_EXIT}) — sudo aide --check --config /etc/aide/aide.conf${RESET}"
+        AIDE_STATUS="${JAUNE}Baseline à mettre à jour — sudo vps-secure-aide-rebase${RESET}"
     else
         AIDE_STATUS="${JAUNE}État inconnu (exit ${AIDE_EXIT}) — sudo aide --check${RESET}"
     fi

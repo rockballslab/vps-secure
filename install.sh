@@ -360,9 +360,10 @@ apt-get upgrade -y -qq
 apt-get install -y -qq \
     curl wget gnupg lsb-release ca-certificates \
     apt-transport-https software-properties-common \
-    unzip jq htop ncdu tree openssl python3
-    debsums apt-show-versions acct sysstat
+    unzip jq htop ncdu tree openssl python3 \
+    debsums apt-show-versions acct sysstat \
     libpam-pwquality
+
 DEBIAN_FRONTEND=noninteractive pam-auth-update --force 2>/dev/null || true
 log_success "Système mis à jour."
 

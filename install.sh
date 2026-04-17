@@ -362,6 +362,7 @@ apt-get install -y -qq \
     apt-transport-https software-properties-common \
     unzip jq htop ncdu tree openssl python3
     debsums apt-show-versions acct sysstat
+    libpam-pwquality
 log_success "Système mis à jour."
 
 systemctl enable --now acct 2>/dev/null || true
@@ -1055,6 +1056,13 @@ log_success "Core dumps désactivés (limits.conf)."
 # login.defs — délai minimum changement mot de passe (AUTH-9286)
 sed -i 's/^PASS_MIN_DAYS.*/PASS_MIN_DAYS   7/' /etc/login.defs
 log_success "PASS_MIN_DAYS=7 configuré (login.defs)."
+
+# AUTH-9230 + AUTH-9229 — Password hashing rounds (Lynis 3.1.6)
+grep -q "^SHA_CRYPT_MIN_ROUNDS" /etc/login.defs \
+  || echo "SHA_CRYPT_MIN_ROUNDS 5000" >> /etc/login.defs
+grep -q "^SHA_CRYPT_MAX_ROUNDS" /etc/login.defs \
+  || echo "SHA_CRYPT_MAX_ROUNDS 50000" >> /etc/login.defs
+log_success "Password hashing rounds configurés (AUTH-9229/9230)."
 
 
 # ============================================================
@@ -2435,6 +2443,11 @@ if [[ -f /var/lib/aide/aide.db ]]; then
     chattr -i /var/lib/aide/aide.db 2>/dev/null || true  # optionnel : db peut ne pas avoir chattr +i si installation partielle
     rm -f /var/lib/aide/aide.db
 fi
+
+# FINT-4402 — SHA512 ajouté aux checksums AIDE (Lynis 3.1.6)
+grep -q "sha512" /etc/aide/aide.conf \
+  || sed -i 's/sha256/sha256+sha512/g' /etc/aide/aide.conf 2>/dev/null || true
+log_success "AIDE checksums : sha256+sha512 (FINT-4402)."
 
 DEBIAN_FRONTEND=noninteractive aideinit -y -f 2>/dev/null || \
     aide --init --config /etc/aide/aide.conf 2>/dev/null || true  # optionnel : fallback si aideinit absent

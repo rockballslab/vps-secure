@@ -1022,6 +1022,25 @@ else
     log_warn "AppArmor userns sysctl non disponible sur ce kernel — skipped."
 fi
 
+# Blacklist protocoles réseau inutiles (NETW-3200 — CIS 3.x)
+cat >> /etc/modprobe.d/vps-secure-blacklist.conf << 'EOF'
+install dccp /bin/true
+install sctp /bin/true
+install rds /bin/true
+install tipc /bin/true
+EOF
+log_success "Protocoles réseau inutiles blacklistés (dccp, sctp, rds, tipc)."
+
+# Désactiver les core dumps (KRNL-5820 — CIS 1.5.1)
+grep -q "hard core" /etc/security/limits.conf \
+  || printf "* hard core 0\n* soft core 0\n" >> /etc/security/limits.conf
+log_success "Core dumps désactivés (limits.conf)."
+
+# login.defs — délai minimum changement mot de passe (AUTH-9286)
+sed -i 's/^PASS_MIN_DAYS.*/PASS_MIN_DAYS   7/' /etc/login.defs
+log_success "PASS_MIN_DAYS=7 configuré (login.defs)."
+
+
 # ============================================================
 # Étape 9 : Audit système (auditd)
 # ============================================================
@@ -1404,7 +1423,14 @@ for svc in "${SERVICES_INUTILES[@]}"; do
         log_success "Service $svc désactivé."
     fi
 done
-log_info "  Services vérifiés : avahi-daemon, cups, bluetooth, ModemManager, whoopsie, apport"
+# Postfix hardening — cacher banner OS + désactiver VRFY (MAIL-8818, MAIL-8820)
+if command -v postconf &>/dev/null; then
+    postconf -e 'smtpd_banner = $myhostname ESMTP'
+    postconf -e 'disable_vrfy_command = yes'
+    systemctl reload postfix 2>/dev/null || true
+    log_success "Postfix durci — banner OS masqué, VRFY désactivé."
+fi
+log_info "  Services vérifiés : avahi-daemon, cups, bluetooth, ModemManager, whoopsie, apport, postfix"
 log_info "  Pour voir les services actifs : systemctl list-units --type=service --state=active"
 
 # ============================================================

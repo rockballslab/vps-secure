@@ -420,7 +420,6 @@ Domains=~.
 DNSEOF
 
 # 2. Drop-in networkd — remplace le DNS statique Hostinger par Quad9/Cloudflare
-#    + active DoT au niveau per-link (là où ça s'applique réellement)
 NETPLAN_NET=$(ls /run/systemd/network/10-netplan-*.network 2>/dev/null | head -1)
 if [[ -n "$NETPLAN_NET" ]]; then
     DROPIN_DIR="/etc/systemd/network/$(basename "${NETPLAN_NET}").d"
@@ -434,8 +433,18 @@ DNS=1.1.1.1#cloudflare-dns.com
 DNS=1.0.0.1#cloudflare-dns.com
 Domains=~.
 DNSOverTLS=opportunistic
+
+[DHCP]
+UseDNS=no
 NETEOF
-    networkctl reload 2>/dev/null || true
+    chmod 755 "$DROPIN_DIR"
+    chmod 644 "$DROPIN_DIR/50-vps-secure-dns.conf"
+    systemctl restart systemd-networkd
+    sleep 2
+    systemctl restart systemd-resolved 2>/dev/null || true
+    log_success "DNS Quad9 DoT configuré (per-link override Hostinger)."
+else
+    log_warn "Fichier .network Hostinger non trouvé — DNS non configuré."
 fi
 
 # 3. Restart + vérification

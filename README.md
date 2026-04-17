@@ -386,7 +386,7 @@ VPS-Secure ne “garantit” pas une sécurité absolue - aucun outil sérieux n
 | CIS Benchmark L1 | Base de durcissement reconnue pour des serveurs de production |
 | DISA STIG Ubuntu 24.04 | Un niveau de sécurité plus exigeant, inspiré des environnements les plus contrôlés |
 | OWASP Infrastructure | Une attention particulière à la supply chain, aux secrets, à la traçabilité et à l’intégrité |
-| Lynis Audit | **81/100** sur une installation de référence, signe d’un durcissement déjà très avancé |
+| Lynis Audit | **83/100** sur une installation de référence, signe d’un durcissement déjà très avancé |
 
 **CIS Benchmark L1** - Le CIS Benchmark du Center for Internet Security est une référence reconnue pour sécuriser les systèmes Linux.
 Le niveau L1 vise un bon équilibre entre sécurité et compatibilité, ce qui en fait une base adaptée aux serveurs de production.
@@ -398,7 +398,7 @@ VPS-Secure reprend cette logique pour aller au-delà d’un durcissement “de b
 
 **Lynis** - Lynis est un outil d’audit de sécurité Linux largement utilisé par les administrateurs système.
 Il attribue un score de durcissement sur 100 et met en évidence les points faibles de la configuration.
-Sur une installation de référence, VPS-Secure atteint un Lynis hardening index de **81/100**, ce qui correspond à un niveau de durcissement élevé pour un VPS public.
+Sur une installation de référence, VPS-Secure atteint un Lynis hardening index de **83/100**, ce qui correspond à un niveau de durcissement élevé pour un VPS public.
 
 > ℹ️ Ce que cela couvre concrètement
 >

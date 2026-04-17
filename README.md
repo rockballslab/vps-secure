@@ -50,7 +50,7 @@ J'ai conçu **VPS-SECURE** par nécessité : je voulais un outil capable de tran
 ## Exemple du Dashboard inclus - 61 bots m'auraient déjà attaqué en 24H sans VPS-SECURE pour me protéger
 
 Un cockpit web complet et sécurisé pour visualiser en temps réel l'état de ton serveur :
-bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système, alertes Telegram.
+bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de rootkits, charge CPU RAM, alertes Telegram.
 
 
  <p align="center">

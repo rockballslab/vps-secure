@@ -628,9 +628,19 @@ function updateCards(d) {
   setCard('card-rkhunter',rkSt==='warning'?'a-red':'a-green');
 
   const aiSt=ai.status||'unknown';
-  $('val-aide').textContent=aiSt==='clean'?'✅ Propre':aiSt==='changes'?'⚠️ Modifs':'❓ Inconnu';
-  setPill('pill-aide',aiSt==='changes'?'warning':aiSt);
-  $('sub-aide').textContent=`Dernier scan : ${ai.last_scan||'—'}`;
+  $('val-aide').textContent=
+      aiSt==='clean'   ? '✅ Propre' :
+      aiSt==='rebase'  ? '🔄 Rebase requis' :
+      aiSt==='changes' ? '🚨 Modifications !' :
+      '❓ Inconnu';
+  setPill('pill-aide',
+      aiSt==='clean'   ? 'clean'   :
+      aiSt==='rebase'  ? 'warning' :
+      aiSt==='changes' ? 'danger'  : 'unk');
+  $('sub-aide').textContent=
+      aiSt==='rebase'  ? 'sudo vps-secure-aide-rebase' :
+      aiSt==='changes' ? 'sudo aide --check | head -30' :
+      `Dernier scan : ${ai.last_scan||'—'}`;
   setCard('card-aide',aiSt==='changes'?'a-red':aiSt==='clean'?'a-green':'');
 
   $('val-ip').textContent=s.ip||'—';

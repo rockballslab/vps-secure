@@ -389,6 +389,7 @@ fi
 # Sans DoT, les résolutions DNS transitent en clair — fenêtre de DNS poisoning.
 log_info "Activation du DNS chiffré avant les téléchargements..."
 mkdir -p /etc/systemd/resolved.conf.d
+# ── 1. Config systemd-resolved (ajouter Domains=~.) ──
 cat > /etc/systemd/resolved.conf.d/vps-secure-dns.conf << 'DNSEOF'
 # vps-secure — DNS over TLS
 # Quad9 (filtrage malware, Suisse) + Cloudflare (fallback)
@@ -401,6 +402,32 @@ MulticastDNS=no
 LLMNR=no
 Domains=~.
 DNSEOF
+
+# ── 2. NOUVEAU — Désactiver DNS DHCP per-link via netplan ──
+# Empêche Hostinger de pousser 153.92.2.6 +DefaultRoute qui bypasse notre DoT
+MAIN_IF=$(ip route | awk '/^default/ {print $5; exit}')
+cat > /etc/netplan/99-vps-secure-dns.yaml << NETEOF
+network:
+  version: 2
+  ethernets:
+    ${MAIN_IF}:
+      dhcp4-overrides:
+        use-dns: false
+        use-domains: false
+NETEOF
+chmod 600 /etc/netplan/99-vps-secure-dns.yaml
+netplan apply --timeout 30 2>/dev/null || true
+
+# ── 3. Redémarrer resolved APRÈS netplan apply ──
+systemctl restart systemd-resolved
+
+# ── 4. Vérification install ──
+sleep 2
+if resolvectl query quad9.net 2>&1 | grep -q "encrypted transport: yes"; then
+    log_success "DNS over TLS actif — Quad9 + Cloudflare (DoT chiffré confirmé)"
+else
+    log_warning "DNS over TLS configuré — vérifier avec : resolvectl query quad9.net"
+fi
 
 systemctl enable systemd-resolved
 systemctl restart systemd-resolved

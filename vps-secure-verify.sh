@@ -251,19 +251,34 @@ fi
 # ── DNS over TLS ──────────────────────────────────────────────
 DNS_FAILS=()
 systemctl is-active systemd-resolved &>/dev/null \
-    || DNS_FAILS+=("systemd-resolved inactif")
+  || DNS_FAILS+=("systemd-resolved inactif")
 grep -qi "^DNSOverTLS=yes" /etc/systemd/resolved.conf.d/vps-secure-dns.conf 2>/dev/null \
-    || DNS_FAILS+=("DNS over TLS non confirmé — vérifie /etc/systemd/resolved.conf.d/vps-secure-dns.conf")
+  || DNS_FAILS+=("DNS over TLS non configuré dans vps-secure-dns.conf")
+grep -qi "^Domains=~\." /etc/systemd/resolved.conf.d/vps-secure-dns.conf 2>/dev/null \
+  || DNS_FAILS+=("Domains=~. absent — per-link DHCP Hostinger override DoT (issue #XX)")
 RESOLV_LINK=$(readlink /etc/resolv.conf 2>/dev/null || echo "")
 [[ "$RESOLV_LINK" == "/run/systemd/resolve/stub-resolv.conf" ]] \
-    || DNS_FAILS+=("/etc/resolv.conf ne pointe pas vers le stub systemd-resolved")
+  || DNS_FAILS+=("/etc/resolv.conf ne pointe pas vers le stub systemd-resolved")
 
 if [[ ${#DNS_FAILS[@]} -eq 0 ]]; then
-    DNS_SRV=$(resolvectl status 2>/dev/null | grep "DNS Servers:" | head -1 \
-        | sed 's/.*DNS Servers: //' | awk '{print $1}' || echo "?")
-    _pass "DNS over TLS" "systemd-resolved actif · DoT=yes · serveur principal : ${DNS_SRV}"
+  CURRENT_DNS=$(resolvectl status 2>/dev/null \
+    | grep "Current DNS Server:" | head -1 | awk '{print $NF}' || echo "?")
+  EXPECTED=("9.9.9.9" "149.112.112.112" "1.1.1.1" "1.0.0.1" "9.9.9.10" "149.112.112.10")
+  DNS_TRUSTED=false
+  for srv in "${EXPECTED[@]}"; do
+    [[ "$CURRENT_DNS" == "$srv" ]] && DNS_TRUSTED=true && break
+  done
+  DOT_ACTIVE=$(resolvectl status 2>/dev/null | grep -c "+DNSOverTLS" || echo "0")
+
+  if [[ "$DNS_TRUSTED" == true ]] && [[ "$DOT_ACTIVE" -gt 0 ]]; then
+    _pass "DNS over TLS" "systemd-resolved actif · DoT actif · serveur : ${CURRENT_DNS}"
+  elif [[ "$DNS_TRUSTED" == false ]]; then
+    _fail "DNS over TLS" "DNS actif=${CURRENT_DNS} (attendu Quad9/Cloudflare) — DHCP override, Domains=~. requis"
+  else
+    _warn "DNS over TLS" "serveur OK (${CURRENT_DNS}) mais +DNSOverTLS non confirmé"
+  fi
 else
-    _fail "DNS over TLS" "$(IFS=', '; echo "${DNS_FAILS[*]}")"
+  _fail "DNS over TLS" "$(IFS=', '; echo "${DNS_FAILS[*]}")"
 fi
 
 # ── Telegram ──────────────────────────────────────────────────

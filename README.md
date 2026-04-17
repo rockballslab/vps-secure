@@ -102,7 +102,7 @@ bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de root
 
 Avant de commencer et de lancer le script, tu as besoin de :
 
-- ✅ Un VPS vierge **Ubuntu 24.04 LTS** (Hostinger, Hetzner,…)
+- ✅ Un VPS vierge **Ubuntu 24.04 LTS** (Hostinger, Hetzner, OVH,…)
 - ✅ L'**IP** et le **mot de passe root** fournis par ton hébergeur
 - ✅ Une **clé SSH** générée sur ton ordinateur
 

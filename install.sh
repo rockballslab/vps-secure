@@ -444,7 +444,7 @@ sleep 2
 if resolvectl query quad9.net 2>&1 | grep -q "encrypted transport: yes"; then
     log_success "DNS over TLS actif — Quad9 + Cloudflare (trafic DNS chiffré confirmé)"
 else
-    log_warning "DNS over TLS configuré — résolution OK, DoT à vérifier manuellement"
+    log_warn "DNS over TLS configuré — résolution OK, DoT à vérifier manuellement"
 fi
 
 systemctl enable systemd-resolved

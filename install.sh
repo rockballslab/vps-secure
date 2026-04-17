@@ -399,6 +399,7 @@ DNSOverTLS=yes
 DNSSEC=yes
 MulticastDNS=no
 LLMNR=no
+Domains=~.
 DNSEOF
 
 systemctl enable systemd-resolved

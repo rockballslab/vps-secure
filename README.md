@@ -314,6 +314,8 @@ Si une anomalie est détectée dans le rapport quotidien, le message inclut le d
  
 Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
 
+Lance cette commande:
+
  ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)
 ```

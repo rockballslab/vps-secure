@@ -22,12 +22,13 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 Un serveur nu ou configuré par défaut est une cible facile, visible et attaquable en quelques minutes.
 
-**VPS-Secure** n’est pas un simple script d’installation : c’est une fondation de sécurité ultra robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.
-
 
 <p align="center">
   <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
+
+
+**VPS-Secure** n’est pas un simple script d’installation : c’est une fondation de sécurité ultra robuste, pensée pour transformer un VPS nu en serveur prêt à l’emploi et nettement mieux protégé contre les attaquants.
 
 
 ---

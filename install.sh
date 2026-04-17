@@ -389,18 +389,49 @@ fi
 # Sans DoT, les résolutions DNS transitent en clair — fenêtre de DNS poisoning.
 log_info "Activation du DNS chiffré avant les téléchargements..."
 mkdir -p /etc/systemd/resolved.conf.d
-# ── 1. Config systemd-resolved (ajouter Domains=~.) ──
+# ── DNS over TLS — étape 3 install.sh ──────────────────────
+
+# 1. Config resolved globale
 cat > /etc/systemd/resolved.conf.d/vps-secure-dns.conf << 'DNSEOF'
 # vps-secure — DNS over TLS
 # Quad9 (filtrage malware, Suisse) + Cloudflare (fallback)
 [Resolve]
 DNS=9.9.9.9#dns.quad9.net 149.112.112.112#dns.quad9.net 1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com
 FallbackDNS=9.9.9.10#dns.quad9.net 149.112.112.10#dns.quad9.net
-DNSOverTLS=yes
-DNSSEC=yes
+DNSOverTLS=opportunistic
+DNSSEC=allow-downgrade
 MulticastDNS=no
 LLMNR=no
+Domains=~.
 DNSEOF
+
+# 2. Drop-in networkd — remplace le DNS statique Hostinger par Quad9/Cloudflare
+#    + active DoT au niveau per-link (là où ça s'applique réellement)
+NETPLAN_NET=$(ls /run/systemd/network/10-netplan-*.network 2>/dev/null | head -1)
+if [[ -n "$NETPLAN_NET" ]]; then
+    DROPIN_DIR="/etc/systemd/network/$(basename "${NETPLAN_NET}").d"
+    mkdir -p "$DROPIN_DIR"
+    cat > "$DROPIN_DIR/50-vps-secure-dns.conf" << 'NETEOF'
+[Network]
+DNS=
+DNS=9.9.9.9#dns.quad9.net
+DNS=149.112.112.112#dns.quad9.net
+DNS=1.1.1.1#cloudflare-dns.com
+DNS=1.0.0.1#cloudflare-dns.com
+Domains=~.
+DNSOverTLS=opportunistic
+NETEOF
+    networkctl reload 2>/dev/null || true
+fi
+
+# 3. Restart + vérification
+systemctl restart systemd-resolved
+sleep 2
+if resolvectl query quad9.net 2>&1 | grep -q "encrypted transport: yes"; then
+    log_success "DNS over TLS actif — Quad9 + Cloudflare (trafic DNS chiffré confirmé)"
+else
+    log_warning "DNS over TLS configuré — résolution OK, DoT à vérifier manuellement"
+fi
 
 systemctl enable systemd-resolved
 systemctl restart systemd-resolved

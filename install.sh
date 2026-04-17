@@ -2448,9 +2448,8 @@ fi
 
 # FINT-4402 — SHA512 ajouté aux checksums AIDE (Lynis 3.1.6)
 grep -q "sha512" /etc/aide/aide.conf \
-  || printf "\n# FINT-4402 — SHA512 (Lynis 3.1.6)\nCONTENT_LYNIS = sha256+sha512+p+i+n+u+g+s+m+ftype\n" \
+  || printf "\n# FINT-4402\nCONTENT_LYNIS = sha256+sha512+p+i+n+u+g+s+m+ftype\n" \
      >> /etc/aide/aide.conf
-  || sed -i 's/sha256/sha256+sha512/g' /etc/aide/aide.conf 2>/dev/null || true
 log_success "AIDE checksums : sha256+sha512 (FINT-4402)."
 
 DEBIAN_FRONTEND=noninteractive aideinit -y -f 2>/dev/null || \

@@ -250,12 +250,20 @@ fi
 
 # ── DNS over TLS ──────────────────────────────────────────────
 DNS_FAILS=()
+
 systemctl is-active systemd-resolved &>/dev/null \
   || DNS_FAILS+=("systemd-resolved inactif")
-grep -qi "^DNSOverTLS=yes" /etc/systemd/resolved.conf.d/vps-secure-dns.conf 2>/dev/null \
-  || DNS_FAILS+=("DNS over TLS non configuré dans vps-secure-dns.conf")
+
+grep -qi "^DNSOverTLS=" /etc/systemd/resolved.conf.d/vps-secure-dns.conf 2>/dev/null \
+  || DNS_FAILS+=("DNSOverTLS absent de vps-secure-dns.conf")
+
 grep -qi "^Domains=~\." /etc/systemd/resolved.conf.d/vps-secure-dns.conf 2>/dev/null \
-  || DNS_FAILS+=("Domains=~. absent — per-link DHCP Hostinger override DoT (issue #XX)")
+  || DNS_FAILS+=("Domains=~. absent de vps-secure-dns.conf — issue #53")
+
+NETPLAN_DROPIN=$(ls /etc/systemd/network/10-netplan-*.network.d/50-vps-secure-dns.conf 2>/dev/null | head -1)
+[[ -n "$NETPLAN_DROPIN" ]] \
+  || DNS_FAILS+=("Drop-in networkd absent — DNS statique Hostinger non neutralisé — issue #53")
+
 RESOLV_LINK=$(readlink /etc/resolv.conf 2>/dev/null || echo "")
 [[ "$RESOLV_LINK" == "/run/systemd/resolve/stub-resolv.conf" ]] \
   || DNS_FAILS+=("/etc/resolv.conf ne pointe pas vers le stub systemd-resolved")
@@ -263,19 +271,22 @@ RESOLV_LINK=$(readlink /etc/resolv.conf 2>/dev/null || echo "")
 if [[ ${#DNS_FAILS[@]} -eq 0 ]]; then
   CURRENT_DNS=$(resolvectl status 2>/dev/null \
     | grep "Current DNS Server:" | head -1 | awk '{print $NF}' || echo "?")
+  CURRENT_DNS_IP="${CURRENT_DNS%%#*}"
   EXPECTED=("9.9.9.9" "149.112.112.112" "1.1.1.1" "1.0.0.1" "9.9.9.10" "149.112.112.10")
   DNS_TRUSTED=false
   for srv in "${EXPECTED[@]}"; do
-    [[ "$CURRENT_DNS" == "$srv" ]] && DNS_TRUSTED=true && break
+    [[ "$CURRENT_DNS_IP" == "$srv" ]] && DNS_TRUSTED=true && break
   done
-  DOT_ACTIVE=$(resolvectl status 2>/dev/null | grep -c "+DNSOverTLS" || echo "0")
 
-  if [[ "$DNS_TRUSTED" == true ]] && [[ "$DOT_ACTIVE" -gt 0 ]]; then
-    _pass "DNS over TLS" "systemd-resolved actif · DoT actif · serveur : ${CURRENT_DNS}"
+  DOT_ENCRYPTED=$(resolvectl query quad9.net 2>&1 \
+    | grep -c "encrypted transport: yes" || echo "0")
+
+  if [[ "$DNS_TRUSTED" == true ]] && [[ "$DOT_ENCRYPTED" -gt 0 ]]; then
+    _pass "DNS over TLS" "DoT actif · serveur : ${CURRENT_DNS} · trafic chiffré confirmé"
   elif [[ "$DNS_TRUSTED" == false ]]; then
-    _fail "DNS over TLS" "DNS actif=${CURRENT_DNS} (attendu Quad9/Cloudflare) — DHCP override, Domains=~. requis"
+    _fail "DNS over TLS" "DNS actif=${CURRENT_DNS_IP} (attendu Quad9/Cloudflare) — DNS Hostinger override"
   else
-    _warn "DNS over TLS" "serveur OK (${CURRENT_DNS}) mais +DNSOverTLS non confirmé"
+    _warn "DNS over TLS" "serveur OK (${CURRENT_DNS}) mais trafic non chiffré — DoT inactif"
   fi
 else
   _fail "DNS over TLS" "$(IFS=', '; echo "${DNS_FAILS[*]}")"

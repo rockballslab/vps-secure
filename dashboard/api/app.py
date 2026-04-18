@@ -29,6 +29,68 @@ ENDLESSH_CONTAINER  = os.environ.get("ENDLESSH_CONTAINER", "endlessh")
 CROWDSEC_CONTAINER  = os.environ.get("CROWDSEC_CONTAINER", "crowdsec")
 HOSTFS              = os.environ.get("HOSTFS", "/")
 
+# ── Geo IP ────────────────────────────────────────────────────────────────────
+_geo_cache: dict = {}
+
+def _flag(code: str) -> str:
+    """ISO 3166-1 alpha-2 → emoji drapeau.  'CN' → '🇨🇳'  'FR' → '🇫🇷'"""
+    if not code or len(code) != 2:
+        return ""
+    return (chr(0x1F1E6 + ord(code[0].upper()) - ord("A")) +
+            chr(0x1F1E6 + ord(code[1].upper()) - ord("A")))
+
+_PRIV = ("10.", "192.168.", "127.", "::1",
+         "172.16.", "172.17.", "172.18.", "172.19.", "172.20.", "172.21.",
+         "172.22.", "172.23.", "172.24.", "172.25.", "172.26.", "172.27.",
+         "172.28.", "172.29.", "172.30.", "172.31.")
+
+def get_geo(ip: str) -> dict:
+    """Retourne {country, code, flag} pour une IP publique.
+    Cache mémoire — ip-api.com gratuit (sans clé, 45 req/min) — timeout 2s.
+    Retourne {} pour les IPs privées/loopback ou en cas d'erreur réseau.
+    """
+    if not ip or any(ip.startswith(p) for p in _PRIV):
+        return {}
+    if ip in _geo_cache:
+        return _geo_cache[ip]
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,countryCode"
+        req = urllib.request.Request(url, headers={"User-Agent": "vps-monitor/1.0"})
+        with urllib.request.urlopen(req, timeout=2) as r:
+            d = json.loads(r.read().decode())
+        if d.get("status") == "success":
+            code = d.get("countryCode", "")
+            geo  = {"country": d.get("country", ""), "code": code, "flag": _flag(code)}
+            _geo_cache[ip] = geo
+            return geo
+    except Exception:
+        pass
+    _geo_cache[ip] = {}
+    return {}
+
+def _geo_tag(ip: str) -> str:
+    """Retourne ' · 🇨🇳 CN' pour une IP. Chaîne vide si pas de données."""
+    g = _geo_cache.get(ip, {})
+    f, c = g.get("flag", ""), g.get("code", "")
+    return f" · {f} {c}" if f else ""
+
+def _prefetch_geo(ips: list) -> None:
+    """Lookup parallèle pour toutes les IPs inconnues du cache.
+    Utilise threading (déjà importé). Timeout total : 3 secondes.
+    Résultats stockés dans _geo_cache — lookups suivants instantanés.
+    """
+    unknown = [ip for ip in dict.fromkeys(ips) if ip and ip not in _geo_cache]
+    if not unknown:
+        return
+    threads = [
+        threading.Thread(target=get_geo, args=(ip,), daemon=True)
+        for ip in unknown
+    ]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=3.0)
+
 # ── Auth & Rate Limiting ──────────────────────────────────────────────────────
 DASHBOARD_USER   = os.environ.get("DASHBOARD_USER", "admin")
 DASHBOARD_PASS   = os.environ.get("DASHBOARD_PASS", "")   # vide = auth désactivée
@@ -550,6 +612,349 @@ def get_open_ports() -> dict:
         "alert":      len(unexpected) > 0,
     }
 
+def get_alerts() -> list:
+    """Journal de sécurité 24h — 4 statuts :
+       action      -> 🔴 Action requise   (doit être traité manuellement)
+       detected    -> 👁️  Détectée         (anomalie, protection active)
+       reported    -> 📢 Signalée          (notifié via Telegram)
+       neutralized -> ✅ Neutralisée       (VPS-SECURE a géré automatiquement)
+    """
+    alerts = []
+    now    = time.time()
+    cutoff = now - 86400  # 24h
+
+    # ── 1. CrowdSec bans → ✅ Neutralisée ─────────────────────────────────────
+    try:
+        out = run(
+            ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "alerts",
+             "list", "--since", "24h", "-o", "json"],
+            timeout=15,
+        )
+        cs_list   = json.loads(out) if out.strip().startswith("[") else []
+        ban_count = len(cs_list) if cs_list else 0
+        if ban_count > 0:
+            last_ts = max((_parse_ts(a.get("created_at", "")) for a in cs_list), default=now)
+            s = "s" if ban_count > 1 else ""
+            alerts.append({
+                "service": "CrowdSec",
+                "status":  "neutralized",
+                "icon":    "✅",
+                "label":   "Neutralisée",
+                "detail":  f"{ban_count} IP{s} bannie{s} automatiquement",
+                "ts":      last_ts,
+            })
+    except Exception:
+        pass
+
+    # ── 2. Endlessh bots → ✅ Neutralisée ─────────────────────────────────────
+    try:
+        out24     = run(["docker", "logs", "--since", "24h", ENDLESSH_CONTAINER], timeout=20)
+        bot_count = len(re.findall(r'ACCEPT|"accepted"', out24, re.IGNORECASE))
+        if bot_count > 0:
+            s = "s" if bot_count > 1 else ""
+            alerts.append({
+                "service": "Endlessh",
+                "status":  "neutralized",
+                "icon":    "✅",
+                "label":   "Neutralisée",
+                "detail":  f"{bot_count} bot{s} piégé{s} sur port 22",
+                "ts":      now,
+            })
+    except Exception:
+        pass
+
+    # ── 3. UFW blocks → ✅ Neutralisée ────────────────────────────────────────
+    try:
+        ufw_total = 0
+        for path in ["/var/log/ufw.log", "/var/log/ufw.log.1"]:
+            try:
+                with open(path, errors="replace") as f:
+                    ufw_total += f.read().count("UFW BLOCK")
+            except Exception:
+                pass
+        if ufw_total > 0:
+            s = "s" if ufw_total > 1 else ""
+            alerts.append({
+                "service": "UFW",
+                "status":  "neutralized",
+                "icon":    "✅",
+                "label":   "Neutralisée",
+                "detail":  f"{ufw_total} connexion{s} bloquée{s} (cumul 24h)",
+                "ts":      now,
+            })
+    except Exception:
+        pass
+
+    # ── 4. Telegram actif → 📢 Signalée ───────────────────────────────────────
+    try:
+        tg = get_telegram_status()
+        if tg.get("configured") and tg.get("report"):
+            alerts.append({
+                "service": "Telegram",
+                "status":  "reported",
+                "icon":    "📢",
+                "label":   "Signalée",
+                "detail":  "Rapport quotidien actif — tu es notifié chaque matin à 09h00",
+                "ts":      now,
+            })
+        if tg.get("configured") and tg.get("ssh"):
+            alerts.append({
+                "service": "Telegram",
+                "status":  "reported",
+                "icon":    "📢",
+                "label":   "Signalée",
+                "detail":  "Alerte SSH active — tu es notifié à chaque connexion",
+                "ts":      now,
+            })
+    except Exception:
+        pass
+
+    # ── 5. rkhunter → 👁️ Détectée ou 🔴 Action requise ───────────────────────
+    # Warnings sur binaires critiques = Action requise
+    CRIT_BINS = ["/bin/", "/sbin/", "/usr/bin/", "/usr/sbin/"]
+    # Faux positifs rkhunter connus → silence total (ne pas alarmer pour rien)
+    FP = [
+        "lwp-request", "lwp-rget", "GET", "HEAD", "POST",
+        "mail", "mailx", "hidden files", "hidden directories",
+        "package manager", "gpg", "passwd file", "group file",
+    ]
+    try:
+        with open("/var/log/rkhunter.log", errors="replace") as f:
+            content = f.read()
+        dates   = re.findall(r"Start date is\s+(.+?)\n", content)
+        scan_ts = now - 3600
+        if dates:
+            try:
+                scan_ts = datetime.strptime(
+                    dates[-1].strip(), "%a %b %d %H:%M:%S %Z %Y"
+                ).timestamp()
+            except Exception:
+                pass
+        for w in re.findall(r"Warning:\s+(.+?)(?:\n|$)", content):
+            w = w.strip()
+            if not w or any(fp.lower() in w.lower() for fp in FP):
+                continue   # faux positif connu → silence
+            is_crit = any(b in w for b in CRIT_BINS)
+            alerts.append({
+                "service": "rkhunter",
+                "status":  "action" if is_crit else "detected",
+                "icon":    "🔴" if is_crit else "👁️",
+                "label":   "Action requise" if is_crit else "Détectée",
+                "detail":  w[:120],
+                "ts":      scan_ts,
+            })
+    except Exception:
+        pass
+
+    # ── 6. AIDE integrity ─────────────────────────────────────────────────────
+    try:
+        with open("/var/log/aide-daily.exit") as f:
+            exit_code = int(f.read().strip())
+        aide_ts = now
+        try:
+            p = Path("/var/log/aide-daily.log")
+            if p.exists() and p.stat().st_size > 0:
+                aide_ts = p.stat().st_mtime
+        except Exception:
+            pass
+        if (exit_code & 7) != 0:
+            has_ctx = os.path.exists("/var/log/aide-daily.exit.context")
+            if has_ctx:
+                # Modif après apt upgrade → normal, pas d'urgence
+                alerts.append({
+                    "service": "AIDE",
+                    "status":  "reported",
+                    "icon":    "📢",
+                    "label":   "Signalée",
+                    "detail":  "Modifications liées à une mise à jour apt — comportement attendu",
+                    "ts":      aide_ts,
+                })
+            else:
+                # Modif sans contexte apt → suspect
+                alerts.append({
+                    "service": "AIDE",
+                    "status":  "action",
+                    "icon":    "🔴",
+                    "label":   "Action requise",
+                    "detail":  "Fichiers système modifiés hors mise à jour — vérification requise",
+                    "ts":      aide_ts,
+                })
+    except Exception:
+        pass
+
+    # ── 7. SSH brute force (seuil ≥ 20 tentatives en 24h) ────────────────────
+    fail_count   = 0
+    last_fail_ts = cutoff
+    last_fail_ip = "IP inconnue"
+    for path in ["/var/log/auth.log", "/var/log/secure"]:
+        try:
+            with open(path, errors="replace") as f:
+                for line in f:
+                    if (("Failed password" not in line and "Invalid user" not in line)
+                            or "sshd" not in line):
+                        continue
+                    m_t  = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+                    m_t2 = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
+                    ts = 0.0
+                    if m_t:
+                        try:
+                            ts = datetime.fromisoformat(m_t.group(1)).timestamp()
+                        except Exception:
+                            pass
+                    elif m_t2:
+                        try:
+                            ts = datetime.strptime(
+                                f"{datetime.now().year} {m_t2.group(1).strip()}",
+                                "%Y %b %d %H:%M:%S",
+                            ).timestamp()
+                        except Exception:
+                            pass
+                    if ts > cutoff:
+                        fail_count += 1
+                        if ts > last_fail_ts:
+                            last_fail_ts = ts
+                            m_ip = re.search(r"from\s+(\S+)\s+port", line)
+                            last_fail_ip = m_ip.group(1) if m_ip else "IP inconnue"
+            break
+        except Exception:
+            continue
+
+    if fail_count >= 20:
+        bouncer_ok = get_bouncer_status().get("status") == "active"
+        if not bouncer_ok:
+            alerts.append({
+                "service": "SSH",
+                "status":  "action",
+                "icon":    "🔴",
+                "label":   "Action requise",
+                "detail":  (f"{fail_count} tentatives SSH + bouncer inactif "
+                            f"— protection compromise"),
+                "ts":      last_fail_ts,
+            })
+        else:
+            alerts.append({
+                "service": "SSH",
+                "status":  "detected",
+                "icon":    "👁️",
+                "label":   "Détectée",
+                "detail":  (f"{fail_count} tentatives bloquées par CrowdSec "
+                            f"(dernière IP : {last_fail_ip})"),
+                "ts":      last_fail_ts,
+            })
+
+    # ── 8. Ports inattendus → 🔴 Action requise ───────────────────────────────
+    try:
+        for p in get_open_ports().get("unexpected", []):
+            alerts.append({
+                "service": "Ports",
+                "status":  "action",
+                "icon":    "🔴",
+                "label":   "Action requise",
+                "detail":  f"Port inattendu en écoute : {p['port']} — quelle app l'utilise ?",
+                "ts":      now,
+            })
+    except Exception:
+        pass
+
+    # ── 9. Disque ─────────────────────────────────────────────────────────────
+    try:
+        du  = shutil.disk_usage(HOSTFS)
+        pct = round(du.used / du.total * 100, 1)
+        ugb = round(du.used  / 1e9, 1)
+        tgb = round(du.total / 1e9, 1)
+        if pct > 90:
+            alerts.append({
+                "service": "Disque",
+                "status":  "action",
+                "icon":    "🔴",
+                "label":   "Action requise",
+                "detail":  f"Espace disque à {pct}% ({ugb}Go / {tgb}Go) — risque de crash",
+                "ts":      now,
+            })
+        elif pct > 80:
+            alerts.append({
+                "service": "Disque",
+                "status":  "detected",
+                "icon":    "👁️",
+                "label":   "Détectée",
+                "detail":  f"Espace disque à {pct}% ({ugb}Go / {tgb}Go) — prévoir du nettoyage",
+                "ts":      now,
+            })
+    except Exception:
+        pass
+
+    # ── 10. Mémoire ───────────────────────────────────────────────────────────
+    try:
+        mem: dict[str, int] = {}
+        with open("/proc/meminfo") as f:
+            for line in f:
+                k, v = line.split(":", 1)
+                mem[k.strip()] = int(v.split()[0])
+        total = mem["MemTotal"]
+        used  = total - mem["MemAvailable"]
+        pct   = round(used / total * 100, 1)
+        if pct > 95:
+            alerts.append({
+                "service": "Mémoire",
+                "status":  "action",
+                "icon":    "🔴",
+                "label":   "Action requise",
+                "detail":  f"RAM à {pct}% ({used // 1024}Mo / {total // 1024}Mo) — risque crash containers",
+                "ts":      now,
+            })
+        elif pct > 85:
+            alerts.append({
+                "service": "Mémoire",
+                "status":  "detected",
+                "icon":    "👁️",
+                "label":   "Détectée",
+                "detail":  f"RAM à {pct}% ({used // 1024}Mo / {total // 1024}Mo) — surveiller",
+                "ts":      now,
+            })
+    except Exception:
+        pass
+
+    # ── 11. CrowdSec bouncer inactif → 🔴 Action requise ──────────────────────
+    try:
+        if get_bouncer_status().get("status") != "active":
+            alerts.append({
+                "service": "CrowdSec",
+                "status":  "action",
+                "icon":    "🔴",
+                "label":   "Action requise",
+                "detail":  "Bouncer inactif — les IPs malveillantes ne sont plus bannies",
+                "ts":      now,
+            })
+    except Exception:
+        pass
+
+    # ── 12. Mises à jour en retard (> 30 paquets) → 👁️ Détectée ──────────────
+    try:
+        out   = run(["apt", "list", "--upgradable"], timeout=15)
+        count = len([l for l in out.splitlines() if "upgradable from" in l])
+        if count > 30:
+            alerts.append({
+                "service": "Mises à jour",
+                "status":  "detected",
+                "icon":    "👁️",
+                "label":   "Détectée",
+                "detail":  f"{count} paquets en retard — mise à jour manuelle recommandée",
+                "ts":      now,
+            })
+    except Exception:
+        pass
+
+    # ── Format timestamps & tri ───────────────────────────────────────────────
+    ORDER = {"action": 0, "detected": 1, "reported": 2, "neutralized": 3}
+    for a in alerts:
+        try:
+            a["datetime"] = datetime.fromtimestamp(a["ts"]).strftime("%d/%m %H:%M")
+        except Exception:
+            a["datetime"] = "—"
+        del a["ts"]
+    alerts.sort(key=lambda x: ORDER.get(x["status"], 9))
+    return alerts
+
 def get_timeline() -> list:
     """20 derniers événements sécurité triés par heure (SSH, bans CrowdSec, sudo critique, rkhunter)."""
     events = []
@@ -617,6 +1022,7 @@ def get_timeline() -> list:
                         "color": "rose",
                         "title": "Tentative SSH échouée",
                         "detail": m_ip.group(1) if m_ip else "IP inconnue",
+                        "_ip":   m_ip.group(1) if m_ip else "",
                         "count": 1,
                     })
             break
@@ -632,6 +1038,7 @@ def get_timeline() -> list:
             "color": "teal",
             "title": f"Connexion SSH — {data['user']}",
             "detail": ip,
+            "_ip":   ip,
             "count": data["count"],
         })
 
@@ -658,6 +1065,7 @@ def get_timeline() -> list:
                 "color": "purple",
                 "title": f"IP bannie — {ip}",
                 "detail": reason,
+                "_ip":   ip,
             })
     except Exception:
         pass
@@ -720,6 +1128,16 @@ def get_timeline() -> list:
     # Trier par timestamp décroissant, garder les 25 plus récents
     events.sort(key=lambda x: x["ts"], reverse=True)
     events = events[:25]
+    
+
+    # ── Géolocalisation IPs (parallèle, cache mémoire) ───────────────────────
+    _prefetch_geo([e["_ip"] for e in events if e.get("_ip")])
+    for e in events:
+        _ip = e.pop("_ip", None)
+        if _ip:
+            tag = _geo_tag(_ip)
+            if tag:
+                e["detail"] = (e.get("detail") or "") + tag
 
     # Formater les timestamps pour l'affichage
     for e in events:
@@ -865,6 +1283,7 @@ ROUTES = {
     "/api/history":  lambda: _history,
     "/api/timeline": lambda: get_timeline(),
     "/api/telegram/status": lambda: get_telegram_status(),
+    "/api/alerts":          lambda: get_alerts(),
 }
 
 

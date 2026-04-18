@@ -99,36 +99,17 @@
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 10px; }
     .card-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
     .card-desc { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 3px; line-height: 1.4; }
-    
+
     .icon-chip {
-      width: 38px;
-      height: 38px;
-      border-radius: var(--r-xs);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      /* Fond translucide très léger (marche sur blanc et sur noir) */
+      width: 38px; height: 38px; border-radius: var(--r-xs);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
       background: rgba(45, 125, 111, 0.12) !important;
       border: 1px solid rgba(45, 125, 111, 0.2) !important;
-      box-shadow: none !important; /* On enlève l'ombre pour plus de pureté */
+      box-shadow: none !important;
     }
-
-    /* Force l'icône en Teal profond, pas de vert acide */
-    .icon-chip i {
-      font-size: 20px;
-      color: #2d7d6f !important; /* Code hex direct pour éviter les variations de variables */
-      line-height: 1;
-    }
-
-    /* On s'assure qu'aucune règle "body.dark" ne vienne écraser cela */
-    body.dark .icon-chip {
-      background: rgba(0, 255, 136, 0.1) !important;
-      border: 1px solid rgba(0, 255, 136, 0.2) !important;
-    }
-    body.dark .icon-chip i {
-      color: #00ff88 !important;
-    }
+    .icon-chip i { font-size: 20px; color: #2d7d6f !important; line-height: 1; }
+    body.dark .icon-chip { background: rgba(0, 255, 136, 0.1) !important; border: 1px solid rgba(0, 255, 136, 0.2) !important; }
+    body.dark .icon-chip i { color: #00ff88 !important; }
 
     .card-value { font-size: 40px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
     .card-sub { font-size: 12px; color: var(--muted); font-weight: 500; }
@@ -146,37 +127,13 @@
     .port-ok    { background: rgba(34,197,94,0.12); color: #15803d; }
     .port-alert { background: rgba(239,68,68,0.12); color: #b91c1c; }
 
-    /* --- TICKER PRO INFINI --- */
-    #timeline-inline {
-      height: 45px;
-      overflow: hidden;
-      position: relative;
-      width: 100%;
-    }
-    .tl-wrapper {
-      position: absolute;
-      width: 100%;
-      will-change: transform;
-    }
-    .tl-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 5px 0;
-      height: 45px;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
+    #timeline-inline { height: 45px; overflow: hidden; position: relative; width: 100%; }
+    .tl-wrapper { position: absolute; width: 100%; will-change: transform; }
+    .tl-item { display: flex; align-items: center; gap: 14px; padding: 5px 0; height: 45px; border-bottom: 1px solid rgba(0,0,0,0.05); }
     body.dark .tl-item { border-bottom: 1px solid rgba(255,255,255,0.05); }
     .tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    /* Synchronisé avec le vert du Bouncer (#22c55e) */
     .tl-dot-teal   { background: #22c55e !important; box-shadow: 0 0 8px rgba(34, 197, 94, 0.6) !important; }
-    
-    /* Harmonisation du badge multiplicateur (ex: 3x) dans le JS */
-    #timeline-inline span[style*="background:rgba(45,125,111,0.15)"] {
-        background: rgba(34, 197, 94, 0.15) !important;
-        color: #22c55e !important;
-    }
-      
+    #timeline-inline span[style*="background:rgba(45,125,111,0.15)"] { background: rgba(34, 197, 94, 0.15) !important; color: #22c55e !important; }
     .tl-dot-rose   { background: var(--rose); box-shadow: 0 0 6px rgba(224,90,122,0.5); }
     .tl-dot-gold   { background: var(--gold); box-shadow: 0 0 6px rgba(201,168,76,0.5); }
     .tl-dot-purple { background: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,0.5); }
@@ -210,6 +167,60 @@
     .tg-toggle input:checked + .tg-slider { background:#22c55e; }
     .tg-toggle input:checked + .tg-slider:before { transform:translateX(16px); }
     @keyframes pulse-green { 0%,100%{box-shadow:0 0 8px rgba(34,197,94,0.6)} 50%{box-shadow:0 0 14px rgba(34,197,94,0.9)} }
+
+    /* ── Journal de Sécurité ──────────────────────────────────────────── */
+    .journal-header-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; gap: 10px;
+    }
+    .journal-btn-ghost {
+      font-size: 11px; font-weight: 600; padding: 6px 16px; border-radius: 50px;
+      border: none; cursor: pointer; background: var(--bg); color: var(--muted);
+      box-shadow: var(--shadow-in); transition: opacity 0.15s, transform 0.15s; white-space: nowrap;
+    }
+    .journal-btn-ghost:hover { opacity: 0.75; transform: scale(1.04); }
+    .journal-empty-state {
+      text-align: center; padding: 28px 0; font-size: 13px;
+      color: var(--muted); font-weight: 500;
+    }
+    .journal-table-scroll { overflow-x: auto; }
+    .journal-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .journal-tbl th {
+      text-align: left; padding: 6px 12px 10px; font-size: 10px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted);
+      border-bottom: 1px solid rgba(128,128,128,0.15);
+    }
+    .journal-tbl td {
+      padding: 10px 12px; border-bottom: 1px solid rgba(128,128,128,0.07); vertical-align: middle;
+    }
+    .journal-tbl tbody tr:last-child td { border-bottom: none; }
+    .journal-tbl tbody tr:hover { background: rgba(128,128,128,0.035); }
+    .jr-action      { border-left: 3px solid #ef4444; }
+    .jr-detected    { border-left: 3px solid #7c3aed; }
+    .jr-reported    { border-left: 3px solid #3b82f6; }
+    .jr-neutralized { border-left: 3px solid #22c55e; }
+    .journal-svc-pill {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 3px 9px; border-radius: var(--r-xs);
+      background: rgba(128,128,128,0.1); white-space: nowrap;
+    }
+    .jsb {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700; padding: 4px 10px;
+      border-radius: 50px; white-space: nowrap;
+    }
+    .jsb-action      { background: rgba(239,68,68,0.12);   color: #b91c1c; }
+    .jsb-detected    { background: rgba(124,58,237,0.12);  color: #5b21b6; }
+    .jsb-reported    { background: rgba(59,130,246,0.12);  color: #1d4ed8; }
+    .jsb-neutralized { background: rgba(34,197,94,0.12);   color: #15803d; }
+    body.dark .jsb-action      { background: rgba(239,68,68,0.2);    color: #f87171; }
+    body.dark .jsb-detected    { background: rgba(167,139,250,0.2);  color: #a78bfa; }
+    body.dark .jsb-reported    { background: rgba(96,165,250,0.2);   color: #60a5fa; }
+    body.dark .jsb-neutralized { background: rgba(34,197,94,0.2);    color: #4ade80; }
+    .journal-detail-cell { max-width: 380px; line-height: 1.45; color: var(--text); }
+    .journal-time-cell { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); white-space: nowrap; }
+    /* ── FIN Journal de Sécurité ──────────────────────────────────────── */
+
   </style>
 </head>
 <body>
@@ -420,6 +431,41 @@
     </div>
   </div>
 
+  <!-- ═══ JOURNAL DE SÉCURITÉ ═══ -->
+  <div class="card" id="card-journal">
+    <div class="journal-header-row">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="icon-chip"><i class="ph-fill ph-book-open-text"></i></div>
+        <div>
+          <div class="card-label">Journal de Sécurité</div>
+          <div class="card-desc" id="journal-subtitle">24 dernières heures</div>
+        </div>
+      </div>
+      <button class="journal-btn-ghost" id="btn-journal-victories" onclick="journalToggleVictories()">
+        ✅ Afficher les victoires
+      </button>
+    </div>
+    <div id="journal-empty-state" class="journal-empty-state" style="display:none;">
+      ✅ Aucune anomalie détectée — tout est nominal
+    </div>
+    <div class="journal-table-scroll" id="journal-table-wrap">
+      <table class="journal-tbl">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Détail</th>
+            <th>Date / Heure</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody id="journal-tbody">
+          <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted);">Chargement…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- ═══ FIN JOURNAL DE SÉCURITÉ ═══ -->
+
   <div class="footer-bar">
     <div class="footer-badge">
       <i class="ph ph-clock" style="font-size:13px;"></i> Dernière mise à jour : <b id="last-update">—</b>
@@ -451,7 +497,6 @@ function startCountdown() {
   clearInterval(cdTimer); countdown=30;
   cdTimer=setInterval(()=>{countdown=Math.max(0,countdown-1);$('countdown').textContent=`${countdown}s`;},1000);
 }
-
 
 async function loadTelegramStatus() {
   try {
@@ -547,16 +592,13 @@ async function refreshTimeline() {
   } catch(e){}
 }
 
-// --- LOGIQUE TICKER DYNAMIQUE PRO ---
 function renderTimeline(events) {
   const list = $('timeline-inline'); if (!list) return;
   if (!events || events.length === 0) {
     list.innerHTML = '<div class="tl-empty">Aucun événement récent</div>'; return;
   }
-  
   const cm = {teal:'teal', rose:'rose', gold:'gold', purple:'purple', red:'red'};
   const itemCount = events.length;
-  
   const drawItem = (e) => `
     <div class="tl-item">
       <div class="tl-dot tl-dot-${cm[e.color]||'gray'}"></div>
@@ -567,21 +609,15 @@ function renderTimeline(events) {
       </div>
       <div class="tl-time">${e.time||'—'}</div>
     </div>`;
-
-  // Clone pour boucle infinie
   const mainContent = events.map(e => drawItem(e)).join('');
   const cloneFirst = drawItem(events[0]);
   list.innerHTML = `<div id="tl-moving-box" class="tl-wrapper">${mainContent}${cloneFirst}</div>`;
-
-  // Animation dynamique
-  const duration = itemCount * 4; // 4s par news
+  const duration = itemCount * 4;
   const stepPct = 100 / itemCount;
   const pausePct = stepPct * 0.8;
-  
   const styleId = 'dynamic-timeline-style';
   let styleEl = $(styleId) || document.createElement('style');
   styleEl.id = styleId;
-  
   let keyframes = `@keyframes scrollInfinitePro {`;
   for(let i = 0; i <= itemCount; i++) {
     let startStep = i * stepPct;
@@ -591,11 +627,7 @@ function renderTimeline(events) {
     if(i < itemCount) keyframes += `${stopStep}% { transform: translateY(-${y}px); }`;
   }
   keyframes += `}`;
-
-  styleEl.innerHTML = `
-    ${keyframes}
-    #tl-moving-box { animation: scrollInfinitePro ${duration}s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
-  `;
+  styleEl.innerHTML = `${keyframes} #tl-moving-box { animation: scrollInfinitePro ${duration}s cubic-bezier(0.65, 0, 0.35, 1) infinite; }`;
   if (!$(styleId)) document.head.appendChild(styleEl);
 }
 
@@ -606,18 +638,14 @@ function updateCards(d) {
   const upd = d.updates || {};
 
   updateScore(d.score);
-  
   $('sub-updates-date').textContent = "Dernier check : " + (upd.last_check || "—");
   $('val-endlessh-total').textContent=fmt(e.total);
   $('sub-endlessh').innerHTML=`24h : <b>${fmt(e.last24h)}</b>`;
   $('sub-endlessh-duration').innerHTML=`Durée moy. : <b>${e.avg_duration_fmt||'—'}</b>`;
   setCard('card-endlessh',e.last24h>0?'a-green':'');
-
   $('val-crowdsec').textContent=fmt(c.active_bans);
   $('sub-crowdsec').innerHTML=`Alertes 24h : <b>${fmt(c.alerts_24h)}</b>`;
-
   updateBouncer(d.bouncer);
-
   $('val-ufw').textContent=fmt(u.total);
   $('val-audit').textContent=fmt(a.sudo_today);
 
@@ -654,26 +682,18 @@ function updateCards(d) {
 
   const updCount = d.updates?.count ?? null;
   const lastCheck = d.updates?.last_check ?? 'Inconnue';
-
   $('val-updates').textContent = fmt(updCount);
-
   if (updCount === 0) {
-      // On met tout sur UNE SEULE ligne
       $('sub-updates').innerHTML = `✅ Serveur à jour <span style="font-size: 0.85em; opacity: 0.8;"></span>`;
       setCard('card-updates', 'a-green');
   } else {
       $('sub-updates').innerHTML = `paquets <b>disponibles</b> <span style="font-size: 0.85em; opacity: 0.8;">(${lastCheck})</span>`;
       setCard('card-updates', updCount > 0 ? 'a-gold' : '');
   }
-
-  // SI TU AS UN AUTRE ÉLÉMENT QUI ÉCRIT LA DATE, VIDE-LE :
-  if ($('date-check-element')) { // Remplace par l'ID qui écrit la 2ème ligne si tu le connais
-      $('date-check-element').textContent = '';
-  }
+  if ($('date-check-element')) { $('date-check-element').textContent = ''; }
 
   $('val-connections').textContent=fmt(d.connections?.established??'—');
   setCard('card-connections',(d.connections?.established||0)>500?'a-red':'a-green');
-
   updatePorts(d.open_ports);
 }
 
@@ -741,6 +761,88 @@ initDonuts();
 applyTheme(sessionStorage.getItem(DARK_KEY)==='1');
 refresh();
 loadTelegramStatus();
+
+/* ── Journal de Sécurité ──────────────────────────────────────────────────── */
+(function () {
+  'use strict';
+  let _showVictories = false;
+  let _journalData   = [];
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function statusBadge(status, icon, label) {
+    var cls = {
+      action:      'jsb jsb-action',
+      detected:    'jsb jsb-detected',
+      reported:    'jsb jsb-reported',
+      neutralized: 'jsb jsb-neutralized',
+    }[status] || 'jsb';
+    return '<span class="' + cls + '">' + esc(icon) + ' ' + esc(label) + '</span>';
+  }
+
+  function renderJournal(data) {
+    var tbody      = document.getElementById('journal-tbody');
+    var emptyState = document.getElementById('journal-empty-state');
+    var tableWrap  = document.getElementById('journal-table-wrap');
+    var subtitle   = document.getElementById('journal-subtitle');
+    if (!tbody) return;
+
+    var rows = _showVictories
+      ? data
+      : data.filter(function (a) { return a.status !== 'neutralized'; });
+
+    if (rows.length === 0) {
+      if (emptyState) emptyState.style.display = '';
+      if (tableWrap)  tableWrap.style.display  = 'none';
+      return;
+    }
+    if (emptyState) emptyState.style.display = 'none';
+    if (tableWrap)  tableWrap.style.display  = '';
+
+    var actionCount = rows.filter(function (r) { return r.status === 'action'; }).length;
+    if (subtitle) {
+      subtitle.textContent = actionCount > 0
+        ? '\u26a0\ufe0f ' + actionCount + ' point' + (actionCount > 1 ? 's' : '') + ' \u00e0 traiter'
+        : '24 derni\u00e8res heures \u2014 tout se passe bien';
+    }
+
+    var rowCls = {action:'jr-action', detected:'jr-detected', reported:'jr-reported', neutralized:'jr-neutralized'};
+    tbody.innerHTML = rows.map(function (a) {
+      return '<tr class="' + (rowCls[a.status] || '') + '">'
+        + '<td><span class="journal-svc-pill">' + esc(a.service) + '</span></td>'
+        + '<td class="journal-detail-cell">' + esc(a.detail) + '</td>'
+        + '<td class="journal-time-cell">' + esc(a.datetime) + '</td>'
+        + '<td>' + statusBadge(a.status, a.icon, a.label) + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  window.journalToggleVictories = function () {
+    _showVictories = !_showVictories;
+    var btn = document.getElementById('btn-journal-victories');
+    if (btn) btn.textContent = _showVictories ? '\uD83D\uDE48 Masquer les victoires' : '\u2705 Afficher les victoires';
+    renderJournal(_journalData);
+  };
+
+  async function fetchJournal() {
+    try {
+      var res = await fetch('/api/alerts', {cache:'no-store', headers:{'Authorization': AUTH}});
+      if (!res.ok) return;
+      _journalData = await res.json();
+      renderJournal(_journalData);
+    } catch (e) {
+      console.warn('[Journal]', e);
+    }
+  }
+
+  fetchJournal();
+  setInterval(fetchJournal, 30000);
+})();
+/* ── FIN Journal de Sécurité ──────────────────────────────────────────────── */
 </script>
 </body>
 </html>

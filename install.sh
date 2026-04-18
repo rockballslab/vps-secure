@@ -2408,10 +2408,12 @@ log_success "vps-secure-verify installé — commande disponible : sudo vps-secu
 
 # ── MOTD personnalisé (affiché à chaque connexion SSH) ──
 # Désactiver le MOTD Ubuntu par défaut (publicitaire et verbeux)
-chmod -x /etc/update-motd.d/* 2>/dev/null || true  # optionnel : certains fichiers peuvent être absents
+chmod -x /etc/update-motd.d/* 2>/dev/null || true
 # Désactiver les timers systemd qui régénèrent le MOTD Ubuntu après chmod -x
-systemctl disable --now motd-news.timer 2>/dev/null || true        # optionnel : absent sur certains VPS
-systemctl disable --now update-notifier-motd.timer 2>/dev/null || true  # optionnel : absent sur certains VPS
+systemctl disable --now motd-news.timer 2>/dev/null || true
+systemctl disable --now update-notifier-motd.timer 2>/dev/null || true
+truncate -s 0 /run/motd.dynamic 2>/dev/null || true   # ← vide le cache MOTD Ubuntu
+truncate -s 0 /etc/motd 2>/dev/null || true            # ← vide le MOTD statique
 cat > /etc/update-motd.d/00-vps-secure << 'MOTDEOF'
 #!/usr/bin/env bash
 

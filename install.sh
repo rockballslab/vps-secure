@@ -365,10 +365,18 @@ apt-get install -y -qq \
     libpam-pwquality
 
 DEBIAN_FRONTEND=noninteractive pam-auth-update --force 2>/dev/null || true
-log_success "Système mis à jour."
+# PKGS-7370 — debsums cron daily (juste installé ne suffit pas)
+sed -i 's/^#\?CRON_CHECK.*/CRON_CHECK=daily/' /etc/default/debsums 2>/dev/null || \
+  echo "CRON_CHECK=daily" >> /etc/default/debsums
+log_success "Système mis à jour — debsums cron daily configuré."
 
 systemctl enable --now acct 2>/dev/null || true
 systemctl enable --now sysstat 2>/dev/null || true
+# ACCT-9626 — activer la collecte sysstat (ENABLED=true requis, sinon service démarré mais inactif)
+sed -i 's/^ENABLED=.*/ENABLED="true"/' /etc/default/sysstat 2>/dev/null || \
+  echo 'ENABLED="true"' >> /etc/default/sysstat
+systemctl restart sysstat 2>/dev/null || true
+log_success "sysstat activé — collecte système démarrée."
 
 # Sécuriser /tmp (CIS Benchmark L1)
 if ! grep -q "tmpfs /tmp" /etc/fstab; then
@@ -1021,7 +1029,11 @@ net.ipv4.conf.default.log_martians = 1
 
 SYSEOF
 
+chmod 644 /etc/sysctl.d/99-vps-secure.conf
 SYSCTL_OUTPUT=$(sysctl --system 2>&1)
+# Ancrage immédiat — certains services (CrowdSec bouncer) peuvent resetter ces valeurs
+sysctl -w net.ipv4.conf.all.log_martians=1 >/dev/null 2>&1 || true
+sysctl -w net.ipv4.conf.default.log_martians=1 >/dev/null 2>&1 || true
 SYSCTL_ERRORS=$(echo "$SYSCTL_OUTPUT" | grep -c "^sysctl: " 2>/dev/null || echo "0")
 SYSCTL_ERRORS=$(echo "$SYSCTL_ERRORS" | tr -d '[:space:]' | grep -E '^[0-9]+$' || echo "0")
 if [[ "$SYSCTL_ERRORS" -gt 0 ]]; then

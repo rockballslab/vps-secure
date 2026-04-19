@@ -599,6 +599,7 @@ function setPill(id, st) {
   const el = $(id); if (!el) return;
   if (st === 'clean')                        { el.className = 'pill pill-ok';   el.textContent = 'OK'; }
   else if (st === 'warning' || st === 'changes') { el.className = 'pill pill-warn'; el.textContent = 'ALERTE'; }
+  else if (st === 'rebase')                  { el.className = 'pill pill-warn'; el.textContent = 'Rebase requis'; }
   else                                       { el.className = 'pill pill-unk';  el.textContent = '—'; }
 }
 function startCountdown() {

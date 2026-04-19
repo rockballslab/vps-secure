@@ -55,13 +55,15 @@ def get_geo(ip: str) -> dict:
     if ip in _geo_cache:
         return _geo_cache[ip]
     try:
-        url = f"http://ip-api.com/json/{ip}?fields=status,country,countryCode"
+        # FIX M-GEO — ipapi.co (HTTPS gratuit) remplace ip-api.com (HTTP only)
+        url = f"https://ipapi.co/{ip}/json/"
         req = urllib.request.Request(url, headers={"User-Agent": "vps-monitor/1.0"})
         with urllib.request.urlopen(req, timeout=2) as r:
             d = json.loads(r.read().decode())
-        if d.get("status") == "success":
-            code = d.get("countryCode", "")
-            geo  = {"country": d.get("country", ""), "code": code, "flag": _flag(code)}
+        code = d.get("country_code", "")
+        country = d.get("country_name", d.get("country", ""))
+        if code:
+            geo = {"country": country, "code": code, "flag": _flag(code)}
             _geo_cache[ip] = geo
             return geo
     except Exception:
@@ -96,9 +98,29 @@ RL_MAX_ATTEMPTS  = int(os.environ.get("AUTH_MAX_ATTEMPTS", "5"))
 RL_WINDOW_SEC    = int(os.environ.get("AUTH_WINDOW_SEC",  "300"))
 RL_LOCKOUT_SEC   = int(os.environ.get("AUTH_LOCKOUT_SEC", "900"))
 
-_rl_lock      = threading.Lock()
-_rl_failed:   dict[str, list[float]] = {}
-_rl_lockouts: dict[str, float]       = {}
+_rl_lock = threading.Lock()
+_rl_failed: dict[str, list[float]] = {}
+_rl_lockouts: dict[str, float] = {}
+# FIX M-RL — Persistance des lockouts sur disque (survit aux restarts container)
+RL_STATE_FILE = "/var/lib/vps-monitor/rl_state.json"
+
+def _save_rl_state() -> None:
+    try:
+        os.makedirs(os.path.dirname(RL_STATE_FILE), exist_ok=True)
+        with open(RL_STATE_FILE, "w") as f:
+            json.dump({"lockouts": _rl_lockouts}, f)
+    except Exception:
+        pass
+
+def _load_rl_state() -> None:
+    global _rl_lockouts
+    try:
+        with open(RL_STATE_FILE) as f:
+            d = json.load(f)
+            now = time.time()
+            _rl_lockouts = {ip: t for ip, t in d.get("lockouts", {}).items() if t > now}
+    except Exception:
+        pass
 
 TRUSTED_PROXIES = {"127.0.0.1", "::1"}
 
@@ -130,6 +152,7 @@ def _record_auth_failure(ip: str) -> None:
         if len(_rl_failed[ip]) >= RL_MAX_ATTEMPTS:
             _rl_lockouts[ip] = now + RL_LOCKOUT_SEC
             print(f"[VPS Monitor] RATE LIMIT {ip} — lockout {RL_LOCKOUT_SEC}s", flush=True)
+            _save_rl_state()
 
 def _check_basic_auth(handler: "Handler") -> bool:
     if not DASHBOARD_PASS:
@@ -392,11 +415,16 @@ def get_rkhunter() -> dict:
     try:
         with open("/var/log/rkhunter.log", errors="replace") as f:
             content = f.read()
+        # FIX M-3 — Dernière session uniquement (log cumulatif)
+        dates = re.findall(r"Start date is\s+(.+?)\n", content)
+        if dates:
+            idx = content.rfind(f"Start date is {dates[-1]}")
+            if idx != -1:
+                content = content[idx:]
         if "Warning:" in content:
             status = "warning"
         elif len(content) > 100:
             status = "clean"
-        dates = re.findall(r"Start date is\s+(.+?)\n", content)
         if dates:
             try:
                 dt = datetime.strptime(dates[-1].strip(), "%a %b %d %H:%M:%S %Z %Y")
@@ -843,9 +871,13 @@ def get_alerts(period_hours: int = 24) -> list:
     try:
         with open("/var/log/rkhunter.log", errors="replace") as f:
             content = f.read()
-        dates   = re.findall(r"Start date is\s+(.+?)\n", content)
+        # FIX M-3 — Dernière session uniquement
+        dates = re.findall(r"Start date is\s+(.+?)\n", content)
         scan_ts = now - 3600
         if dates:
+            idx = content.rfind(f"Start date is {dates[-1]}")
+            if idx != -1:
+                content = content[idx:]
             try:
                 scan_ts = datetime.strptime(
                     dates[-1].strip(), "%a %b %d %H:%M:%S %Z %Y"
@@ -1194,6 +1226,12 @@ def get_timeline() -> list:
     try:
         with open("/var/log/rkhunter.log", errors="replace") as f:
             content = f.read()
+        # FIX M-3 — Dernière session uniquement
+        _rk_dates = re.findall(r"Start date is\s+(.+?)\n", content)
+        if _rk_dates:
+            _idx = content.rfind(f"Start date is {_rk_dates[-1]}")
+            if _idx != -1:
+                content = content[_idx:]
         for m in re.finditer(r"Warning:\s+(.+?)(?:\n|$)", content):
             events.append({
                 "ts":    now - 3600,
@@ -1621,6 +1659,7 @@ class Handler(BaseHTTPRequestHandler):
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     _load_history()
+    _load_rl_state()
     srv = HTTPServer((API_HOST, API_PORT), Handler)
     print(f"[VPS Monitor] API on {API_HOST}:{API_PORT} — cache TTL {CACHE_TTL}s", flush=True)
     srv.serve_forever()

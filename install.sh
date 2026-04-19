@@ -2230,7 +2230,16 @@ if [[ -f /var/lib/aide/aide.db.new ]]; then
     chmod 600 /var/lib/aide/aide.db
     chattr +i /var/lib/aide/aide.db
     rm -f /var/lib/aide/aide.db.new
-    echo "✅ Baseline AIDE mise à jour. Demain matin : 0 alerte si système intact."
+
+    # ── Mise à jour statut dashboard ──────────────────────────────────────
+    chattr -i /var/log/aide-daily.log /var/log/aide-daily.exit 2>/dev/null || true
+    echo "Rebase effectué le \$(date '+%Y-%m-%d %H:%M:%S') — baseline réinitialisée" \
+        > /var/log/aide-daily.log
+    echo "0" > /var/log/aide-daily.exit
+    chattr +i /var/log/aide-daily.log /var/log/aide-daily.exit 2>/dev/null || true
+    # ─────────────────────────────────────────────────────────────────────
+
+    echo "✅ Baseline AIDE mise à jour. Dashboard actualisé immédiatement."
 else
     echo "❌ Échec — vérifier : sudo aide --config-check"; exit 1
 fi

@@ -1385,14 +1385,145 @@ def get_metrics() -> dict:
     return _cache
 
 
+# ── Container update checks ───────────────────────────────────────────────────
+# Maps image_clean name → Docker Hub namespace/repo
+# Le tag est détecté dynamiquement depuis le champ image du container.
+REGISTRY_MAP = {
+    'n8n':      ('n8nio',    'n8n'),
+    'baserow':  ('baserow',  'baserow'),
+    'caddy':    ('library',  'caddy'),
+    'minio':    ('minio',    'minio'),
+    'postgres': ('library',  'postgres'),
+}
+
+_updates_cache: dict | None = None
+_updates_cache_time: float  = 0.0
+UPDATES_CACHE_TTL = 3600  # 1 heure
+
+def _hub_remote_digest(namespace: str, repo: str, tag: str) -> str | None:
+    """Retourne le manifest list digest depuis l'API registry Docker v2.
+    Utilise le header Docker-Content-Digest — identique à ce que docker inspect
+    retourne dans RepoDigests. Fonctionne pour tous les tags (latest, 2-alpine, etc.)
+    """
+    try:
+        full_repo = f"library/{repo}" if namespace == 'library' else f"{namespace}/{repo}"
+
+        # 1. Token anonyme pour ce repo
+        token_url = (
+            f"https://auth.docker.io/token"
+            f"?service=registry.docker.io&scope=repository:{full_repo}:pull"
+        )
+        req = urllib.request.Request(token_url, headers={"User-Agent": "vps-monitor/1.0"})
+        with urllib.request.urlopen(req, timeout=6) as resp:
+            token = json.loads(resp.read()).get('token', '')
+        if not token:
+            return None
+
+        # 2. HEAD sur le manifest — Accept multi-arch en priorité
+        manifest_url = f"https://registry-1.docker.io/v2/{full_repo}/manifests/{tag}"
+        req2 = urllib.request.Request(manifest_url, headers={
+            "User-Agent":    "vps-monitor/1.0",
+            "Authorization": f"Bearer {token}",
+            "Accept": (
+                "application/vnd.docker.distribution.manifest.list.v2+json,"
+                "application/vnd.oci.image.index.v1+json,"
+                "application/vnd.docker.distribution.manifest.v2+json"
+            ),
+        })
+        req2.get_method = lambda: "HEAD"
+        with urllib.request.urlopen(req2, timeout=6) as resp:
+            digest = resp.headers.get("Docker-Content-Digest", "")
+        return digest or None
+    except Exception:
+        return None
+
+def _local_image_digest(image_name: str) -> str | None:
+    """Retourne le RepoDigest de l'image locale via docker image inspect.
+    Prend le nom complet de l'image (ex: caddy:2-alpine, n8nio/n8n:latest).
+    """
+    try:
+        out = subprocess.run(
+            ['docker', 'image', 'inspect', image_name,
+             '--format', '{{index .RepoDigests 0}}'],
+            capture_output=True, text=True, timeout=5
+        ).stdout.strip()
+        # Format : "caddy@sha256:abc123" → extrait le sha256
+        if '@' in out:
+            return out.split('@')[1]  # "sha256:abc123"
+        return None
+    except Exception:
+        return None
+
+def get_container_updates() -> dict:
+    """
+    Retourne { image_clean: status } avec status dans :
+      'up_to_date' | 'update_available' | 'unknown'
+    Résultat mis en cache 1h — les appels Docker Hub sont externes.
+    """
+    global _updates_cache, _updates_cache_time
+    now = time.time()
+    if _updates_cache and (now - _updates_cache_time) < UPDATES_CACHE_TTL:
+        return _updates_cache
+
+    # Liste containers actifs pour récupérer les noms et images réels
+    containers_raw = []
+    try:
+        ps = subprocess.run(
+            ['docker', 'ps', '--format', '{{json .}}'],
+            capture_output=True, text=True, timeout=10
+        )
+        for line in ps.stdout.strip().split('\n'):
+            if line.strip():
+                try:
+                    containers_raw.append(json.loads(line))
+                except Exception:
+                    pass
+    except Exception:
+        return {}
+
+    result = {}
+
+    for c in containers_raw:
+        name        = c.get('Names', '').lstrip('/')
+        image       = c.get('Image', '')           # ex: "caddy:2-alpine" ou "n8nio/n8n:latest"
+        image_clean = image.split(':')[0].split('/')[-1]   # ex: "caddy", "n8n"
+        # Tag réel utilisé : ce qui est après ':' ou 'latest' par défaut
+        image_tag   = image.split(':')[1] if ':' in image else 'latest'
+
+        map_key = next(
+            (k for k in REGISTRY_MAP if
+             image_clean.lower() == k or image_clean.lower().startswith(k)),
+            None
+        )
+        if not map_key:
+            continue  # service non surveillé
+
+        namespace, repo = REGISTRY_MAP[map_key]
+
+        local_digest  = _local_image_digest(image)   # ex: "caddy:2-alpine"
+        remote_digest = _hub_remote_digest(namespace, repo, image_tag)
+
+        if not local_digest or not remote_digest:
+            result[image_clean] = 'unknown'
+        elif local_digest == remote_digest:
+            result[image_clean] = 'up_to_date'
+        else:
+            result[image_clean] = 'update_available'
+
+    _updates_cache      = result
+    _updates_cache_time = now
+    return result
+
+
 # ── HTTP Handler ──────────────────────────────────────────────────────────────
 ROUTES = {
-    "/api/metrics":         lambda: get_metrics(),
-    "/api/health":          lambda: {"status": "ok", "ts": int(time.time())},
-    "/api/history":         lambda: _history,
-    "/api/timeline":        lambda: get_timeline(),
-    "/api/telegram/status": lambda: get_telegram_status(),
-    "/api/containers":      lambda: get_containers(),
+    "/api/metrics":             lambda: get_metrics(),
+    "/api/health":              lambda: {"status": "ok", "ts": int(time.time())},
+    "/api/history":             lambda: _history,
+    "/api/timeline":            lambda: get_timeline(),
+    "/api/telegram/status":     lambda: get_telegram_status(),
+    "/api/containers":          lambda: get_containers(),
+    "/api/containers/updates":  lambda: get_container_updates(),
 }
 
 

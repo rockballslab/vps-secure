@@ -923,6 +923,10 @@ systemctl enable unattended-upgrades
 systemctl restart unattended-upgrades
 log_success "Patches de sécurité automatiques activés."
 
+# FIX #64 — Forcer sudo patchée (CVE-2025-32463 CVSS 9.3 CISA KEV — LPE via --chroot)
+apt-get install -y -qq --only-upgrade sudo 2>/dev/null || true
+log_success "sudo mis à jour — protection CVE-2025-32463."
+
 # ── Blacklist snapd (issue #51 — CVE-2026-3888 LPE CVSS 7.8) ─────────────
 if dpkg -l snapd 2>/dev/null | grep -q '^ii'; then
     log_warn "snapd détecté — suppression (CVE-2026-3888)..."
@@ -2264,6 +2268,11 @@ chattr -i /var/lib/aide/aide.db 2>/dev/null || true
 aide --update --config /etc/aide/aide.conf > /dev/null 2>&1 || true
 if [[ -f /var/lib/aide/aide.db.new ]]; then
     cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+    # FIX #65 — Remettre à zéro les exit files (évite alertes résiduelles 22h)
+    chattr -i /var/log/aide-daily.exit 2>/dev/null || true
+    echo "0" > /var/log/aide-daily.exit
+    chattr +i /var/log/aide-daily.exit 2>/dev/null || true
+    rm -f /var/log/aide-daily.exit.context
     chmod 600 /var/lib/aide/aide.db
     chattr +i /var/lib/aide/aide.db
     rm -f /var/lib/aide/aide.db.new

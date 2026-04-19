@@ -404,6 +404,8 @@ def get_aide() -> dict:
             exit_code = int(f.read().strip())
         if exit_code == 0:
             status = "clean"
+        elif exit_code >= 128:        # Signal système (OOM, kill -9) — pas une alerte réelle
+            status = "unknown"
         elif (exit_code & 56) != 0:
             status = "unknown"
         elif (exit_code & 7) != 0:

@@ -407,7 +407,7 @@ else
 fi
 
 # ── DNS over TLS (activé ici, avant tout téléchargement réseau) ──
-# Raison : CrowdSec et Docker sont téléchargés ensuite.
+# Raison :  et Docker sont téléchargés ensuite.
 # Sans DoT, les résolutions DNS transitent en clair — fenêtre de DNS poisoning.
 log_info "Activation du DNS chiffré avant les téléchargements..."
 mkdir -p /etc/systemd/resolved.conf.d
@@ -547,6 +547,23 @@ for collection in crowdsecurity/linux crowdsecurity/sshd; do
         log_warn "  Réinstalle : sudo cscli collections install $collection"
     fi
 done
+
+# Fix CPU : setup.linux.yaml généré par cscli setup inclut syslog et kern.log
+# CrowdSec n'a pas de parseur pour ces sources sur Ubuntu — il les lit pour rien
+# (~150k lignes/min ingérées, 0 parsées = 28% CPU idle pour zéro valeur)
+if [[ -f /etc/crowdsec/acquis.d/setup.linux.yaml ]]; then
+    python3 - /etc/crowdsec/acquis.d/setup.linux.yaml << 'PYEOF'
+import sys, re
+with open(sys.argv[1]) as f:
+    content = f.read()
+# Retirer /var/log/syslog et /var/log/kern.log de la liste filenames
+content = re.sub(r'\s*- /var/log/syslog\n', '\n', content)
+content = re.sub(r'\s*- /var/log/kern\.log\n', '\n', content)
+with open(sys.argv[1], 'w') as f:
+    f.write(content)
+PYEOF
+    log_success "CrowdSec : syslog + kern.log retirés de l'acquisition (fix CPU)."
+fi
 
 # nginx uniquement si nginx est installé (sinon CrowdSec génère des warnings inutiles)
 if command -v nginx &>/dev/null; then

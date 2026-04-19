@@ -893,8 +893,9 @@ function renderContainerCard(c) {
   }
 
   const animStyle = hc.anim ? 'animation:pulse-green 2s infinite;' : '';
+  // data-image-clean permet l'injection du badge update en background
   return `
-    <div class="card ${isRunning ? 'a-green' : 'a-red'}">
+    <div class="card ${isRunning ? 'a-green' : 'a-red'}" data-image-clean="${c.image_clean}" style="position:relative;">
       <div class="card-header">
         <div style="display:flex;align-items:center;gap:10px;min-width:0;">
           <div style="width:38px;height:38px;border-radius:var(--r-xs);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${meta.bg};border:1px solid ${meta.border};">
@@ -940,6 +941,8 @@ window.fetchContainers = async function() {
       data.length <= 2 ? 'repeat(2,1fr)' :
       data.length <= 3 ? 'repeat(3,1fr)' : 'repeat(4,1fr)';
     grid.innerHTML = data.map(renderContainerCard).join('');
+    // Appel background — peut prendre plusieurs secondes (appels Docker Hub)
+    fetchContainerUpdates();
   } catch(e) {
     grid.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">
       Erreur chargement containers — vérifier que docker.sock est monté
@@ -947,6 +950,45 @@ window.fetchContainers = async function() {
     if (subtitle) subtitle.textContent = 'Erreur';
   }
 };
+
+async function fetchContainerUpdates() {
+  try {
+    const res = await fetch('/api/containers/updates', { cache:'no-store', headers:{'Authorization':AUTH} });
+    if (!res.ok) return;
+    const updates = await res.json();
+    document.querySelectorAll('#containers-grid [data-image-clean]').forEach(card => {
+      const imgClean = card.getAttribute('data-image-clean');
+      const status   = updates[imgClean];
+      // Supprimer badge existant si re-render
+      card.querySelectorAll('.upd-badge').forEach(b => b.remove());
+      if (status === 'up_to_date') {
+        card.insertAdjacentHTML('beforeend', `
+          <div class="upd-badge" style="
+            position:absolute;bottom:11px;right:14px;
+            display:inline-flex;align-items:center;gap:4px;
+            font-size:9px;font-weight:800;letter-spacing:0.4px;text-transform:uppercase;
+            padding:3px 9px 3px 7px;border-radius:20px;
+            background:rgba(34,197,94,0.12);
+            border:1px solid rgba(34,197,94,0.25);
+            color:#15803d;
+            backdrop-filter:blur(4px);
+          "><i class="ph-fill ph-check-circle" style="font-size:11px;"></i>À jour</div>`);
+      } else if (status === 'update_available') {
+        card.insertAdjacentHTML('beforeend', `
+          <div class="upd-badge" style="
+            position:absolute;bottom:11px;right:14px;
+            display:inline-flex;align-items:center;gap:4px;
+            font-size:9px;font-weight:800;letter-spacing:0.4px;text-transform:uppercase;
+            padding:3px 9px 3px 7px;border-radius:20px;
+            background:rgba(249,115,22,0.12);
+            border:1px solid rgba(249,115,22,0.28);
+            color:#c2410c;
+            backdrop-filter:blur(4px);
+          "><i class="ph-fill ph-arrow-circle-up" style="font-size:11px;"></i>Update</div>`);
+      }
+    });
+  } catch(e) {}
+}
 
 
 (function () {

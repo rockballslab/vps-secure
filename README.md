@@ -309,50 +309,65 @@ Si une anomalie est détectée dans le rapport quotidien, le message inclut le d
 >     IdentityFile ~/.ssh/id_ed25519_vps
 > ```
 
+---
 
 ## Dashboard de monitoring (optionnel mais fortement recommandé)
- 
-Un dashboard web pour visualiser en temps réel l'état de ton serveur : bots piégés, IP bannies, blocages UFW, statut AIDE/rkhunter, charge système.
 
-Lance cette commande:
+Un dashboard web pour visualiser en temps réel l'état de ton serveur.
 
- ```bash
+```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)
 ```
 
-Le script te demande un domaine et un mot de passe que tu dois créer. Ton mot de passe sera sauvegardé dans `~/vps-monitor/.env`.
- 
+Le script te demande un domaine et un mot de passe. Ton mot de passe sera sauvegardé dans `~/vps-monitor/.env`.
+
 > [!NOTE]
 > **Prérequis :** un enregistrement DNS A pointant sur l'IP de ton VPS.
 > Pour générer un mot de passe sécurisé : `openssl rand -base64 32`
 
-
- <p align="center">
+<p align="center">
   <img src="./dashboard/dashboard-preview.png" alt="VPS Secure Dashboard" width="100%">
 </p>
-
-
- <p align="center">
+<p align="center">
   <img src="./dashboard/dashboard-preview-light.png" alt="VPS Secure Dashboard" width="100%">
 </p>
 
-Ce Dashboard comprend:
+### Onglet Cockpit
 
-> Design system complet clair/sombre
-> 
-> 11 métriques temps réel avec score de santé
-> 
-> Timeline d'événements sécurité
-> 
-> Toggles Telegram interactifs
-> 
-> Icônes Phosphor, animations, hover effects
-> 
-> Backend Python stdlib zero-dependency
-> 
-> Auth Caddy + bcrypt
-> 
-> Responsive
+Score de santé 0–100 avec mascotte secrète au score parfait.
+
+| Carte | Ce qu'elle mesure |
+|---|---|
+| Endlessh | Bots piégés total · 24h · durée moy. de piégeage |
+| CrowdSec IPS | IP bannies actives · alertes 24h |
+| CrowdSec Bouncer | Statut actif/inactif — applique les bans iptables |
+| Système | CPU · RAM · Disque (donuts) · uptime |
+| UFW Firewall | Blocages totaux sur les logs |
+| Auditd | Escalades sudo du jour |
+| rkhunter | Statut clean/alerte · date du dernier scan |
+| AIDE File Integrity | Intégrité des binaires SHA512 · date du dernier scan |
+| Mises à jour | Paquets apt disponibles · date du dernier check |
+| Connexions TCP | Connexions établies en temps réel |
+| Ports ouverts | Ports TCP en écoute · détection des ports inattendus |
+
+Timeline des 25 derniers événements sécurité avec défilement animé. Toggles Telegram interactifs (rapport 09h00 · alerte SSH).
+
+### Onglet Journal de sécurité
+
+Tous les événements sur 1j / 7j / 30j : tentatives SSH, blocages UFW, bans CrowdSec, warnings rkhunter, modifications AIDE, ports inattendus. Géolocalisation des IPs avec drapeau pays. Filtre victoires/alertes.
+
+### Onglet Containers
+
+Détection automatique de tous les containers Docker via socket. Cards par service avec statut live (Actif · Arrêté · Unhealthy · Démarrage), CPU, RAM, ports exposés. Vérification de version en arrière-plan via registry Docker Hub — badge **À jour** ou **Update disponible** (cache 1h). Services surveillés : n8n, Baserow, MinIO, PostgreSQL, Caddy.
+
+### Stack technique
+
+- Backend Python stdlib — zéro dépendance externe
+- Auth HTTP Basic + rate limiting + lockout
+- Cache TTL 30s, historique 24h persisté sur disque
+- Frontend HTML/CSS/JS vanilla — Phosphor Icons, Chart.js, DM Sans
+- Mode clair/sombre avec persistance
+- Caddy reverse proxy + TLS automatique
 
 
 ---

@@ -669,7 +669,7 @@ function updateBouncer(b) {
   const dot = $('bouncer-dot'), val = $('val-bouncer'), sub = $('sub-bouncer');
   dot.className = 'bouncer-dot';
   if (st === 'active') {
-    dot.classList.add('bouncer-active'); val.textContent = '✅ Actif';
+    dot.classList.add('bouncer-active'); val.innerHTML = '✅ <b>Actif</b>';
     sub.textContent = 'Les bans sont appliqués en temps réel'; setCard('card-bouncer', 'a-green');
   } else if (st === 'inactive' || st === 'failed') {
     dot.classList.add('bouncer-inactive'); val.textContent = '❌ Inactif';
@@ -742,12 +742,12 @@ function updateCards(d) {
   $('val-ufw').textContent = fmt(u.total);
   $('val-audit').textContent = fmt(a.sudo_today);
   const rkSt = rk.status || 'unknown';
-  $('val-rkhunter').textContent = rkSt === 'clean' ? '✅ Propre' : rkSt === 'warning' ? '⚠️ Alerte' : '❓ Inconnu';
+  $('val-rkhunter').innerHTML = rkSt === 'clean' ? '✅ <b>Propre</b>' : rkSt === 'warning' ? '⚠️ Alerte' : '❓ Inconnu';
   setPill('pill-rkhunter', rkSt);
   $('sub-rkhunter').textContent = `Dernier scan : ${rk.last_scan || '—'}`;
   setCard('card-rkhunter', rkSt === 'warning' ? 'a-red' : 'a-green');
   const aiSt = ai.status || 'unknown';
-  $('val-aide').textContent = aiSt === 'clean' ? '✅ Propre' : aiSt === 'rebase' ? '🔄 Rebase requis' : aiSt === 'changes' ? '🚨 Modifications !' : '❓ Inconnu';
+  $('val-aide').innerHTML = aiSt === 'clean' ? '✅ <b>Propre</b>' : aiSt === 'rebase' ? '🔄 Rebase requis' : aiSt === 'changes' ? '🚨 Modifications !' : '❓ Inconnu';
   setPill('pill-aide', aiSt === 'clean' ? 'clean' : aiSt === 'rebase' ? 'warning' : aiSt === 'changes' ? 'danger' : 'unk');
   $('sub-aide').textContent = aiSt === 'rebase' ? 'sudo vps-secure-aide-rebase' : aiSt === 'changes' ? 'sudo aide --check | head -30' : `Dernier scan : ${ai.last_scan || '—'}`;
   setCard('card-aide', aiSt === 'changes' ? 'a-red' : aiSt === 'clean' ? 'a-green' : '');

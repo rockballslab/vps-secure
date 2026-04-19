@@ -280,7 +280,7 @@
         </div>
 
         <div class="header-right">
-          <button class="btn-icon" id="btn-refresh" onclick="refresh()" title="Actualiser"><i id="refresh-icon" class="ph ph-arrows-clockwise"></i></button>
+          <button class="btn-icon btn-icon-muted" id="btn-refresh" onclick="refresh()" title="Actualiser"><i id="refresh-icon" class="ph ph-arrows-clockwise"></i></button>
           <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion"><i class="ph ph-power"></i></button>
           <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Thème"><i id="theme-icon" class="ph ph-moon"></i></button>
         </div>
@@ -337,7 +337,6 @@
         <div class="card-value" id="val-endlessh-total"><span class="skel"></span></div>
         <div class="card-sub">bots piégés <b>total</b></div>
         <div class="card-sub" style="margin-top:4px" id="sub-endlessh">24h : —</div>
-        <div class="card-sub" style="margin-top:4px" id="sub-endlessh-duration">Durée moy. : —</div>
       </div>
       <div class="card">
         <div class="card-header">
@@ -361,7 +360,7 @@
       </div>
 
       <!-- Système : sans chip, donuts 72px -->
-      <div class="card a-teal" id="card-system">
+      <div class="card a-green" id="card-system">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
           <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);">Système</span>
           <span style="font-size:10px;color:var(--muted);font-weight:500;" id="sys-uptime-inline"></span>
@@ -735,8 +734,7 @@ function updateCards(d) {
   const mem = s.memory || {}, dsk = s.disk || {}, upd = d.updates || {};
   updateScore(d.score);
   $('val-endlessh-total').textContent = fmt(e.total);
-  $('sub-endlessh').innerHTML = `24h : <b>${fmt(e.last24h)}</b>`;
-  $('sub-endlessh-duration').innerHTML = `Durée moy. : <b>${e.avg_duration_fmt || '—'}</b>`;
+  $('sub-endlessh').innerHTML = `24h : <b>${fmt(e.last24h)}</b> · Durée moy. : <b>${e.avg_duration_fmt || '—'}</b>`;
   setCard('card-endlessh', e.last24h > 0 ? 'a-green' : '');
   $('val-crowdsec').textContent = fmt(c.active_bans);
   $('sub-crowdsec').innerHTML = `Alertes 24h : <b>${fmt(c.alerts_24h)}</b>`;
@@ -819,6 +817,10 @@ if (!AUTH) { window.location.href = '/login.html'; }
 function applyTheme(dark) {
   document.body.classList.toggle('dark', dark);
   const ic = $('theme-icon'); if (ic) ic.className = dark ? 'ph ph-sun' : 'ph ph-moon';
+  const mascot = $('mascot');
+  if (mascot && mascot.style.display !== 'none') {
+    mascot.src = dark ? '/mascot-dark.png' : '/mascot-light.png';
+  }
 }
 function toggleTheme() { const dark = !document.body.classList.contains('dark'); sessionStorage.setItem('vps_theme_dark', dark ? '1' : '0'); applyTheme(dark); }
 function logout() { sessionStorage.removeItem('vps_auth'); window.location.href = '/login.html'; }

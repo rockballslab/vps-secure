@@ -680,6 +680,10 @@ fi
 # CrowdSec API sur port 8081 (8080 souvent occupé)
 log_info "Configuration de CrowdSec sur le port 8081..."
 sed -i 's/listen_uri: 127.0.0.1:8080/listen_uri: 127.0.0.1:8081/' /etc/crowdsec/config.yaml 2>/dev/null || true  # optionnel : fichier absent si arborescence CrowdSec modifiée
+# FIX #66 — Restreindre Prometheus CrowdSec à localhost (était exposé publiquement)
+sed -i 's/prometheus_listen_addr: 0\.0\.0\.0/prometheus_listen_addr: 127.0.0.1/' \
+    /etc/crowdsec/config.yaml 2>/dev/null || true
+log_success "CrowdSec Prometheus : restreint à localhost:6060 (non exposé sur Internet)."
 sed -i 's/127.0.0.1:8080/127.0.0.1:8081/' /etc/crowdsec/local_api_credentials.yaml 2>/dev/null || true  # optionnel : même raison
 sed -i 's/127.0.0.1:8080/127.0.0.1:8081/' /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml 2>/dev/null || true  # optionnel : même raison
 
@@ -740,6 +744,7 @@ ufw default deny forward
 ufw allow 2222/tcp comment 'SSH vps-secure'
 ufw allow 80/tcp  comment 'HTTP'
 ufw allow 443/tcp comment 'HTTPS'
+ufw deny  6060/tcp  comment 'CrowdSec Prometheus - localhost only - fix #66'
 
 # Détection de l'interface et Forwarding Docker
 MAIN_IFACE=$(ip route show default 2>/dev/null | awk '/default/ {print $5}' | head -1)
@@ -2013,6 +2018,21 @@ done
 BOTFUNNELEOF
 chmod 750 "$BOT_FUNNEL_SCRIPT"
 log_success "Script Bot Funnel déployé : $BOT_FUNNEL_SCRIPT"
+
+# FIX #67 — Créer le fichier whitelist et whitelister l'IP admin automatiquement
+WHITELIST_FILE_MAIN="/etc/crowdsec/parsers/s00-raw/known-ips.conf"
+mkdir -p "$(dirname "$WHITELIST_FILE_MAIN")"
+touch "$WHITELIST_FILE_MAIN"
+chmod 640 "$WHITELIST_FILE_MAIN"
+
+ADMIN_INSTALL_IP=$(echo "${SSH_CLIENT:-}" | awk '{print $1}')
+if [[ -n "$ADMIN_INSTALL_IP" && "$ADMIN_INSTALL_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "$ADMIN_INSTALL_IP" >> "$WHITELIST_FILE_MAIN"
+    log_success "Bot Funnel : IP admin ($ADMIN_INSTALL_IP) whitelistée — lockout impossible."
+else
+    log_warn "Bot Funnel : IP admin non détectée (SSH_CLIENT vide)."
+    log_warn "  → Ajoute-la manuellement : echo 'TON_IP' >> $WHITELIST_FILE_MAIN"
+fi
 
 # Enregistrer un bouncer dédié pour le Bot Funnel
 BOT_FUNNEL_KEY=""

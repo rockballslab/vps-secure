@@ -900,8 +900,8 @@ function renderContainerCard(c) {
     <div class="card ${isRunning ? 'a-green' : 'a-red'}" data-image-clean="${c.image_clean}" style="position:relative;">
       <div class="card-header">
         <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-          <div style="width:38px;height:38px;border-radius:var(--r-xs);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${meta.bg};border:1px solid ${meta.border};">
-            <span style="font-size:11px;font-weight:900;color:${meta.color};letter-spacing:-0.5px;">${meta.initials}</span>
+          <div style="width:38px;height:38px;border-radius:var(--r-xs);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(45,125,111,0.12);border:1px solid rgba(45,125,111,0.2);">
+            <span style="font-size:11px;font-weight:900;color:#2d7d6f;letter-spacing:-0.5px;">${meta.initials}</span>
           </div>
           <div style="min-width:0;">
             <div style="font-size:14px;font-weight:800;letter-spacing:-0.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${meta.label}</div>
@@ -910,7 +910,7 @@ function renderContainerCard(c) {
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
           <div style="width:8px;height:8px;border-radius:50%;background:${hc.dot};${animStyle}box-shadow:0 0 6px ${hc.dot}88;"></div>
-          <span class="pill ${hc.pillCls}" style="font-size:10px;padding:3px 9px;">${hc.pillTxt}</span>
+          <span class="pill" style="font-size:10px;padding:3px 9px;${(c.state==='running')?'background:rgba(34,197,94,0.15);color:#15803d;border:1px solid rgba(34,197,94,0.25);':'background:rgba(45,125,111,0.15);color:#2d7d6f;border:1px solid rgba(45,125,111,0.25);'}">${hc.pillTxt}</span>
         </div>
       </div>
       ${cpuHtml}

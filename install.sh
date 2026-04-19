@@ -1625,7 +1625,7 @@ fi
 PROPUPD_LOG="/var/log/rkhunter-propupd.log"
 PROPUPD_RECENT=""
 if [[ -f "$PROPUPD_LOG" ]] && find "$PROPUPD_LOG" -mmin -1620 -quiet 2>/dev/null; then
-    PROPUPD_DATE=$(tail -1 "$PROPUPD_LOG" 2>/dev/null | grep -oP '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}' || echo "?")
+    PROPUPD_DATE=$(stat -c "%y" "$PROPUPD_LOG" 2>/dev/null | cut -d'.' -f1 | sed 's/ /T/' | cut -c1-16 || echo "jamais")
     PROPUPD_RECENT="ℹ️ Baseline rkhunter mise à jour par apt le ${PROPUPD_DATE}"
 fi
 

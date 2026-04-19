@@ -12,7 +12,7 @@ services:
     volumes:
       - /var/lib/apt/periodic:/var/lib/apt/periodic:ro
       - /var/log:/var/log:ro
-      - /var/log/vps-monitor-history.json:/var/log/vps-monitor-history.json
+      - /var/lib/vps-monitor:/var/lib/vps-monitor
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/crowdsec/local_api_credentials.yaml:/etc/crowdsec/local_api_credentials.yaml:ro
       - /etc/vps-secure:/etc/vps-secure:ro

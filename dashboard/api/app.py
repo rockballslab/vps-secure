@@ -100,9 +100,17 @@ _rl_lock      = threading.Lock()
 _rl_failed:   dict[str, list[float]] = {}
 _rl_lockouts: dict[str, float]       = {}
 
-def _client_ip(handler: "Handler") -> str:
-    xff = handler.headers.get("X-Forwarded-For", "")
-    return xff.split(",")[0].strip() if xff else handler.client_address[0]
+TRUSTED_PROXIES = {"127.0.0.1", "::1"}
+
+def _client_ip(handler) -> str:
+    peer_ip = handler.client_address[0]
+    if peer_ip in TRUSTED_PROXIES:
+        xff = handler.headers.get("X-Forwarded-For", "").strip()
+        if xff:
+            for ip in reversed([i.strip() for i in xff.split(",")]):
+                if ip not in TRUSTED_PROXIES:
+                    return ip
+    return peer_ip
 
 def _is_rate_limited(ip: str) -> bool:
     now = time.time()
@@ -144,7 +152,7 @@ _cache_time: float  = 0.0
 
 # ── Historique en memoire + persistance disque (24h max) ─────────────────────
 HISTORY_MAX_SECONDS = 86400
-HISTORY_FILE        = "/var/log/vps-monitor-history.json"
+HISTORY_FILE        = "/var/lib/vps-monitor/history.json"
 _history: list[dict] = []
 
 def _load_history() -> None:
@@ -319,6 +327,9 @@ def get_telegram_status() -> dict:
     return {"configured": configured, "report": report, "ssh": ssh_alert}
 
 def toggle_telegram(toggle_type: str) -> dict:
+    ALLOWED_SECTIONS = {"pam", "cron", "report", "ssh_alert"}
+    if section not in ALLOWED_SECTIONS:
+        return {"ok": False, "error": f"Section non autorisée : {section}"}
     if toggle_type == "report":
         cron_path = "/etc/cron.d/vps-secure"
         try:

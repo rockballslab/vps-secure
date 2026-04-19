@@ -18,6 +18,7 @@ import threading
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from urllib.parse import urlparse, parse_qs
 
 # ── Config ────────────────────────────────────────────────────────────────────
 API_HOST            = os.environ.get("API_HOST", "127.0.0.1")
@@ -46,8 +47,8 @@ _PRIV = ("10.", "192.168.", "127.", "::1",
 
 def get_geo(ip: str) -> dict:
     """Retourne {country, code, flag} pour une IP publique.
-    Cache mémoire — ip-api.com gratuit (sans clé, 45 req/min) — timeout 2s.
-    Retourne {} pour les IPs privées/loopback ou en cas d'erreur réseau.
+    Cache memoire — ip-api.com gratuit (sans cle, 45 req/min) — timeout 2s.
+    Retourne {} pour les IPs privees/loopback ou en cas d'erreur reseau.
     """
     if not ip or any(ip.startswith(p) for p in _PRIV):
         return {}
@@ -69,16 +70,13 @@ def get_geo(ip: str) -> dict:
     return {}
 
 def _geo_tag(ip: str) -> str:
-    """Retourne ' · 🇨🇳 CN' pour une IP. Chaîne vide si pas de données."""
+    """Retourne ' · flag CC' pour une IP. Chaine vide si pas de donnees."""
     g = _geo_cache.get(ip, {})
     f, c = g.get("flag", ""), g.get("code", "")
     return f" · {f} {c}" if f else ""
 
 def _prefetch_geo(ips: list) -> None:
-    """Lookup parallèle pour toutes les IPs inconnues du cache.
-    Utilise threading (déjà importé). Timeout total : 3 secondes.
-    Résultats stockés dans _geo_cache — lookups suivants instantanés.
-    """
+    """Lookup parallele pour toutes les IPs inconnues du cache."""
     unknown = [ip for ip in dict.fromkeys(ips) if ip and ip not in _geo_cache]
     if not unknown:
         return
@@ -93,17 +91,16 @@ def _prefetch_geo(ips: list) -> None:
 
 # ── Auth & Rate Limiting ──────────────────────────────────────────────────────
 DASHBOARD_USER   = os.environ.get("DASHBOARD_USER", "admin")
-DASHBOARD_PASS   = os.environ.get("DASHBOARD_PASS", "")   # vide = auth désactivée
+DASHBOARD_PASS   = os.environ.get("DASHBOARD_PASS", "")
 RL_MAX_ATTEMPTS  = int(os.environ.get("AUTH_MAX_ATTEMPTS", "5"))
-RL_WINDOW_SEC    = int(os.environ.get("AUTH_WINDOW_SEC",  "300"))   # 5 min
-RL_LOCKOUT_SEC   = int(os.environ.get("AUTH_LOCKOUT_SEC", "900"))   # 15 min
+RL_WINDOW_SEC    = int(os.environ.get("AUTH_WINDOW_SEC",  "300"))
+RL_LOCKOUT_SEC   = int(os.environ.get("AUTH_LOCKOUT_SEC", "900"))
 
 _rl_lock      = threading.Lock()
 _rl_failed:   dict[str, list[float]] = {}
 _rl_lockouts: dict[str, float]       = {}
 
 def _client_ip(handler: "Handler") -> str:
-    """Extrait l'IP réelle — gère X-Forwarded-For de Caddy."""
     xff = handler.headers.get("X-Forwarded-For", "")
     return xff.split(",")[0].strip() if xff else handler.client_address[0]
 
@@ -124,12 +121,11 @@ def _record_auth_failure(ip: str) -> None:
         _rl_failed.setdefault(ip, []).append(now)
         if len(_rl_failed[ip]) >= RL_MAX_ATTEMPTS:
             _rl_lockouts[ip] = now + RL_LOCKOUT_SEC
-            print(f"[VPS Monitor] ⚠️  RATE LIMIT {ip} — lockout {RL_LOCKOUT_SEC}s", flush=True)
+            print(f"[VPS Monitor] RATE LIMIT {ip} — lockout {RL_LOCKOUT_SEC}s", flush=True)
 
 def _check_basic_auth(handler: "Handler") -> bool:
-    """HTTP Basic Auth avec hmac.compare_digest (anti timing-attack)."""
     if not DASHBOARD_PASS:
-        return True  # Auth désactivée — usage interne 127.0.0.1 uniquement
+        return True
     auth = handler.headers.get("Authorization", "")
     if not auth.startswith("Basic "):
         return False
@@ -146,8 +142,8 @@ def _check_basic_auth(handler: "Handler") -> bool:
 _cache: dict | None = None
 _cache_time: float  = 0.0
 
-# ── Historique en mémoire + persistance disque (24h max) ─────────────────────
-HISTORY_MAX_SECONDS = 86400  # 24h
+# ── Historique en memoire + persistance disque (24h max) ─────────────────────
+HISTORY_MAX_SECONDS = 86400
 HISTORY_FILE        = "/var/log/vps-monitor-history.json"
 _history: list[dict] = []
 
@@ -158,7 +154,7 @@ def _load_history() -> None:
             data = json.load(f)
         cutoff = time.time() - HISTORY_MAX_SECONDS
         _history = [p for p in data if p.get("ts", 0) > cutoff]
-        print(f"[VPS Monitor] Historique chargé : {len(_history)} points", flush=True)
+        print(f"[VPS Monitor] Historique charge : {len(_history)} points", flush=True)
     except Exception:
         _history = []
 
@@ -188,7 +184,7 @@ def get_last_update_date():
         if os.path.exists(path):
             return datetime.fromtimestamp(os.path.getmtime(path)).strftime('%d/%m/%Y %H:%M')
         return "Inconnue"
-    except:
+    except Exception:
         return "Erreur"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -199,16 +195,13 @@ def run(cmd: list[str], timeout: int = 10) -> str:
     except Exception:
         return ""
 
-
 def _parse_ts(s: str) -> float:
     try:
         return datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp()
     except Exception:
         return 0.0
 
-
 def _lapi(path: str) -> list | None:
-    """Query CrowdSec LAPI with bouncer API key."""
     if not CROWDSEC_KEY:
         return None
     try:
@@ -221,15 +214,12 @@ def _lapi(path: str) -> list | None:
     except Exception:
         return None
 
-
 # ── Collectors ────────────────────────────────────────────────────────────────
 def get_endlessh() -> dict:
     out24   = run(["docker", "logs", "--since", "24h", ENDLESSH_CONTAINER], timeout=20)
     out_all = run(["docker", "logs", "--tail", "200000", ENDLESSH_CONTAINER], timeout=30)
     pat     = re.compile(r"ACCEPT|\"accepted\"", re.IGNORECASE)
 
-    # Durée moyenne de piège — parser les lignes CLOSE avec time=
-    # Format shizunge/endlessh-go : "CLOSE host=x.x.x.x port=N time=3723.4 bytes=N"
     durations = []
     for m in re.finditer(r"CLOSE\b.*?\btime=([0-9]+(?:\.[0-9]+)?)", out_all):
         try:
@@ -238,10 +228,9 @@ def get_endlessh() -> dict:
             pass
     avg_duration_s = round(sum(durations) / len(durations)) if durations else 0
 
-    # Formater en h/min/s lisible
     def fmt_duration(s: int) -> str:
         if s <= 0:
-            return "—"
+            return "---"
         if s >= 3600:
             return f"{s // 3600}h{(s % 3600) // 60}m"
         if s >= 60:
@@ -256,7 +245,6 @@ def get_endlessh() -> dict:
         "trap_count":       len(durations),
     }
 
-
 def get_crowdsec() -> dict:
     active_bans = 0
     alerts_24h  = 0
@@ -264,7 +252,6 @@ def get_crowdsec() -> dict:
     if CROWDSEC_KEY:
         decisions = _lapi("/v1/decisions?limit=50000")
         active_bans = len(decisions) if decisions else 0
-
         alerts = _lapi("/v1/alerts?limit=500")
         if alerts:
             cutoff = time.time() - 86400
@@ -296,24 +283,18 @@ def get_crowdsec() -> dict:
 
     return {"active_bans": active_bans, "alerts_24h": alerts_24h}
 
-
 def get_bouncer_status() -> dict:
-    # Vérifier que le bouncer firewall communique avec l'API
-    # Un bouncer actif crée des décisions — on vérifie juste si l'API répond
     try:
         req = urllib.request.Request(
             f"{CROWDSEC_URL}/v1/decisions",
             headers={"X-Api-Key": CROWDSEC_KEY} if CROWDSEC_KEY else {},
         )
         with urllib.request.urlopen(req, timeout=5) as resp:
-            # Si l'API répond = CrowdSec actif = bouncer présumé actif
             return {"status": "active"}
     except Exception:
         return {"status": "unknown"}
 
-
 def get_telegram_status() -> dict:
-    """Statut des alertes Telegram — rapport quotidien et alerte SSH."""
     conf = "/etc/vps-secure/telegram.conf"
     configured = os.path.exists(conf)
 
@@ -337,9 +318,7 @@ def get_telegram_status() -> dict:
 
     return {"configured": configured, "report": report, "ssh": ssh_alert}
 
-
 def toggle_telegram(toggle_type: str) -> dict:
-    """Activer/désactiver rapport quotidien ou alerte SSH Telegram."""
     if toggle_type == "report":
         cron_path = "/etc/cron.d/vps-secure"
         try:
@@ -372,7 +351,6 @@ def toggle_telegram(toggle_type: str) -> dict:
 
     return {"ok": False, "error": "type invalide"}
 
-
 def get_ufw() -> dict:
     total = 0
     for path in ["/var/log/ufw.log", "/var/log/ufw.log.1"]:
@@ -383,11 +361,9 @@ def get_ufw() -> dict:
             pass
     return {"total": total}
 
-
 def get_auditd() -> dict:
     sudo_today = 0
     today_iso = datetime.now().strftime("%Y-%m-%d")
-
     for path in ["/var/log/auth.log", "/var/log/secure"]:
         try:
             with open(path, errors="replace") as f:
@@ -397,23 +373,18 @@ def get_auditd() -> dict:
             break
         except Exception:
             continue
-
     return {"sudo_today": sudo_today}
-
 
 def get_rkhunter() -> dict:
     status    = "unknown"
     last_scan = "Jamais"
-
     try:
         with open("/var/log/rkhunter.log", errors="replace") as f:
             content = f.read()
-
         if "Warning:" in content:
             status = "warning"
         elif len(content) > 100:
             status = "clean"
-
         dates = re.findall(r"Start date is\s+(.+?)\n", content)
         if dates:
             try:
@@ -423,15 +394,11 @@ def get_rkhunter() -> dict:
                 last_scan = dates[-1].strip()
     except Exception:
         pass
-
     return {"status": status, "last_scan": last_scan}
-
 
 def get_aide() -> dict:
     status    = "unknown"
     last_scan = "Jamais"
-
-    # Lire l'exit code du script vps-secure-aide-check.sh
     try:
         with open("/var/log/aide-daily.exit") as f:
             exit_code = int(f.read().strip())
@@ -441,45 +408,38 @@ def get_aide() -> dict:
             status = "unknown"
         elif (exit_code & 7) != 0:
             if os.path.exists("/var/log/aide-daily.exit.context"):
-                status = "rebase"    # apt a tourné — rebase attendu
+                status = "rebase"
             else:
-                status = "changes"   # aucune activité apt — suspect
+                status = "changes"
         else:
             status = "unknown"
     except Exception:
         pass
-
-    # Date depuis aide-daily.log
     try:
         p = Path("/var/log/aide-daily.log")
         if p.exists() and p.stat().st_size > 0:
             last_scan = datetime.fromtimestamp(p.stat().st_mtime).strftime("%d/%m/%Y %H:%M")
     except Exception:
         pass
-
     return {"status": status, "last_scan": last_scan}
 
-
 def get_system() -> dict:
-    # Uptime
     try:
         with open("/proc/uptime") as f:
             sec = float(f.read().split()[0])
         d, h, m = int(sec // 86400), int(sec % 86400 // 3600), int(sec % 3600 // 60)
         uptime_str = (f"{d}j {h}h" if d else f"{h}h {m}m")
     except Exception:
-        uptime_str = "—"
+        uptime_str = "---"
 
-    # Load
     try:
         with open("/proc/loadavg") as f:
             p = f.read().split()
         load = {"1m": p[0], "5m": p[1], "15m": p[2]}
         load["cores"] = os.cpu_count() or 1
     except Exception:
-        load = {"1m": "—", "5m": "—", "15m": "—"}
+        load = {"1m": "---", "5m": "---", "15m": "---"}
 
-    # Memory
     memory = {"total_mb": 0, "used_mb": 0, "pct": 0.0}
     try:
         mem: dict[str, int] = {}
@@ -497,7 +457,6 @@ def get_system() -> dict:
     except Exception:
         pass
 
-    # Disk
     disk_info = {"total_gb": 0.0, "used_gb": 0.0, "pct": 0.0}
     try:
         du = shutil.disk_usage(HOSTFS)
@@ -509,23 +468,19 @@ def get_system() -> dict:
     except Exception:
         pass
 
-    # IP publique du VPS
-    vps_ip = "—"
+    vps_ip = "---"
     try:
         with urllib.request.urlopen("https://api.ipify.org?format=json", timeout=5) as resp:
-            vps_ip = json.loads(resp.read()).get("ip", "—")
+            vps_ip = json.loads(resp.read()).get("ip", "---")
     except Exception:
         pass
 
     return {"uptime": uptime_str, "load": load, "memory": memory, "disk": disk_info, "ip": vps_ip}
 
-
 def get_ssh_last() -> dict:
-    """Dernière connexion SSH réussie — IP + heure."""
-    last_ip   = "—"
-    last_time = "—"
-
-    for path in ["/var/log/auth.log", "/var/log/secure"]:
+    last_ip   = "---"
+    last_time = "---"
+    for path in ["/var/log/sshd.log", "/var/log/auth.log", "/var/log/secure"]:
         try:
             with open(path, errors="replace") as f:
                 lines = f.readlines()
@@ -548,12 +503,9 @@ def get_ssh_last() -> dict:
             break
         except Exception:
             continue
-
     return {"ip": last_ip, "time": last_time}
 
-
 def get_updates() -> dict:
-    """Nombre de paquets avec mise à jour disponible."""
     count = 0
     try:
         out = run(["apt", "list", "--upgradable"], timeout=15)
@@ -561,7 +513,6 @@ def get_updates() -> dict:
     except Exception:
         pass
     return {"count": count}
-
 
 def get_connections() -> dict:
     count = 0
@@ -577,7 +528,6 @@ def get_connections() -> dict:
         pass
     return {"established": count}
 
-
 def get_open_ports() -> dict:
     EXPECTED = {22, 25, 53, 80, 443, 2222, 5055, 6060, 8081}
     ports = []
@@ -590,7 +540,6 @@ def get_open_ports() -> dict:
                 parts = line.split()
                 if len(parts) < 4:
                     continue
-                # État 0A = LISTEN
                 if parts[3] != "0A":
                     continue
                 local = parts[1]
@@ -612,111 +561,271 @@ def get_open_ports() -> dict:
         "alert":      len(unexpected) > 0,
     }
 
-def get_alerts() -> list:
-    """Journal de sécurité 24h — 4 statuts :
-       action      -> 🔴 Action requise   (doit être traité manuellement)
-       detected    -> 👁️  Détectée         (anomalie, protection active)
-       reported    -> 📢 Signalée          (notifié via Telegram)
-       neutralized -> ✅ Neutralisée       (VPS-SECURE a géré automatiquement)
-    """
+def get_alerts(period_hours: int = 24) -> list:
+    """Journal de securite — period_hours : 24 (1j)  168 (7j)  720 (30j)"""
     alerts = []
     now    = time.time()
-    cutoff = now - 86400  # 24h
+    cutoff = now - (period_hours * 3600)
 
-    # ── 1. CrowdSec bans → ✅ Neutralisée ─────────────────────────────────────
-    try:
-        out = run(
-            ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "alerts",
-             "list", "--since", "24h", "-o", "json"],
-            timeout=15,
-        )
-        cs_list   = json.loads(out) if out.strip().startswith("[") else []
-        ban_count = len(cs_list) if cs_list else 0
-        if ban_count > 0:
-            last_ts = max((_parse_ts(a.get("created_at", "")) for a in cs_list), default=now)
-            s = "s" if ban_count > 1 else ""
+    def fmt_dt(ts: float) -> str:
+        return datetime.fromtimestamp(ts).strftime("%d/%m %H:%M")
+
+    # ── 1. SSH ────────────────────────────────────────────────────────────────
+    ssh_fails: dict = {}
+    ssh_ok:    dict = {}
+
+    for auth_path in ["/var/log/sshd.log", "/var/log/auth.log", "/var/log/secure"]:
+        try:
+            with open(auth_path, errors="replace") as f:
+                lines = f.readlines()
+            year = datetime.now().year
+            for line in lines:
+                if "sshd" not in line:
+                    continue
+                ts = 0.0
+                m_iso = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+                m_sys = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
+                if m_iso:
+                    try:
+                        ts = datetime.fromisoformat(m_iso.group(1)).timestamp()
+                    except Exception:
+                        continue
+                elif m_sys:
+                    try:
+                        ts = datetime.strptime(
+                            f"{year} {m_sys.group(1).strip()}", "%Y %b %d %H:%M:%S"
+                        ).timestamp()
+                    except Exception:
+                        continue
+                else:
+                    continue
+                if ts < cutoff:
+                    continue
+
+                m_ip = re.search(r"from\s+(\S+)\s+port", line)
+                ip   = m_ip.group(1) if m_ip else ""
+
+                if any(kw in line for kw in [
+                    "Failed password", "Failed publickey",
+                    "Invalid user", "Connection closed by invalid user"
+                ]):
+                    if not ip:
+                        continue
+                    m_user = re.search(r"(?:for invalid user|for)\s+(\S+)\s+from", line)
+                    user   = m_user.group(1) if m_user else "inconnu"
+                    if ip not in ssh_fails:
+                        ssh_fails[ip] = {"count": 0, "ts": ts, "user": user}
+                    ssh_fails[ip]["count"] += 1
+                    ssh_fails[ip]["ts"] = max(ssh_fails[ip]["ts"], ts)
+
+                elif "Accepted publickey" in line or "Accepted password" in line:
+                    if not ip:
+                        continue
+                    m_user = re.search(r"for\s+(\S+)\s+from", line)
+                    user   = m_user.group(1) if m_user else "inconnu"
+                    if ip not in ssh_ok:
+                        ssh_ok[ip] = {"count": 0, "ts": ts, "user": user}
+                    ssh_ok[ip]["count"] += 1
+                    ssh_ok[ip]["ts"] = max(ssh_ok[ip]["ts"], ts)
+            break
+        except Exception:
+            continue
+
+    bouncer_active = get_bouncer_status().get("status") == "active"
+    for ip, data in sorted(ssh_fails.items(), key=lambda x: -x[1]["count"])[:15]:
+        count = data["count"]
+        if count >= 20 and not bouncer_active:
+            status, icon, label = "action", "🔴", "Action requise"
+        else:
+            status, icon, label = "detected", "👁️", "Detectee"
+        alerts.append({
+            "service":  "SSH :2222",
+            "detail":   f"{count} tentative(s) echouee(s) — user cible : {data['user']}",
+            "ip":       ip,
+            "datetime": fmt_dt(data["ts"]),
+            "status":   status,
+            "icon":     icon,
+            "label":    label,
+            "_ts":      data["ts"],
+        })
+
+    for ip, data in sorted(ssh_ok.items(), key=lambda x: -x[1]["ts"])[:5]:
+        alerts.append({
+            "service":  "SSH :2222",
+            "detail":   f"Connexion reussie — {data['user']} ({data['count']}x)",
+            "ip":       ip,
+            "datetime": fmt_dt(data["ts"]),
+            "status":   "reported",
+            "icon":     "🔑",
+            "label":    "Signalee",
+            "_ts":      data["ts"],
+        })
+
+    # ── 2. UFW ────────────────────────────────────────────────────────────────
+    ufw_by_key: dict = {}
+    PORTS_WATCHED = {"2222", "22", "80", "443", "3389", "5900", "6379", "8080", "27017"}
+
+    for log_path in ["/var/log/ufw.log", "/var/log/ufw.log.1",
+                     "/var/log/kern.log", "/var/log/syslog"]:
+        try:
+            with open(log_path, errors="replace") as f:
+                lines = f.readlines()
+            year = datetime.now().year
+            found_any = False
+            for line in lines:
+                if "UFW BLOCK" not in line:
+                    continue
+                found_any = True
+                m_iso = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+                m_sys = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
+                if m_iso:
+                    try:
+                        ts = datetime.fromisoformat(m_iso.group(1)).timestamp()
+                    except Exception:
+                        continue
+                elif m_sys:
+                    try:
+                        ts = datetime.strptime(
+                            f"{year} {m_sys.group(1).strip()}", "%Y %b %d %H:%M:%S"
+                        ).timestamp()
+                    except Exception:
+                        continue
+                else:
+                    continue
+                if ts < cutoff:
+                    continue
+                m_src = re.search(r"SRC=(\S+)", line)
+                m_dpt = re.search(r"DPT=(\d+)", line)
+                if not m_src:
+                    continue
+                ip  = m_src.group(1)
+                dpt = m_dpt.group(1) if m_dpt else "?"
+                if dpt not in PORTS_WATCHED:
+                    continue
+                key = f"{ip}:{dpt}"
+                if key not in ufw_by_key:
+                    ufw_by_key[key] = {"count": 0, "ts": ts, "ip": ip, "dpt": dpt}
+                ufw_by_key[key]["count"] += 1
+                ufw_by_key[key]["ts"] = max(ufw_by_key[key]["ts"], ts)
+            if found_any:
+                break
+        except Exception:
+            continue
+
+    if ufw_by_key:
+        for key, data in sorted(ufw_by_key.items(), key=lambda x: -x[1]["count"])[:15]:
+            port_label = "SSH :2222" if data["dpt"] == "2222" else f"port {data['dpt']}"
             alerts.append({
-                "service": "CrowdSec",
-                "status":  "neutralized",
-                "icon":    "✅",
-                "label":   "Neutralisée",
-                "detail":  f"{ban_count} IP{s} bannie{s} automatiquement",
-                "ts":      last_ts,
+                "service":  "UFW",
+                "detail":   f"Bloquee sur {port_label} — {data['count']}x sur la periode",
+                "ip":       data["ip"],
+                "datetime": fmt_dt(data["ts"]),
+                "status":   "neutralized",
+                "icon":     "✅",
+                "label":    "Neutralisee",
+                "_ts":      data["ts"],
             })
-    except Exception:
-        pass
-
-    # ── 2. Endlessh bots → ✅ Neutralisée ─────────────────────────────────────
-    try:
-        out24     = run(["docker", "logs", "--since", "24h", ENDLESSH_CONTAINER], timeout=20)
-        bot_count = len(re.findall(r'ACCEPT|"accepted"', out24, re.IGNORECASE))
-        if bot_count > 0:
-            s = "s" if bot_count > 1 else ""
-            alerts.append({
-                "service": "Endlessh",
-                "status":  "neutralized",
-                "icon":    "✅",
-                "label":   "Neutralisée",
-                "detail":  f"{bot_count} bot{s} piégé{s} sur port 22",
-                "ts":      now,
-            })
-    except Exception:
-        pass
-
-    # ── 3. UFW blocks → ✅ Neutralisée ────────────────────────────────────────
-    try:
+    else:
         ufw_total = 0
-        for path in ["/var/log/ufw.log", "/var/log/ufw.log.1"]:
+        for p in ["/var/log/ufw.log", "/var/log/ufw.log.1"]:
             try:
-                with open(path, errors="replace") as f:
+                with open(p, errors="replace") as f:
                     ufw_total += f.read().count("UFW BLOCK")
             except Exception:
                 pass
         if ufw_total > 0:
             s = "s" if ufw_total > 1 else ""
             alerts.append({
-                "service": "UFW",
-                "status":  "neutralized",
-                "icon":    "✅",
-                "label":   "Neutralisée",
-                "detail":  f"{ufw_total} connexion{s} bloquée{s} (cumul 24h)",
-                "ts":      now,
+                "service":  "UFW",
+                "detail":   f"{ufw_total} connexion{s} bloquee{s} (cumul {period_hours}h)",
+                "ip":       "---",
+                "datetime": fmt_dt(now),
+                "status":   "neutralized",
+                "icon":     "✅",
+                "label":    "Neutralisee",
+                "_ts":      now,
+            })
+
+    # ── 3. CrowdSec ───────────────────────────────────────────────────────────
+    try:
+        since_str = f"{period_hours}h"
+        out = run(
+            ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "alerts",
+             "list", "--since", since_str, "-o", "json"],
+            timeout=15,
+        )
+        cs_list = json.loads(out) if out.strip().startswith("[") else []
+        ips_seen = set()
+        for a in (cs_list or [])[:30]:
+            ts = _parse_ts(a.get("created_at", ""))
+            if ts < cutoff:
+                continue
+            src    = a.get("source", {})
+            ip     = src.get("ip", "IP inconnue")
+            reason = a.get("scenario", a.get("reason", "Regle CrowdSec"))
+            if ip in ips_seen:
+                continue
+            ips_seen.add(ip)
+            alerts.append({
+                "service":  "CrowdSec",
+                "detail":   reason[:80],
+                "ip":       ip,
+                "datetime": fmt_dt(ts),
+                "status":   "neutralized",
+                "icon":     "✅",
+                "label":    "Neutralisee",
+                "_ts":      ts,
+            })
+        if not ips_seen and cs_list:
+            ban_count = len(cs_list)
+            s = "s" if ban_count > 1 else ""
+            alerts.append({
+                "service":  "CrowdSec",
+                "detail":   f"{ban_count} IP{s} bannie{s} automatiquement",
+                "ip":       "---",
+                "datetime": fmt_dt(now),
+                "status":   "neutralized",
+                "icon":     "✅",
+                "label":    "Neutralisee",
+                "_ts":      now,
             })
     except Exception:
         pass
 
-    # ── 4. Telegram actif → 📢 Signalée ───────────────────────────────────────
+    # ── 4. Telegram ───────────────────────────────────────────────────────────
     try:
         tg = get_telegram_status()
         if tg.get("configured") and tg.get("report"):
             alerts.append({
-                "service": "Telegram",
-                "status":  "reported",
-                "icon":    "📢",
-                "label":   "Signalée",
-                "detail":  "Rapport quotidien actif — tu es notifié chaque matin à 09h00",
-                "ts":      now,
+                "service":  "Telegram",
+                "detail":   "Rapport quotidien actif — notifie chaque matin a 09h00",
+                "ip":       "---",
+                "datetime": fmt_dt(now),
+                "status":   "reported",
+                "icon":     "📢",
+                "label":    "Signalee",
+                "_ts":      now,
             })
         if tg.get("configured") and tg.get("ssh"):
             alerts.append({
-                "service": "Telegram",
-                "status":  "reported",
-                "icon":    "📢",
-                "label":   "Signalée",
-                "detail":  "Alerte SSH active — tu es notifié à chaque connexion",
-                "ts":      now,
+                "service":  "Telegram",
+                "detail":   "Alerte SSH active — notifie a chaque connexion",
+                "ip":       "---",
+                "datetime": fmt_dt(now),
+                "status":   "reported",
+                "icon":     "📢",
+                "label":    "Signalee",
+                "_ts":      now,
             })
     except Exception:
         pass
 
-    # ── 5. rkhunter → 👁️ Détectée ou 🔴 Action requise ───────────────────────
-    # Warnings sur binaires critiques = Action requise
+    # ── 5. rkhunter ───────────────────────────────────────────────────────────
     CRIT_BINS = ["/bin/", "/sbin/", "/usr/bin/", "/usr/sbin/"]
-    # Faux positifs rkhunter connus → silence total (ne pas alarmer pour rien)
     FP = [
-        "lwp-request", "lwp-rget", "GET", "HEAD", "POST",
-        "mail", "mailx", "hidden files", "hidden directories",
-        "package manager", "gpg", "passwd file", "group file",
+        "lwp-request", "lwp-rget", "GET", "HEAD", "POST", "mail", "mailx",
+        "hidden files", "hidden directories", "package manager",
+        "gpg", "passwd file", "group file",
     ]
     try:
         with open("/var/log/rkhunter.log", errors="replace") as f:
@@ -733,130 +842,111 @@ def get_alerts() -> list:
         for w in re.findall(r"Warning:\s+(.+?)(?:\n|$)", content):
             w = w.strip()
             if not w or any(fp.lower() in w.lower() for fp in FP):
-                continue   # faux positif connu → silence
+                continue
             is_crit = any(b in w for b in CRIT_BINS)
             alerts.append({
-                "service": "rkhunter",
-                "status":  "action" if is_crit else "detected",
-                "icon":    "🔴" if is_crit else "👁️",
-                "label":   "Action requise" if is_crit else "Détectée",
-                "detail":  w[:120],
-                "ts":      scan_ts,
+                "service":  "rkhunter",
+                "detail":   w[:120],
+                "ip":       "---",
+                "datetime": fmt_dt(scan_ts),
+                "status":   "action" if is_crit else "detected",
+                "icon":     "🔴" if is_crit else "👁️",
+                "label":    "Action requise" if is_crit else "Detectee",
+                "_ts":      scan_ts,
             })
     except Exception:
         pass
 
-    # ── 6. AIDE integrity ─────────────────────────────────────────────────────
+    # ── 6. AIDE ───────────────────────────────────────────────────────────────
     try:
         with open("/var/log/aide-daily.exit") as f:
             exit_code = int(f.read().strip())
         aide_ts = now
         try:
             p = Path("/var/log/aide-daily.log")
-            if p.exists() and p.stat().st_size > 0:
+            if p.exists():
                 aide_ts = p.stat().st_mtime
         except Exception:
             pass
-        if (exit_code & 7) != 0:
+        if aide_ts >= cutoff and (exit_code & 7) != 0:
             has_ctx = os.path.exists("/var/log/aide-daily.exit.context")
             if has_ctx:
-                # Modif après apt upgrade → normal, pas d'urgence
                 alerts.append({
-                    "service": "AIDE",
-                    "status":  "reported",
-                    "icon":    "📢",
-                    "label":   "Signalée",
-                    "detail":  "Modifications liées à une mise à jour apt — comportement attendu",
-                    "ts":      aide_ts,
+                    "service":  "AIDE",
+                    "detail":   "Modifications liees a une MAJ apt — comportement attendu",
+                    "ip":       "---",
+                    "datetime": fmt_dt(aide_ts),
+                    "status":   "reported",
+                    "icon":     "📢",
+                    "label":    "Signalee",
+                    "_ts":      aide_ts,
                 })
             else:
-                # Modif sans contexte apt → suspect
                 alerts.append({
-                    "service": "AIDE",
-                    "status":  "action",
-                    "icon":    "🔴",
-                    "label":   "Action requise",
-                    "detail":  "Fichiers système modifiés hors mise à jour — vérification requise",
-                    "ts":      aide_ts,
+                    "service":  "AIDE",
+                    "detail":   "Fichiers systeme modifies hors MAJ — verification requise",
+                    "ip":       "---",
+                    "datetime": fmt_dt(aide_ts),
+                    "status":   "action",
+                    "icon":     "🔴",
+                    "label":    "Action requise",
+                    "_ts":      aide_ts,
                 })
     except Exception:
         pass
 
-    # ── 7. SSH brute force (seuil ≥ 20 tentatives en 24h) ────────────────────
-    fail_count   = 0
-    last_fail_ts = cutoff
-    last_fail_ip = "IP inconnue"
-    for path in ["/var/log/auth.log", "/var/log/secure"]:
-        try:
-            with open(path, errors="replace") as f:
-                for line in f:
-                    if (("Failed password" not in line and "Invalid user" not in line)
-                            or "sshd" not in line):
-                        continue
-                    m_t  = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
-                    m_t2 = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
-                    ts = 0.0
-                    if m_t:
-                        try:
-                            ts = datetime.fromisoformat(m_t.group(1)).timestamp()
-                        except Exception:
-                            pass
-                    elif m_t2:
-                        try:
-                            ts = datetime.strptime(
-                                f"{datetime.now().year} {m_t2.group(1).strip()}",
-                                "%Y %b %d %H:%M:%S",
-                            ).timestamp()
-                        except Exception:
-                            pass
-                    if ts > cutoff:
-                        fail_count += 1
-                        if ts > last_fail_ts:
-                            last_fail_ts = ts
-                            m_ip = re.search(r"from\s+(\S+)\s+port", line)
-                            last_fail_ip = m_ip.group(1) if m_ip else "IP inconnue"
-            break
-        except Exception:
-            continue
-
-    if fail_count >= 20:
-        bouncer_ok = get_bouncer_status().get("status") == "active"
-        if not bouncer_ok:
-            alerts.append({
-                "service": "SSH",
-                "status":  "action",
-                "icon":    "🔴",
-                "label":   "Action requise",
-                "detail":  (f"{fail_count} tentatives SSH + bouncer inactif "
-                            f"— protection compromise"),
-                "ts":      last_fail_ts,
-            })
-        else:
-            alerts.append({
-                "service": "SSH",
-                "status":  "detected",
-                "icon":    "👁️",
-                "label":   "Détectée",
-                "detail":  (f"{fail_count} tentatives bloquées par CrowdSec "
-                            f"(dernière IP : {last_fail_ip})"),
-                "ts":      last_fail_ts,
-            })
-
-    # ── 8. Ports inattendus → 🔴 Action requise ───────────────────────────────
+    # ── 7. Ports inattendus ────────────────────────────────────────────────────
     try:
         for p in get_open_ports().get("unexpected", []):
             alerts.append({
-                "service": "Ports",
-                "status":  "action",
-                "icon":    "🔴",
-                "label":   "Action requise",
-                "detail":  f"Port inattendu en écoute : {p['port']} — quelle app l'utilise ?",
-                "ts":      now,
+                "service":  "Ports",
+                "detail":   f"Port inattendu en ecoute : {p['port']}",
+                "ip":       "---",
+                "datetime": fmt_dt(now),
+                "status":   "action",
+                "icon":     "🔴",
+                "label":    "Action requise",
+                "_ts":      now,
             })
     except Exception:
         pass
 
-    # ── 9. Disque ─────────────────────────────────────────────────────────────
+    # ── 8. Endlessh ───────────────────────────────────────────────────────────
+    try:
+        e_data    = get_endlessh()
+        bot_count = e_data.get("last24h", 0)
+        if bot_count > 0:
+            s = "s" if bot_count > 1 else ""
+            alerts.append({
+                "service":  "Endlessh",
+                "detail":   f"{bot_count} bot{s} piege{s} sur port 22 (24h)",
+                "ip":       "---",
+                "datetime": fmt_dt(now),
+                "status":   "neutralized",
+                "icon":     "✅",
+                "label":    "Neutralisee",
+                "_ts":      now - 60,
+            })
+    except Exception:
+        pass
+
+    # ── 9. Bouncer inactif ────────────────────────────────────────────────────
+    try:
+        if get_bouncer_status().get("status") != "active":
+            alerts.append({
+                "service":  "CrowdSec",
+                "detail":   "Bouncer inactif — IPs malveillantes plus bannies",
+                "ip":       "---",
+                "datetime": fmt_dt(now),
+                "status":   "action",
+                "icon":     "🔴",
+                "label":    "Action requise",
+                "_ts":      now,
+            })
+    except Exception:
+        pass
+
+    # ── 10. Disque / Memoire ──────────────────────────────────────────────────
     try:
         du  = shutil.disk_usage(HOSTFS)
         pct = round(du.used / du.total * 100, 1)
@@ -864,26 +954,21 @@ def get_alerts() -> list:
         tgb = round(du.total / 1e9, 1)
         if pct > 90:
             alerts.append({
-                "service": "Disque",
-                "status":  "action",
-                "icon":    "🔴",
-                "label":   "Action requise",
-                "detail":  f"Espace disque à {pct}% ({ugb}Go / {tgb}Go) — risque de crash",
-                "ts":      now,
+                "service": "Disque", "ip": "---",
+                "detail":  f"Espace disque a {pct}% ({ugb}Go / {tgb}Go) — risque crash",
+                "datetime": fmt_dt(now), "status": "action",
+                "icon": "🔴", "label": "Action requise", "_ts": now,
             })
         elif pct > 80:
             alerts.append({
-                "service": "Disque",
-                "status":  "detected",
-                "icon":    "👁️",
-                "label":   "Détectée",
-                "detail":  f"Espace disque à {pct}% ({ugb}Go / {tgb}Go) — prévoir du nettoyage",
-                "ts":      now,
+                "service": "Disque", "ip": "---",
+                "detail":  f"Espace disque a {pct}% ({ugb}Go / {tgb}Go) — prevoir nettoyage",
+                "datetime": fmt_dt(now), "status": "detected",
+                "icon": "👁️", "label": "Detectee", "_ts": now,
             })
     except Exception:
         pass
 
-    # ── 10. Mémoire ───────────────────────────────────────────────────────────
     try:
         mem: dict[str, int] = {}
         with open("/proc/meminfo") as f:
@@ -895,76 +980,63 @@ def get_alerts() -> list:
         pct   = round(used / total * 100, 1)
         if pct > 95:
             alerts.append({
-                "service": "Mémoire",
-                "status":  "action",
-                "icon":    "🔴",
-                "label":   "Action requise",
-                "detail":  f"RAM à {pct}% ({used // 1024}Mo / {total // 1024}Mo) — risque crash containers",
-                "ts":      now,
+                "service": "Memoire", "ip": "---",
+                "detail":  f"RAM a {pct}% ({used // 1024}Mo / {total // 1024}Mo) — risque crash",
+                "datetime": fmt_dt(now), "status": "action",
+                "icon": "🔴", "label": "Action requise", "_ts": now,
             })
         elif pct > 85:
             alerts.append({
-                "service": "Mémoire",
-                "status":  "detected",
-                "icon":    "👁️",
-                "label":   "Détectée",
-                "detail":  f"RAM à {pct}% ({used // 1024}Mo / {total // 1024}Mo) — surveiller",
-                "ts":      now,
+                "service": "Memoire", "ip": "---",
+                "detail":  f"RAM a {pct}% ({used // 1024}Mo / {total // 1024}Mo) — surveiller",
+                "datetime": fmt_dt(now), "status": "detected",
+                "icon": "👁️", "label": "Detectee", "_ts": now,
             })
     except Exception:
         pass
 
-    # ── 11. CrowdSec bouncer inactif → 🔴 Action requise ──────────────────────
-    try:
-        if get_bouncer_status().get("status") != "active":
-            alerts.append({
-                "service": "CrowdSec",
-                "status":  "action",
-                "icon":    "🔴",
-                "label":   "Action requise",
-                "detail":  "Bouncer inactif — les IPs malveillantes ne sont plus bannies",
-                "ts":      now,
-            })
-    except Exception:
-        pass
-
-    # ── 12. Mises à jour en retard (> 30 paquets) → 👁️ Détectée ──────────────
+    # ── 11. MAJ critiques ─────────────────────────────────────────────────────
     try:
         out   = run(["apt", "list", "--upgradable"], timeout=15)
         count = len([l for l in out.splitlines() if "upgradable from" in l])
         if count > 30:
             alerts.append({
-                "service": "Mises à jour",
-                "status":  "detected",
-                "icon":    "👁️",
-                "label":   "Détectée",
-                "detail":  f"{count} paquets en retard — mise à jour manuelle recommandée",
-                "ts":      now,
+                "service": "Mises a jour", "ip": "---",
+                "detail":  f"{count} paquets en retard — MAJ manuelle recommandee",
+                "datetime": fmt_dt(now), "status": "detected",
+                "icon": "👁️", "label": "Detectee", "_ts": now,
             })
     except Exception:
         pass
 
-    # ── Format timestamps & tri ───────────────────────────────────────────────
+    # ── Geolocalisation ───────────────────────────────────────────────────────
+    all_ips = [a["ip"] for a in alerts if a.get("ip") and a["ip"] not in ("---", "")]
+    if all_ips:
+        _prefetch_geo(all_ips)
+        for a in alerts:
+            ip = a.get("ip", "")
+            if ip and ip != "---":
+                tag = _geo_tag(ip)
+                if tag:
+                    a["ip"] = ip + tag
+
     ORDER = {"action": 0, "detected": 1, "reported": 2, "neutralized": 3}
+    alerts.sort(key=lambda x: (ORDER.get(x["status"], 9), -x.get("_ts", 0)))
     for a in alerts:
-        try:
-            a["datetime"] = datetime.fromtimestamp(a["ts"]).strftime("%d/%m %H:%M")
-        except Exception:
-            a["datetime"] = "—"
-        del a["ts"]
-    alerts.sort(key=lambda x: ORDER.get(x["status"], 9))
-    return alerts
+        a.pop("_ts", None)
+
+    return alerts[:100]
+
 
 def get_timeline() -> list:
-    """20 derniers événements sécurité triés par heure (SSH, bans CrowdSec, sudo critique, rkhunter)."""
+    """25 derniers evenements securite (SSH, bans CrowdSec, sudo critique, rkhunter)."""
     events = []
     now = time.time()
-    cutoff = now - 86400  # 24h
+    cutoff = now - 86400
 
-    # ── SSH connections (auth.log) ──
-    ssh_by_ip: dict = {}  # grouper par IP — une seule ligne avec count
+    ssh_by_ip: dict = {}
 
-    for path in ["/var/log/auth.log", "/var/log/secure"]:
+    for path in ["/var/log/sshd.log", "/var/log/auth.log", "/var/log/secure"]:
         try:
             with open(path, errors="replace") as f:
                 lines = f.readlines()
@@ -1020,7 +1092,7 @@ def get_timeline() -> list:
                         "type":  "ssh_fail",
                         "icon":  "⚠️",
                         "color": "rose",
-                        "title": "Tentative SSH échouée",
+                        "title": "Tentative SSH echouee",
                         "detail": m_ip.group(1) if m_ip else "IP inconnue",
                         "_ip":   m_ip.group(1) if m_ip else "",
                         "count": 1,
@@ -1029,7 +1101,6 @@ def get_timeline() -> list:
         except Exception:
             continue
 
-    # Convertir ssh_by_ip en events
     for ip, data in ssh_by_ip.items():
         events.append({
             "ts":    data["ts"],
@@ -1042,22 +1113,21 @@ def get_timeline() -> list:
             "count": data["count"],
         })
 
-            
-    # ── CrowdSec bans (via docker exec cscli) ──
+    # ── CrowdSec bans ─────────────────────────────────────────────────────────
     try:
         out = run(
             ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "alerts", "list",
              "--since", "24h", "-o", "json"],
             timeout=15,
         )
-        alerts = json.loads(out) if out.strip().startswith("[") else []
-        for a in (alerts or []):
+        cs_alerts = json.loads(out) if out.strip().startswith("[") else []
+        for a in (cs_alerts or []):
             ts = _parse_ts(a.get("created_at", ""))
             if ts < cutoff:
                 continue
             src = a.get("source", {})
             ip  = src.get("ip", "IP inconnue")
-            reason = a.get("scenario", a.get("reason", "Règle CrowdSec"))
+            reason = a.get("scenario", a.get("reason", "Regle CrowdSec"))
             events.append({
                 "ts":    ts,
                 "type":  "ban",
@@ -1070,9 +1140,8 @@ def get_timeline() -> list:
     except Exception:
         pass
 
-    # ── Sudo commands critiques ──
+    # ── Sudo critiques ────────────────────────────────────────────────────────
     CRITICAL_CMDS = ["useradd", "userdel", "passwd", "chmod 777", "visudo", "crontab", "iptables", "ufw"]
-    today_iso = datetime.now().strftime("%Y-%m-%d")
     for path in ["/var/log/auth.log", "/var/log/secure"]:
         try:
             with open(path, errors="replace") as f:
@@ -1085,8 +1154,7 @@ def get_timeline() -> list:
                 if not cmd_m:
                     continue
                 cmd = cmd_m.group(1).strip()
-                is_critical = any(c in cmd for c in CRITICAL_CMDS)
-                if not is_critical:
+                if not any(c in cmd for c in CRITICAL_CMDS):
                     continue
                 m_time = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
                 if m_time:
@@ -1109,28 +1177,25 @@ def get_timeline() -> list:
         except Exception:
             continue
 
-    # ── rkhunter warnings ──
+    # ── rkhunter warnings ─────────────────────────────────────────────────────
     try:
         with open("/var/log/rkhunter.log", errors="replace") as f:
             content = f.read()
         for m in re.finditer(r"Warning:\s+(.+?)(?:\n|$)", content):
             events.append({
-                "ts":    now - 3600,  # approximatif si pas de timestamp
+                "ts":    now - 3600,
                 "type":  "rkhunter",
                 "icon":  "🔍",
                 "color": "red",
-                "title": "rkhunter — warning détecté",
+                "title": "rkhunter — warning detecte",
                 "detail": m.group(1).strip()[:80],
             })
     except Exception:
         pass
 
-    # Trier par timestamp décroissant, garder les 25 plus récents
     events.sort(key=lambda x: x["ts"], reverse=True)
     events = events[:25]
-    
 
-    # ── Géolocalisation IPs (parallèle, cache mémoire) ───────────────────────
     _prefetch_geo([e["_ip"] for e in events if e.get("_ip")])
     for e in events:
         _ip = e.pop("_ip", None)
@@ -1139,105 +1204,150 @@ def get_timeline() -> list:
             if tag:
                 e["detail"] = (e.get("detail") or "") + tag
 
-    # Formater les timestamps pour l'affichage
     for e in events:
         try:
             e["time"] = datetime.fromtimestamp(e["ts"]).strftime("%H:%M:%S")
             e["date"] = datetime.fromtimestamp(e["ts"]).strftime("%d/%m")
         except Exception:
-            e["time"] = "—"
-            e["date"] = "—"
+            e["time"] = "---"
+            e["date"] = "---"
 
     return events
 
 
 def get_score(metrics: dict) -> dict:
-    """Score de santé global 0-100 basé sur l'état de tous les composants."""
     score = 100
     issues = []
 
-    # Bouncer CrowdSec (critique — sans lui rien n'est banni)
     bouncer = metrics.get("bouncer", {}).get("status", "unknown")
     if bouncer != "active":
         score -= 30
-        issues.append({"sev": "critical", "msg": "Bouncer CrowdSec inactif — les IPs ne sont plus bannies"})
+        issues.append({"sev": "critical", "msg": "Bouncer CrowdSec inactif"})
 
-    # rkhunter
     rk = metrics.get("rkhunter", {}).get("status", "unknown")
     if rk == "warning":
         score -= 20
-        issues.append({"sev": "high", "msg": "rkhunter — anomalie détectée"})
+        issues.append({"sev": "high", "msg": "rkhunter — anomalie detectee"})
     elif rk == "unknown":
         score -= 5
-        issues.append({"sev": "info", "msg": "rkhunter — pas encore exécuté"})
+        issues.append({"sev": "info", "msg": "rkhunter — pas encore execute"})
 
-    # AIDE
     ai = metrics.get("aide", {}).get("status", "unknown")
     if ai == "changes":
         score -= 20
-        issues.append({"sev": "high", "msg": "AIDE — modifications système détectées"})
+        issues.append({"sev": "high", "msg": "AIDE — modifications systeme detectees"})
     elif ai == "unknown":
         score -= 5
-        issues.append({"sev": "info", "msg": "AIDE — baseline pas encore scannée"})
+        issues.append({"sev": "info", "msg": "AIDE — baseline pas encore scannee"})
 
-    # Ports inattendus
     ports = metrics.get("open_ports", {})
     unexpected = ports.get("unexpected", [])
     if unexpected:
         score -= 15 * min(len(unexpected), 2)
         for p in unexpected[:3]:
-            issues.append({"sev": "high", "msg": f"Port inattendu ouvert : {p['port']} ({p.get('process','?')})"})
+            issues.append({"sev": "high", "msg": f"Port inattendu ouvert : {p['port']}"})
 
-    # Mises à jour en attente
     upd = metrics.get("updates", {}).get("count", 0)
     if upd > 20:
         score -= 10
-        issues.append({"sev": "medium", "msg": f"{upd} mises à jour en attente"})
+        issues.append({"sev": "medium", "msg": f"{upd} mises a jour en attente"})
     elif upd > 0:
         score -= 5
-        issues.append({"sev": "info", "msg": f"{upd} mises à jour disponibles"})
+        issues.append({"sev": "info", "msg": f"{upd} mises a jour disponibles"})
 
-    # Disque
     disk_pct = metrics.get("system", {}).get("disk", {}).get("pct", 0)
     if disk_pct > 90:
         score -= 10
         issues.append({"sev": "high", "msg": f"Disque presque plein : {disk_pct}%"})
     elif disk_pct > 80:
         score -= 5
-        issues.append({"sev": "medium", "msg": f"Disque à {disk_pct}%"})
+        issues.append({"sev": "medium", "msg": f"Disque a {disk_pct}%"})
 
-    # Mémoire
     mem_pct = metrics.get("system", {}).get("memory", {}).get("pct", 0)
     if mem_pct > 95:
         score -= 5
-        issues.append({"sev": "medium", "msg": f"Mémoire critique : {mem_pct}%"})
+        issues.append({"sev": "medium", "msg": f"Memoire critique : {mem_pct}%"})
 
     score = max(0, min(100, score))
 
     if score >= 90:
-        level = "excellent"
-        label = "Forteresse"
-        color = "green"
+        level, label = "excellent", "Forteresse"
     elif score >= 70:
-        level = "good"
-        label = "Bon état"
-        color = "teal"
+        level, label = "good", "Bon etat"
     elif score >= 50:
-        level = "warning"
-        label = "À surveiller"
-        color = "gold"
+        level, label = "warning", "A surveiller"
     else:
-        level = "critical"
-        label = "Action requise"
-        color = "red"
+        level, label = "critical", "Action requise"
 
-    return {
-        "score":  score,
-        "level":  level,
-        "label":  label,
-        "color":  color,
-        "issues": issues,
-    }
+    return {"score": score, "level": level, "label": label, "issues": issues}
+
+
+# ── Containers ───────────────────────────────────────────────────────────────
+def get_containers() -> list:
+    containers_raw = []
+    try:
+        ps = subprocess.run(
+            ['docker', 'ps', '-a', '--format', '{{json .}}'],
+            capture_output=True, text=True, timeout=10
+        )
+        for line in ps.stdout.strip().split('\n'):
+            if line.strip():
+                try:
+                    containers_raw.append(json.loads(line))
+                except Exception:
+                    pass
+    except Exception:
+        return []
+
+    stats_map = {}
+    try:
+        st = subprocess.run(
+            ['docker', 'stats', '--no-stream', '--format', '{{json .}}'],
+            capture_output=True, text=True, timeout=15
+        )
+        for line in st.stdout.strip().split('\n'):
+            if line.strip():
+                try:
+                    s = json.loads(line)
+                    stats_map[s.get('Name', '')] = s
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    result = []
+    for c in containers_raw:
+        name   = c.get('Names', '').lstrip('/')
+        state  = c.get('State', 'unknown')
+        status = c.get('Status', '')
+        image  = c.get('Image', '')
+        ports  = c.get('Ports', '')
+
+        if state == 'running':
+            if   '(healthy)'          in status: health = 'healthy'
+            elif '(unhealthy)'        in status: health = 'unhealthy'
+            elif '(health: starting)' in status: health = 'starting'
+            else:                                health = 'running'
+        elif state == 'exited': health = 'stopped'
+        elif state == 'paused': health = 'paused'
+        else:                   health = state
+
+        image_clean = image.split(':')[0].split('/')[-1]
+        s = stats_map.get(name, {})
+
+        result.append({
+            'name':        name,
+            'image':       image,
+            'image_clean': image_clean,
+            'state':       state,
+            'status':      status,
+            'health':      health,
+            'cpu':         s.get('CPUPerc', '—'),
+            'mem':         s.get('MemUsage', '—'),
+            'ports':       ports
+        })
+
+    return result
 
 
 # ── Cache & Aggregator ────────────────────────────────────────────────────────
@@ -1253,14 +1363,13 @@ def collect() -> dict:
         "system":      get_system(),
         "ssh_last":    get_ssh_last(),
         "updates": {
-            "count": get_updates()["count"],
-            "last_check": get_last_update_date()
+            "count":      get_updates()["count"],
+            "last_check": get_last_update_date(),
         },
         "connections": get_connections(),
         "open_ports":  get_open_ports(),
         "collected_at": int(time.time()),
     }
-    # Score calculé après les autres métriques
     base["score"] = get_score(base)
     return base
 
@@ -1278,12 +1387,12 @@ def get_metrics() -> dict:
 
 # ── HTTP Handler ──────────────────────────────────────────────────────────────
 ROUTES = {
-    "/api/metrics":  lambda: get_metrics(),
-    "/api/health":   lambda: {"status": "ok", "ts": int(time.time())},
-    "/api/history":  lambda: _history,
-    "/api/timeline": lambda: get_timeline(),
+    "/api/metrics":         lambda: get_metrics(),
+    "/api/health":          lambda: {"status": "ok", "ts": int(time.time())},
+    "/api/history":         lambda: _history,
+    "/api/timeline":        lambda: get_timeline(),
     "/api/telegram/status": lambda: get_telegram_status(),
-    "/api/alerts":          lambda: get_alerts(),
+    "/api/containers":      lambda: get_containers(),
 }
 
 
@@ -1291,7 +1400,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         ip = _client_ip(self)
 
-        # 1. Rate limiting (avant auth)
+        # 1. Rate limiting
         if _is_rate_limited(ip):
             self.send_response(429)
             self.send_header("Retry-After", str(RL_LOCKOUT_SEC))
@@ -1301,7 +1410,7 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(b'{"error":"too_many_requests"}')
             return
 
-        # 2. Authentification HTTP Basic
+        # 2. Auth HTTP Basic
         if DASHBOARD_PASS and not _check_basic_auth(self):
             _record_auth_failure(ip)
             self.send_response(401)
@@ -1313,12 +1422,25 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         # 3. Routing
-        fn = ROUTES.get(self.path.rstrip("/"))
+        parsed     = urlparse(self.path)
+        clean_path = parsed.path.rstrip("/")
+        params     = parse_qs(parsed.query)
+
+        if clean_path == "/api/alerts":
+            period_str   = params.get("period", ["1d"])[0]
+            period_map   = {"1d": 24, "7d": 168, "30d": 720}
+            period_hours = period_map.get(period_str, 24)
+            fn = lambda: get_alerts(period_hours)
+        else:
+            fn = ROUTES.get(clean_path)
+
+        # ── Envoi de la reponse HTTP ──────────────────────────────────────────
         if fn is None:
             self.send_error(404)
             return
         try:
-            body = json.dumps(fn(), ensure_ascii=False).encode()
+            result = fn()
+            body   = json.dumps(result, ensure_ascii=False).encode()
             self.send_response(200)
             self.send_header("Content-Type",   "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
@@ -1327,7 +1449,6 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(body)
         except Exception as exc:
             self.send_error(500, str(exc))
-
 
     def do_POST(self) -> None:
         path = self.path.rstrip("/")
@@ -1359,5 +1480,3 @@ if __name__ == "__main__":
     srv = HTTPServer((API_HOST, API_PORT), Handler)
     print(f"[VPS Monitor] API on {API_HOST}:{API_PORT} — cache TTL {CACHE_TTL}s", flush=True)
     srv.serve_forever()
-
-# ── Telegram status & toggle ─────────────────────────────────────────────────

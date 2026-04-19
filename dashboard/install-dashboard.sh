@@ -117,8 +117,10 @@ EOF
 chmod 600 "$DEST/.env"
 
 # ── Fichier historique dashboard ─────────────────────────────────────────────
-sudo touch /var/log/vps-monitor-history.json
-sudo chmod 644 /var/log/vps-monitor-history.json
+# FIX #63 — history.json dans volume dédié (pas dans /var/log monté RW)
+sudo mkdir -p /var/lib/vps-monitor
+sudo touch /var/lib/vps-monitor/history.json
+sudo chmod 644 /var/lib/vps-monitor/history.json
 
 # ── Lancement ─────────────────────────────────────────────────────────────────
 echo ""

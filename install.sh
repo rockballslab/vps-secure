@@ -670,6 +670,9 @@ supported_decisions_types:
 iptables_chains:
   - INPUT
   - FORWARD
+ip6tables_chains:
+  - INPUT
+  - FORWARD
 EOF
         chmod 600 /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
         log_success "Config bouncer créée avec clé API (fichier absent — recréé)."
@@ -1191,6 +1194,10 @@ cat > /etc/audit/rules.d/vps-secure.rules << 'AUDITEOF'
 -a always,exit -F arch=b64 -S bpf -F a0=8 -k bpf_obj_pin
 -a always,exit -F arch=b64 -S bpf -F a0=7 -k bpf_obj_get
 -w /sys/fs/bpf -p wa -k bpf_pinned_maps
+
+# FIX E-AUDIT — io_uring bypass auditd (CVE-2025-71239) + userfaultfd (CVE-2026-23241)
+-a always,exit -F arch=b64 -S io_uring_setup -S io_uring_enter -k io_uring
+-a always,exit -F arch=b64 -S userfaultfd -F auid>=1000 -F auid!=4294967295 -k userfaultfd
 -e 2
 AUDITEOF
 
@@ -1450,7 +1457,7 @@ log_info "  Dernier rapport      : /var/log/rkhunter.log"
 # Cron rkhunter quotidien à 00h00 UTC (02h00 Paris) — indépendant de Telegram
 # (si Telegram n'est pas configuré, rkhunter scanne quand même)
 if [[ ! -f /etc/cron.d/rkhunter-daily ]]; then
-    echo "0 0 * * * root rkhunter --check --sk --report-warnings-only >> /var/log/rkhunter-cron.log 2>&1" \
+    echo "0 0 * * * root rkhunter --check --sk --report-warnings-only --nocolors >> /var/log/rkhunter-cron.log 2>&1" \
         > /etc/cron.d/rkhunter-daily
     chmod 644 /etc/cron.d/rkhunter-daily
     log_success "Scan rkhunter quotidien configuré à 00h00 UTC (02h00 Paris) (log : /var/log/rkhunter-cron.log)."
@@ -1608,8 +1615,15 @@ fi
 # ── rkhunter ──
 # mktemp évite l'attaque symlink (/tmp world-writable, script tourne en root)
 RKHUNTER_LOG=$(mktemp /tmp/rkhunter-XXXXXX.log)
-trap 'rm -f "$RKHUNTER_LOG"' EXIT
-rkhunter --check --sk --report-warnings-only --nocolors > "$RKHUNTER_LOG" 2>&1
+# FIX B-1 — Lire le scan 00h00 (évite double scan coûteux sur KVM2)
+RKHUNTER_CRON_LOG="/var/log/rkhunter-cron.log"
+if [[ -f "$RKHUNTER_CRON_LOG" ]] && find "$RKHUNTER_CRON_LOG" -mmin -480 -quiet 2>/dev/null; then
+    RKHUNTER_LOG="$RKHUNTER_CRON_LOG"
+else
+    RKHUNTER_LOG=$(mktemp /tmp/rkhunter-XXXXXX.log)
+    trap 'rm -f "$RKHUNTER_LOG"' EXIT
+    rkhunter --check --sk --report-warnings-only --nocolors > "$RKHUNTER_LOG" 2>&1
+fi
 RK_WARNINGS=$(grep -c "Warning" "$RKHUNTER_LOG" 2>/dev/null || true); RK_WARNINGS="${RK_WARNINGS:-0}"
 
 if [[ "$RK_WARNINGS" -gt 0 ]]; then
@@ -1926,6 +1940,11 @@ is_whitelisted() {
 add_redirect() {
     local ip="$1"
     [[ ! "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && return
+    # FIX M-6 — Jamais rediriger les IPs privées (Docker gateway, localhost)
+    if [[ "$ip" =~ ^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.) ]]; then
+        logger -t "$LOG_TAG" "Skip $ip (RFC-1918 — non redirigé)"
+        return
+    fi
     is_whitelisted "$ip" && { logger -t "$LOG_TAG" "Skip $ip (whitelist)"; return; }
     if ! iptables -t nat -C "$REDIRECT_CHAIN" \
          -s "$ip" -j REDIRECT --to-port "$HONEYPOT_PORT" 2>/dev/null; then
@@ -2055,6 +2074,7 @@ if [[ -z "$BOT_FUNNEL_KEY" ]]; then
 else
     echo "$BOT_FUNNEL_KEY" > "$BOT_FUNNEL_KEY_FILE"
     chmod 600 "$BOT_FUNNEL_KEY_FILE"
+    chattr +i "$BOT_FUNNEL_KEY_FILE"
     log_success "Clé API Bot Funnel générée et stockée."
 
     # Installer le service systemd
@@ -2234,6 +2254,7 @@ cat > /etc/logrotate.d/aide-daily << 'LOGROTEOF'
     weekly
     rotate 8
     compress
+    dateext
     missingok
     notifempty
 }

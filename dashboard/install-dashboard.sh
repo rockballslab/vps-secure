@@ -143,7 +143,7 @@ docker ps --format '{{.Names}}' | grep -q "vps-monitor-caddy" && CADDY_UP=1
 
 if [[ $API_UP -eq 1 && $CADDY_UP -eq 1 ]]; then
   echo ""
-  echo "✓ Dashboard disponible sur https://$DOMAIN"
+  echo "✓ Dashboard dispo sur https://$DOMAIN"
   echo "  Login : admin / (mot de passe saisi)"
   echo "  Mot de passe sauvegardé dans : $DEST/.env"
   echo ""

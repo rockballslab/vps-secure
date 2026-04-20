@@ -119,6 +119,9 @@ chmod 600 "$DEST/.env"
 # ── Fichier historique dashboard ─────────────────────────────────────────────
 # FIX #63 — history.json dans volume dédié (pas dans /var/log monté RW)
 sudo mkdir -p /var/lib/vps-monitor
+if [[ -f /var/log/vps-monitor-history.json && ! -s /var/lib/vps-monitor/history.json ]]; then
+    sudo cp /var/log/vps-monitor-history.json /var/lib/vps-monitor/history.json
+fi
 sudo touch /var/lib/vps-monitor/history.json
 sudo chmod 644 /var/lib/vps-monitor/history.json
 

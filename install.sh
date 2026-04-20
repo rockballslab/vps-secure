@@ -2160,7 +2160,7 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/home/[^/]+/\.npm(/.*)?$
 !/root/\.gnupg(/.*)?$
 !/root/\.npm(/.*)?$
-!/var/log/vps-monitor-history\.json$
+!/var/lib/vps-monitor/history.json
 !/etc/vps-secure/known-ips\.conf$
 !/etc/update-motd\.d/
 !/etc/cron\.d/vps-secure

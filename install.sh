@@ -2256,9 +2256,14 @@ cat > /etc/logrotate.d/aide-daily << 'LOGROTEOF'
     weekly
     rotate 8
     compress
-    dateext
     missingok
     notifempty
+    prerotate
+        chattr -i /var/log/aide-daily.log 2>/dev/null || true
+    endscript
+    postrotate
+        chattr +i /var/log/aide-daily.log 2>/dev/null || true
+    endscript
 }
 LOGROTEOF
 

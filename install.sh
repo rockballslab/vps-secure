@@ -2209,11 +2209,11 @@ readonly DPKG_WINDOW_HOURS=26
 
 AIDE_EXIT=0
 # E1 : Lever la protection chattr avant écriture
-chattr -i "$AIDE_EXIT_FILE" 2>/dev/null || true
+chattr -i "$AIDE_EXIT_FILE" "$AIDE_LOG" 2>/dev/null || true  # optionnel : les deux fichiers peuvent avoir chattr +i post-rebase
 aide --check --config "$AIDE_CONF" > "$AIDE_LOG" 2>&1 || AIDE_EXIT=$?
 echo "$AIDE_EXIT" > "$AIDE_EXIT_FILE"
 # E1 : Protéger le fichier contre falsification post-compromise
-chattr +i "$AIDE_EXIT_FILE" 2>/dev/null || true
+chattr +i "$AIDE_EXIT_FILE" "$AIDE_LOG" 2>/dev/null || true  # optionnel : symétrie chattr -i ligne précédente
 chattr -i "$AIDE_CONTEXT_FILE" 2>/dev/null || true
 
 [[ "$AIDE_EXIT" -eq 0 ]] && { rm -f "$AIDE_CONTEXT_FILE"; exit 0; }

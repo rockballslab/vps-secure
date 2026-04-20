@@ -152,6 +152,7 @@
     .ports-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
     .port-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; font-family: 'DM Mono', monospace; }
     .port-ok    { background: rgba(34,197,94,0.12); color: #15803d; }
+    .port-local { background: rgba(100,116,139,0.12); color: #64748b; border: 1px solid rgba(100,116,139,0.25); }
     .port-alert { background: rgba(239,68,68,0.12); color: #b91c1c; }
 
     /* ── Timeline ────────────────────────────────────────────────────────── */
@@ -682,11 +683,16 @@ function updateBouncer(b) {
 }
 
 function updatePorts(op) {
-  if (!op) return;
-  const list = $('ports-list'), ports = op.ports || [];
-  if (!ports.length) { list.innerHTML = '<div class="tl-empty">Aucun port</div>'; return; }
-  list.innerHTML = ports.map(p => `<span class="port-chip ${p.expected ? 'port-ok' : 'port-alert'}">${p.expected ? '●' : '⚠'} ${p.port}</span>`).join('');
-  setCard('card-ports', op.alert ? 'a-red' : 'a-green');
+  if(!op) return;
+  const list=$('ports-list'), ports=op.ports||[];
+  if(ports.length===0){list.innerHTML='<div class="tl-empty">Aucun port détecté</div>'; return;}
+  list.innerHTML=ports.map(p=>{
+    const cls  = !p.expected ? 'port-alert' : p.local_only ? 'port-local' : 'port-ok';
+    const icon = !p.expected ? '⚠' : p.local_only ? '⚙' : '●';
+    const tip  = p.local_only ? `${p.port} — interne localhost` : p.port;
+    return `<span class="port-chip ${cls}" title="${tip}">${icon} ${p.port}</span>`;
+  }).join('');
+  setCard('card-ports',op.alert?'a-red':'a-green');
 }
 
 /* ── Timeline ─────────────────────────────────────────────────────────────── */

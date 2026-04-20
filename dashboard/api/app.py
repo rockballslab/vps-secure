@@ -571,6 +571,8 @@ def get_connections() -> dict:
 
 def get_open_ports() -> dict:
     EXPECTED = {22, 25, 53, 80, 443, 2222, 5055, 6060, 8081}
+    # Adresses loopback en little-endian hex (/proc/net/tcp format)
+    LOOPBACK = {"0100007F", "00000000000000000000000001000000"}
     ports = []
     seen = set()
     for path in ["/proc/net/tcp", "/proc/net/tcp6"]:
@@ -584,18 +586,21 @@ def get_open_ports() -> dict:
                 if parts[3] != "0A":
                     continue
                 local = parts[1]
-                port = int(local.split(":")[1], 16)
+                addr_hex, port_hex = local.split(":")
+                port = int(port_hex, 16)
                 if port in seen:
                     continue
                 seen.add(port)
                 ports.append({
-                    "port":     port,
-                    "process":  "",
-                    "expected": port in EXPECTED,
+                    "port":       port,
+                    "process":    "",
+                    "expected":   port in EXPECTED,
+                    "local_only": addr_hex.upper() in LOOPBACK,
                 })
         except Exception:
             pass
-    unexpected = [p for p in ports if not p["expected"]]
+    # Alerte uniquement sur les ports inattendus ET exposés (pas localhost-only)
+    unexpected = [p for p in ports if not p["expected"] and not p["local_only"]]
     return {
         "ports":      sorted(ports, key=lambda x: x["port"]),
         "unexpected": unexpected,

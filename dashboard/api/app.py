@@ -32,6 +32,9 @@ HOSTFS              = os.environ.get("HOSTFS", "/")
 
 # ── Geo IP ────────────────────────────────────────────────────────────────────
 _geo_cache: dict = {}
+_vps_ip_cache: str = ""
+_vps_ip_cache_time: float = 0.0
+_GEO_CACHE_MAX = 5000  # évite la croissance illimitée sous attaque
 
 def _flag(code: str) -> str:
     """ISO 3166-1 alpha-2 → emoji drapeau.  'CN' → '🇨🇳'  'FR' → '🇫🇷'"""
@@ -64,6 +67,11 @@ def get_geo(ip: str) -> dict:
         country = d.get("country_name", d.get("country", ""))
         if code:
             geo = {"country": country, "code": code, "flag": _flag(code)}
+            if len(_geo_cache) >= _GEO_CACHE_MAX:
+                # Purge simple : vider la moitié la plus ancienne
+                keys = list(_geo_cache.keys())
+                for k in keys[:_GEO_CACHE_MAX // 2]:
+                    del _geo_cache[k]
             _geo_cache[ip] = geo
             return geo
     except Exception:
@@ -191,8 +199,10 @@ def _load_history() -> None:
 
 def _save_history() -> None:
     try:
-        with open(HISTORY_FILE, "w") as f:
+        tmp = HISTORY_FILE + ".tmp"
+        with open(tmp, "w") as f:
             json.dump(_history, f)
+        os.replace(tmp, HISTORY_FILE)  # atomique sur Linux
     except Exception:
         pass
 
@@ -511,10 +521,17 @@ def get_system() -> dict:
 
     vps_ip = "---"
     try:
-        with urllib.request.urlopen("https://api.ipify.org?format=json", timeout=5) as resp:
-            vps_ip = json.loads(resp.read()).get("ip", "---")
+        # Cache l'IP 1h — elle ne change pas entre les refreshes de 30s
+        global _vps_ip_cache, _vps_ip_cache_time
+        if _vps_ip_cache and (time.time() - _vps_ip_cache_time) < 3600:
+            vps_ip = _vps_ip_cache
+        else:
+            with urllib.request.urlopen("https://api.ipify.org?format=json", timeout=5) as resp:
+                vps_ip = json.loads(resp.read()).get("ip", "---")
+            _vps_ip_cache = vps_ip
+            _vps_ip_cache_time = time.time()
     except Exception:
-        pass
+        vps_ip = _vps_ip_cache if _vps_ip_cache else "---"
 
     return {"uptime": uptime_str, "load": load, "memory": memory, "disk": disk_info, "ip": vps_ip}
 
@@ -1638,6 +1655,26 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(500, str(exc))
 
     def do_POST(self) -> None:
+        ip = _client_ip(self)
+        # Rate limiting
+        if _is_rate_limited(ip):
+            self.send_response(429)
+            self.send_header("Retry-After", str(RL_LOCKOUT_SEC))
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(b'{"error":"too_many_requests"}')
+            return
+        # Auth Basic
+        if DASHBOARD_PASS and not _check_basic_auth(self):
+            _record_auth_failure(ip)
+            self.send_response(401)
+            self.send_header("WWW-Authenticate", 'Basic realm="VPS-SECURE Dashboard"')
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(b'{"error":"unauthorized"}')
+            return
         path = self.path.rstrip("/")
         if path == "/api/telegram/toggle":
             try:

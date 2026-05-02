@@ -2400,6 +2400,38 @@ log_success "Commande vps-secure-aide-rebase disponible (sudo vps-secure-aide-re
 chattr +i /usr/local/bin/vps-secure-aide-rebase
 log_success "vps-secure-aide-rebase protégé en écriture (chattr +i — issue #6)."
 
+# ── Units systemd trigger file AIDE (issue #109) ────────────────────────────
+# Architecture : dashboard écrit trigger file → systemd détecte → rebase host
+# Remplace nsenter — container n'a plus besoin de privileged: true
+cat > /etc/systemd/system/vps-aide-trigger.path << 'PATHEOF'
+[Unit]
+Description=Watch for AIDE rebase trigger from dashboard
+
+[Path]
+PathExists=/var/lib/vps-monitor/aide_rebase_trigger
+Unit=vps-aide-trigger.service
+
+[Install]
+WantedBy=multi-user.target
+PATHEOF
+
+cat > /etc/systemd/system/vps-aide-trigger.service << 'SVCEOF'
+[Unit]
+Description=Run AIDE rebase triggered by dashboard
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/rm -f /var/lib/vps-monitor/aide_rebase_trigger
+ExecStart=/usr/local/bin/vps-secure-aide-rebase
+ExecStartPost=/bin/bash -c 'echo $? > /var/lib/vps-monitor/aide_rebase_result'
+SVCEOF
+
+mkdir -p /var/lib/vps-monitor
+chmod 755 /var/lib/vps-monitor
+systemctl daemon-reload
+systemctl enable --now vps-aide-trigger.path
+log_success "vps-aide-trigger.path activé — rebase dashboard sans nsenter (issue #109)."
+
 # ============================================================
 # Installation de vps-secure-stats
 # ============================================================

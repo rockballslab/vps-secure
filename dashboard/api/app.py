@@ -33,6 +33,10 @@ ENDLESSH_CONTAINER  = os.environ.get("ENDLESSH_CONTAINER", "endlessh")
 CROWDSEC_CONTAINER  = os.environ.get("CROWDSEC_CONTAINER", "crowdsec")
 HOSTFS              = os.environ.get("HOSTFS", "/")
 
+# ── AIDE trigger file (issue #109) ───────────────────────────────────────────
+AIDE_TRIGGER = Path("/var/lib/vps-monitor/aide_rebase_trigger")
+AIDE_RESULT  = Path("/var/lib/vps-monitor/aide_rebase_result")
+
 # ── Variables de cache (globales) ────────────────────────────────────────────
 _alerts_cache: dict       = {}
 _alerts_cache_time: dict  = {}
@@ -629,9 +633,27 @@ def get_connections() -> dict:
     except Exception:
         pass
     return {"established": count}
+    
+def _load_expected_ports() -> set:
+    """Charge les ports attendus depuis le fichier de config + les ports système de base."""
+    BASE = {22, 25, 53, 80, 443, 2222, 5055, 6060, 8081}
+    conf_file = "/etc/vps-secure/expected-ports.conf"
+    try:
+        if os.path.exists(conf_file):
+            with open(conf_file) as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        try:
+                            BASE.add(int(line))
+                        except ValueError:
+                            pass
+    except Exception:
+        pass
+    return BASE
 
 def get_open_ports() -> dict:
-    EXPECTED = {22, 25, 53, 80, 443, 2222, 5055, 6060, 8081}
+    EXPECTED = _load_expected_ports()
     # Adresses loopback en little-endian hex (/proc/net/tcp format)
     LOOPBACK = {"0100007F", "00000000000000000000000001000000"}
     ports = []
@@ -1820,21 +1842,52 @@ def api_geomap() -> dict:
     _geomap_cache = {'ts': time.time(), 'data': data}
     return data
     
-# ── AIDE Rebase (issue #85) ───────────────────────────────────────────────────
-_rebase_lock        = threading.Lock()
-_rebase_status      = "idle"
+# ── AIDE Rebase via trigger file systemd (issue #109) ────────────────────────
+_rebase_lock = threading.Lock()
+_rebase_status = "idle"
 _rebase_status_lock = threading.Lock()
-
 
 def _get_rebase_status() -> dict:
     with _rebase_status_lock:
         return {"status": _rebase_status}
 
-
 def _set_rebase_status(s: str) -> None:
     global _rebase_status
     with _rebase_status_lock:
         _rebase_status = s
+
+def _run_rebase_bg() -> None:
+    """Déclenche le rebase AIDE via trigger file systemd (issue #109).
+    Remplace nsenter — container sans privileged: true.
+    Prérequis host : vps-aide-trigger.path actif.
+    """
+    status = "error:init"
+    try:
+        _set_rebase_status("running")
+        AIDE_RESULT.unlink(missing_ok=True)
+        AIDE_TRIGGER.touch()          # systemd vps-aide-trigger.path réagit ici
+        for _ in range(1200):          # polling max 10 min
+            time.sleep(1)
+            if AIDE_RESULT.exists():
+                try:
+                    rc_text = AIDE_RESULT.read_text().strip()
+                    rc = int(rc_text) if rc_text.isdigit() else 1
+                except Exception:
+                    rc = 1
+                AIDE_RESULT.unlink(missing_ok=True)
+                status = "ok" if rc == 0 else f"error:{rc}"
+                break
+        else:
+            AIDE_TRIGGER.unlink(missing_ok=True)
+            status = "timeout"
+    except Exception as exc:
+        status = f"error:{type(exc).__name__}"
+    finally:
+        _set_rebase_status(status)
+        try:
+            _rebase_lock.release()
+        except RuntimeError:
+            pass
 
 
 def _send_telegram_api(message: str) -> bool:
@@ -1861,36 +1914,6 @@ def _send_telegram_api(message: str) -> bool:
         return False
 
 
-def _run_rebase_bg() -> None:
-    status = "error:init"
-    try:
-        _set_rebase_status("running")
-        result = subprocess.run(
-            ["nsenter", "-t", "1", "-m", "--",
-             "/usr/local/bin/vps-secure-aide-rebase"],
-            capture_output=True, text=True, timeout=600,
-        )
-        status = "ok" if result.returncode == 0 else f"error:{result.returncode}"
-        if status == "ok":
-            try:
-                subprocess.run(
-                    ["nsenter", "-t", "1", "-m", "--",
-                     "bash", "-c",
-                     "chattr -i /var/log/aide-daily.exit && echo 0 > /var/log/aide-daily.exit && chattr +i /var/log/aide-daily.exit"],
-                    capture_output=True, text=True, timeout=10,
-                )
-            except Exception:
-                pass
-    except subprocess.TimeoutExpired:
-        status = "timeout"
-    except Exception as exc:
-        status = f"error:{type(exc).__name__}"
-    finally:
-        _set_rebase_status(status)
-        try:
-            _rebase_lock.release()
-        except RuntimeError:
-            pass
 
 # ── HTTP Handler ──────────────────────────────────────────────────────────────
 

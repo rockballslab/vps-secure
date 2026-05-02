@@ -9,8 +9,15 @@ services:
     build: ./api
     container_name: vps-monitor-api
     pid: "host"
-    privileged: true
     network_mode: host
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_PTRACE
+      - DAC_READ_SEARCH
+      - AUDIT_READ
+    security_opt:
+      - no-new-privileges:true
     volumes:
       - /var/lib/apt/periodic:/var/lib/apt/periodic:ro
       - /var/log:/var/log:ro

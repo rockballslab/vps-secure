@@ -402,7 +402,7 @@ VPS-Secure ne “garantit” pas une sécurité absolue - aucun outil sérieux n
 | CIS Benchmark L1 | Base de durcissement reconnue pour des serveurs de production |
 | DISA STIG Ubuntu 24.04 | Un niveau de sécurité plus exigeant, inspiré des environnements les plus contrôlés |
 | OWASP Infrastructure | Une attention particulière à la supply chain, aux secrets, à la traçabilité et à l’intégrité |
-| Lynis Audit | **86/100** sur une installation de référence, signe d’un durcissement déjà très avancé |
+| Lynis Audit | Outil open source d'audit de sécurité qui scanne le système et produit un score de durcissement. Référence dans la communauté Linux pour évaluer l'état réel d'un serveur. |
 
 **CIS Benchmark L1** - Le CIS Benchmark du Center for Internet Security est une référence reconnue pour sécuriser les systèmes Linux.
 Le niveau L1 vise un bon équilibre entre sécurité et compatibilité, ce qui en fait une base adaptée aux serveurs de production.

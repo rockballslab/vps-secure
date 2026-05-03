@@ -116,7 +116,7 @@ Avant de commencer et de lancer le script, tu as besoin de :
 ---
 
 
-# Installation en 15mn chrono
+# Installation automatique en 15mn chrono
 
 ### Étape 0 - Utilise le guide interactif (recommandé)
 

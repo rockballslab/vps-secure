@@ -2238,6 +2238,18 @@ cat >> /etc/aide/aide.conf << 'AIDEEXCLEOF'
 !/tmp(/.*)?$
 !/root/\.lesshst$
 !/etc/vps-secure/expected-ports\.conf$
+# ── Exclusions volatiles (issue #110) ────────────────────────────────────────
+!/proc
+!/sys
+!/run
+!/dev
+!/tmp
+!/var/tmp
+!/var/cache
+!/var/lock
+!/var/run
+!/home/*/.cache
+!/root/.cache
 AIDEEXCLEOF
 
 # AIDE --init : déplacé en fin de script (issue #43)

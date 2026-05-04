@@ -83,7 +83,19 @@ bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de root
 | 14 | **Endlessh** (honeypot port 22) | SSH est sur le port 2222 - le port 22 est libre. Endlessh le capture et maintient les bots connectés des heures en leur envoyant un banner SSH infini. Ils ne peuvent pas attaquer ailleurs pendant ce temps |
 | 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 - toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram. Après une mise à jour OS, relancer la baseline manuellement (commande fournie). |
 
+---
 
+## 🛡️ Réactivité sécurité
+
+> *"VPS-SECURE v2.7.2 est sorti aujourd'hui avec un patch pour CVE-2026-31431 — une faille kernel  
+> activement exploitée ajoutée à la liste CISA la veille. Le fix a été intégré en moins de 24h  
+> après publication. C'est exactement pour ça que le produit existe."*
+
+**CVE-2026-31431 "Copy Fail"** — CVSS 7.8 · CISA KEV · Exploité in-the-wild  
+Vecteur : escalade de privilèges locale via `algif_aead` (Linux kernel 6.8.0, Ubuntu 24.04)  
+Fix : blacklist permanente du module via `modprobe.d` — intégré dans `install.sh` étape 8.
+
+---
 
 <p align="center">
   <img src="./screenshots/sticker2.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">

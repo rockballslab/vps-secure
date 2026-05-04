@@ -87,7 +87,7 @@ bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de root
 
 ## 🛡️ Réactivité sécurité
 
-> *"VPS-SECURE v2.7.2 est sorti aujourd'hui avec un patch pour CVE-2026-31431 — une faille kernel  
+> *"VPS-SECURE v2.7.2 est sorti aujourd'hui le 4 mai 2026 avec un patch pour CVE-2026-31431 — une faille kernel  
 > activement exploitée ajoutée à la liste CISA la veille. Le fix a été intégré en moins de 24h  
 > après publication. C'est exactement pour ça que le produit existe."*
 

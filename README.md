@@ -8,7 +8,7 @@
 > "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un VPS, et que tu tiens à tes données, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**"
 
 
-**15 minutes**, une seule commande pour que ton serveur devienne une **Forteresse** prête à accueillir tes services en toute sérennité.
+**15 minutes**, une seule commande pour que ton serveur devienne une **Forteresse** prête à accueillir tes services en toute sérénité.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
@@ -87,7 +87,7 @@ bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de root
 
 ## 🛡️ Réactivité sécurité
 
-> *"VPS-SECURE v2.7.2 est sorti aujourd'hui le 4 mai 2026 avec un patch pour CVE-2026-31431 — une faille kernel  
+> *"VPS-SECURE v2.7.2 — patch CVE-2026-31431 intégré en moins de 24h — une faille kernel  
 > activement exploitée ajoutée à la liste CISA la veille. Le fix a été intégré en moins de 24h  
 > après publication. C'est exactement pour ça que le produit existe."*
 
@@ -501,7 +501,7 @@ Alertes (24h)         : 12
 Blocages totaux       : 4521
 
 📋 AUDIT (auditd)
-Escalades privilèges  : 1247 aujourd'hui
+Escalades privilèges  : 3 aujourd'hui
 
 🔍 ROOTKITS (rkhunter)          OK
 Dernier scan          : 2026-04-05 04:00:01

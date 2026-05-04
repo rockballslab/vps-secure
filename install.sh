@@ -2413,6 +2413,7 @@ if [[ -f "$AIDE_DB_NEW" ]]; then
     chattr -i "$AIDE_EXIT" 2>/dev/null || true
     echo "0" > "$AIDE_EXIT" 2>/dev/null || true
     chattr +i "$AIDE_EXIT" 2>/dev/null || true
+    rm -f /var/log/aide-daily.exit.context 2>/dev/null || true
     echo "✅ Baseline AIDE mise à jour. Dashboard actualisé immédiatement."
 else
     echo "❌ Échec — vérifier : sudo aide --config-check"

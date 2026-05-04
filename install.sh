@@ -1091,6 +1091,12 @@ else
     log_warn "AppArmor userns sysctl non disponible sur ce kernel — skipped."
 fi
 
+# ── Blacklist algif_aead — CVE-2026-31431 "Copy Fail" (CVSS 7.8, CISA KEV 2026-05-03) ──
+echo "install algif_aead /bin/false" > /etc/modprobe.d/disable-algif_aead.conf
+chmod 644 /etc/modprobe.d/disable-algif_aead.conf
+rmmod algif_aead 2>/dev/null || true
+log_success "algif_aead blacklisté — CVE-2026-31431 'Copy Fail' (CVSS 7.8, CISA KEV 2026-05-03)."
+
 # Blacklist protocoles réseau inutiles (NETW-3200 — CIS 3.x)
 cat >> /etc/modprobe.d/vps-secure-blacklist.conf << 'EOF'
 install dccp /bin/true

@@ -1650,7 +1650,14 @@ else
 fi
 RK_WARNINGS=$(grep -c "Warning" "$RKHUNTER_LOG" 2>/dev/null || true); RK_WARNINGS="${RK_WARNINGS:-0}"
 
-if [[ "$RK_WARNINGS" -gt 0 ]]; then
+if [[ ! -s "$RKHUNTER_LOG" ]]; then
+    ISSUES=$((ISSUES + 1))
+    DETAILS+="⚠️ rkhunter — log vide (scanner inactif ou erreur)
+  → Vérifier : sudo rkhunter --check --report-warnings-only
+  → Log : /var/log/rkhunter.log
+
+"
+elif [[ "$RK_WARNINGS" -gt 0 ]]; then
     ISSUES=$((ISSUES + 1))
     DETAILS+="🔴 rkhunter : ${RK_WARNINGS} anomalie(s) détectée(s)
   → Lance : sudo rkhunter --check --report-warnings-only
@@ -1681,7 +1688,7 @@ SSH_COUNT=$(ausearch -k sshd_config --start today -i 2>/dev/null | grep -c "^---
 AUDIT_TOTAL=$((PRIV_COUNT + DOCK_COUNT + SSH_COUNT))
 
 # Seuil adaptatif : alerte si > 10 événements/jour (admin normal = 3-5 sudo max)
-AUDIT_THRESHOLD=20000
+AUDIT_THRESHOLD=100
 
 if [[ "$AUDIT_TOTAL" -gt "$AUDIT_THRESHOLD" ]]; then
     ISSUES=$((ISSUES + 1))

@@ -2038,17 +2038,6 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(resp)
             except Exception as exc:
                 self.send_error(500, str(exc))
-        elif path == "/api/aide/rebase":
-            # Auth
-            if DASHBOARD_PASS and not _check_basic_auth(self):
-                _record_auth_failure(_client_ip(self))
-                self.send_response(401)
-                self.send_header("WWW-Authenticate", 'Basic realm="VPS-SECURE Dashboard"')
-                self.send_header("Content-Type", "application/json; charset=utf-8")
-                self.send_header("Cache-Control", "no-store")
-                self.end_headers()
-                self.wfile.write(b'{"error":"unauthorized"}')
-                return
             # Lock non-bloquant — 409 si rebase déjà actif
             if not _rebase_lock.acquire(blocking=False):
                 resp = json.dumps({"status": "already_running"}).encode()
@@ -2059,7 +2048,6 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(resp)
                 return
             # Telegram AVANT le lancement (BLOCKER #2)
-            ip = _client_ip(self)
             _send_telegram_api(
                 f"⚠️ AIDE rebase déclenché depuis le dashboard\n"
                 f"🌐 IP source : {ip}\n"

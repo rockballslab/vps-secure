@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# VPS-secure — Bootstrap VPS
+# VPS-secure — Ton VPS devient une forteresse
 # À lancer en ROOT sur un Ubuntu 24.04 LTS vierge
 #
 # Ce script fait :

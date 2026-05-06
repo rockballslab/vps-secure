@@ -1541,7 +1541,7 @@ def get_containers() -> list:
         s = stats_map.get(name, {})
 
         result.append({
-            'name':        name,
+            'name':        name.replace('saaskit-', '', 1),
             'image':       image,
             'image_clean': image_clean,
             'state':       state,

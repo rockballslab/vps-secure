@@ -2162,7 +2162,8 @@ SERVICEEOF
     netfilter-persistent save 2>/dev/null || \
         iptables-save > /etc/iptables/rules.v4 2>/dev/null || true  # optionnel : netfilter-persistent peut être absent sur kernels minimalistes
     log_success "Règles iptables NAT sauvegardées (persistance reboot)."
-fi
+fi  # closes if [[ -z "$BOT_FUNNEL_KEY" ]]
+fi  # closes if ! ipset create _vps_install_probe (guard compatibilité kernel)
 
 # ============================================================
 # Étape 15 : Integrity monitoring (AIDE)

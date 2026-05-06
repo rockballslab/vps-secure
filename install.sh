@@ -22,8 +22,8 @@
 #
 # Usage :
 #   ssh root@IP_DU_VPS
-#   curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/install.sh
-#   chmod +x install.sh && ./install.sh
+#   curl -O https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh
+#   chmod +x install-secure.sh && ./install-secure.sh
 #
 # Après le script :
 #   ssh vpsadmin@IP_DU_VPS -p 2222 -i ~/.ssh/id_ed25519_vps

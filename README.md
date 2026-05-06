@@ -611,9 +611,9 @@ sudo cat /var/log/voidlink-detect.log
 
 ## Compatibilité
 
-Testé et vérifié le 17 Avril 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2
+Testé et vérifié le 6 mai 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2 et Hetzner CPX42
 
-Installation complète et 100% fonctionnelle en **13 min**
+Installation complète et 100% fonctionnelle en **13 min** (dashboard inclus)
 
 ---
 

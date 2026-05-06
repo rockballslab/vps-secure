@@ -356,7 +356,9 @@ etape "3" "$TOTAL_ETAPES" "Mise à jour du système"
 _wait_dpkg
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get upgrade -y -qq
+DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq \
+    -o Dpkg::Options::="--force-confdef" \
+    -o Dpkg::Options::="--force-confold"
 apt-get install -y -qq \
     curl wget gnupg lsb-release ca-certificates \
     apt-transport-https software-properties-common \

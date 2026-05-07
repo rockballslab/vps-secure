@@ -75,7 +75,7 @@ bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de root
 | 6 | **Docker** Engine + Compose v2 | Docker permet de faire tourner des applications dans des "boîtes isolées" (containers). Configuré pour ne **pas** bypasser UFW - les ports exposés restent sous contrôle du pare-feu. Règle NAT ajoutée dans UFW - les containers ont accès à internet |
 | 7 | unattended-upgrades | Patches de sécurité installés automatiquement chaque nuit. **Docker CE** inclus dans les mises à jour automatiques. **snapd blacklisté** (CVE-2026-3888) |
 | 8 | Kernel hardening | **35 paramètres** : réseau (spoofing, SYN flood, ICMP...) + ASLR + ptrace + core dumps + perf events + **AppArmor userns restriction (CIS compliance)** |
-| 9 | **auditd** | Journalise tout : SSH, sudo, Docker, fichiers sensibles, crontabs, `/etc/hosts`. **Surveillance anti-rootkit eBPF/LKM** (VoidLink) au niveau syscall. Scan quotidien `voidlink-detect` à 02h30 |
+| 9 | **auditd** | Journalise tout : SSH, sudo, Docker, fichiers sensibles, crontabs, `/etc/hosts`. **Surveillance anti-rootkit** Scan quotidien `voidlink-detect` à 02h30 |
 | 10 | Swap 2 GB | Mémoire virtuelle d'urgence - évite les crashs |
 | 11 | **rkhunter** | Scanne les backdoors et rootkits. Scan quotidien automatique à **00h00 UTC (02h00 Paris)** - indépendant de Telegram |
 | 12 | Désactivation des services inutiles | avahi, cups, bluetooth, ModemManager désactivés - chaque service actif = surface d'attaque (CIS 2.x). Ctrl-Alt-Delete masqué (DISA STIG) |
@@ -251,7 +251,7 @@ Chaque composant retourne `[PASS]` ou `[FAIL]` avec la raison. Tout doit être P
   [PASS] rkhunter     : installé · baseline présente · conf.local OK · cron 00h00 UTC · dernier scan : jamais
   [PASS] auditd       : actif · 34 règle(s) chargée(s)
   [PASS] Swap         : actif · 2048 MB · swappiness=10
-  [PASS] Kernel       : ASLR=2 · ptrace_scope=1 · syncookies=1 · ip_forward=1 · suid_dumpable=0 · dmesg/kptr/eBPF restreints
+  [PASS] Kernel       : ASLR=2 · ptrace_scope=1 · syncookies=1 · ip_forward=1 · suid_dumpable=0 
   [PASS] DNS over TLS : systemd-resolved actif · DoT=yes · serveur principal : 9.9.9.9
   [PASS] Telegram     : config présente · API OK · bot : @monbot
 
@@ -595,11 +595,6 @@ cat /var/cache/vps-secure/security-stats.json
 ```bash
 # Vérifier si rkhunter a été mis à jour par apt
 sudo cat /var/log/rkhunter-propupd.log
-```
-
-```bash
-# Scanner manuellement les rootkits eBPF/LKM (VoidLink et variants)
-sudo voidlink-detect
 ```
 
 ```bash

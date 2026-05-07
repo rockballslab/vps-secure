@@ -2378,16 +2378,23 @@ readonly AIDE_DB_NEW="/var/lib/aide/aide.db.new"
 readonly AIDE_CONF="/etc/aide/aide.conf"
 readonly LOCK_FILE="/var/run/vps-aide-rebase.lock"
 readonly AIDE_EXIT="/var/log/aide-daily.exit"
+readonly REBASE_RESULT="/var/lib/vps-monitor/aide_rebase_result"
 
 # Trap : restaurer chattr +i si interruption (SIGTERM, OOM killer, Ctrl+C)
 _db_unprotected=0
 
 cleanup() {
+    local exit_code=$?
     if [[ "$_db_unprotected" -eq 1 ]] && [[ -f "$AIDE_DB" ]]; then
         chmod 600 "$AIDE_DB" 2>/dev/null || true
         chattr +i "$AIDE_DB" 2>/dev/null || true
         echo "⚠️  Rebase interrompu — baseline AIDE reprotégée (chattr +i)." >&2
     fi
+    # Nettoyage aide.db.new orphelin si interruption
+    [[ -f "$AIDE_DB_NEW" ]] && rm -f "$AIDE_DB_NEW" 2>/dev/null || true
+    # Écriture résultat pour le dashboard (fonctionne même si systemd kill le process)
+    mkdir -p /var/lib/vps-monitor
+    echo "$exit_code" > "$REBASE_RESULT" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
 
@@ -2450,9 +2457,10 @@ Description=Run AIDE rebase triggered by dashboard
 
 [Service]
 Type=oneshot
+TimeoutStartSec=1800
 ExecStartPre=/bin/rm -f /var/lib/vps-monitor/aide_rebase_trigger
 ExecStart=/usr/local/bin/vps-secure-aide-rebase
-ExecStartPost=/bin/bash -c 'echo $? > /var/lib/vps-monitor/aide_rebase_result'
+# ExecStartPost supprimé — résultat écrit par le script lui-même via cleanup()
 SVCEOF
 
 mkdir -p /var/lib/vps-monitor

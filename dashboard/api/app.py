@@ -636,7 +636,7 @@ def get_connections() -> dict:
     
 def _load_expected_ports() -> set:
     """Charge les ports attendus depuis le fichier de config + les ports système de base."""
-    BASE = {22, 25, 53, 80, 443, 2222, 5055, 6060, 8081}
+    BASE = {22, 25, 53, 80, 443, 2222, 5055, 6060, 8081, 9119}
     conf_file = "/etc/vps-secure/expected-ports.conf"
     try:
         if os.path.exists(conf_file):
@@ -1541,7 +1541,7 @@ def get_containers() -> list:
         s = stats_map.get(name, {})
 
         result.append({
-            'name':        name.replace('saaskit-', '', 1),
+            'name':        name,
             'image':       image,
             'image_clean': image_clean,
             'state':       state,
@@ -2038,6 +2038,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(resp)
             except Exception as exc:
                 self.send_error(500, str(exc))
+            return
+        elif path == "/api/aide/rebase":  # ← AJOUT : route dédiée
             # Lock non-bloquant — 409 si rebase déjà actif
             if not _rebase_lock.acquire(blocking=False):
                 resp = json.dumps({"status": "already_running"}).encode()

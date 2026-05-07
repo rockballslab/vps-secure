@@ -353,60 +353,6 @@ log_success "Connexion SSH confirmée — le script continue."
 # ============================================================
 etape "3" "$TOTAL_ETAPES" "Mise à jour du système"
 
-_wait_dpkg
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq \
-    -o Dpkg::Options::="--force-confdef" \
-    -o Dpkg::Options::="--force-confold"
-apt-get install -y -qq \
-    curl wget gnupg lsb-release ca-certificates \
-    apt-transport-https software-properties-common \
-    unzip jq htop ncdu tree openssl python3 \
-    debsums apt-show-versions acct sysstat \
-    libpam-pwquality
-
-DEBIAN_FRONTEND=noninteractive pam-auth-update --force 2>/dev/null || true
-# PKGS-7370 — debsums cron daily (juste installé ne suffit pas)
-sed -i 's/^#\?CRON_CHECK.*/CRON_CHECK=daily/' /etc/default/debsums 2>/dev/null || \
-  echo "CRON_CHECK=daily" >> /etc/default/debsums
-log_success "Système mis à jour — debsums cron daily configuré."
-
-systemctl enable --now acct 2>/dev/null || true
-systemctl enable --now sysstat 2>/dev/null || true
-# ACCT-9626 — activer la collecte sysstat (ENABLED=true requis, sinon service démarré mais inactif)
-sed -i 's/^ENABLED=.*/ENABLED="true"/' /etc/default/sysstat 2>/dev/null || \
-  echo 'ENABLED="true"' >> /etc/default/sysstat
-systemctl restart sysstat 2>/dev/null || true
-log_success "sysstat activé — collecte système démarrée."
-
-# Sécuriser /tmp (CIS Benchmark L1)
-if ! grep -q "tmpfs /tmp" /etc/fstab; then
-    # Désactiver tmp.mount systemd pour éviter un conflit au boot
-    if systemctl is-enabled tmp.mount &>/dev/null; then
-        systemctl mask tmp.mount
-        log_info "tmp.mount systemd masqué — gestion via fstab."
-    fi
-    echo "tmpfs /tmp tmpfs defaults,noexec,nosuid,nodev 0 0" >> /etc/fstab
-    mount -o remount /tmp 2>/dev/null || true  # optionnel : remount échoue si le noyau n'a pas encore pris en compte l'entrée fstab — effectif au prochain reboot
-    log_success "/tmp sécurisé (noexec, nosuid, nodev)."
-else
-    log_warn "/tmp déjà configuré dans fstab — on continue."
-fi
-
-# Vérification AppArmor (actif par défaut sur Ubuntu 24.04)
-if command -v aa-status &>/dev/null; then
-    if aa-status 2>/dev/null | grep -q "apparmor module is loaded"; then
-        ENFORCING=$(aa-status 2>/dev/null | grep "profiles are in enforce mode" | awk '{print $1}' || echo "?")
-        log_success "AppArmor actif — ${ENFORCING} profils en mode enforcing."
-    else
-        log_warn "AppArmor chargé mais aucun profil en enforcing."
-        log_warn "  Vérifier : sudo aa-status"
-    fi
-else
-    log_warn "AppArmor non détecté — installation manuelle recommandée :"
-    log_warn "  sudo apt-get install apparmor apparmor-utils && sudo aa-enforce /etc/apparmor.d/*"
-fi
 
 # ── DNS over TLS (activé ici, avant tout téléchargement réseau) ──
 # Raison :  et Docker sont téléchargés ensuite.
@@ -476,6 +422,61 @@ if resolvectl query quad9.net &>/dev/null; then
 else
     log_warn "DNS over TLS configuré — vérification transitoire échouée."
     log_warn "  Vérifie après install : resolvectl query google.com"
+fi
+
+_wait_dpkg
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq \
+    -o Dpkg::Options::="--force-confdef" \
+    -o Dpkg::Options::="--force-confold"
+apt-get install -y -qq \
+    curl wget gnupg lsb-release ca-certificates \
+    apt-transport-https software-properties-common \
+    unzip jq htop ncdu tree openssl python3 \
+    debsums apt-show-versions acct sysstat \
+    libpam-pwquality
+
+DEBIAN_FRONTEND=noninteractive pam-auth-update --force 2>/dev/null || true
+# PKGS-7370 — debsums cron daily (juste installé ne suffit pas)
+sed -i 's/^#\?CRON_CHECK.*/CRON_CHECK=daily/' /etc/default/debsums 2>/dev/null || \
+  echo "CRON_CHECK=daily" >> /etc/default/debsums
+log_success "Système mis à jour — debsums cron daily configuré."
+
+systemctl enable --now acct 2>/dev/null || true
+systemctl enable --now sysstat 2>/dev/null || true
+# ACCT-9626 — activer la collecte sysstat (ENABLED=true requis, sinon service démarré mais inactif)
+sed -i 's/^ENABLED=.*/ENABLED="true"/' /etc/default/sysstat 2>/dev/null || \
+  echo 'ENABLED="true"' >> /etc/default/sysstat
+systemctl restart sysstat 2>/dev/null || true
+log_success "sysstat activé — collecte système démarrée."
+
+# Sécuriser /tmp (CIS Benchmark L1)
+if ! grep -q "tmpfs /tmp" /etc/fstab; then
+    # Désactiver tmp.mount systemd pour éviter un conflit au boot
+    if systemctl is-enabled tmp.mount &>/dev/null; then
+        systemctl mask tmp.mount
+        log_info "tmp.mount systemd masqué — gestion via fstab."
+    fi
+    echo "tmpfs /tmp tmpfs defaults,noexec,nosuid,nodev 0 0" >> /etc/fstab
+    mount -o remount /tmp 2>/dev/null || true  # optionnel : remount échoue si le noyau n'a pas encore pris en compte l'entrée fstab — effectif au prochain reboot
+    log_success "/tmp sécurisé (noexec, nosuid, nodev)."
+else
+    log_warn "/tmp déjà configuré dans fstab — on continue."
+fi
+
+# Vérification AppArmor (actif par défaut sur Ubuntu 24.04)
+if command -v aa-status &>/dev/null; then
+    if aa-status 2>/dev/null | grep -q "apparmor module is loaded"; then
+        ENFORCING=$(aa-status 2>/dev/null | grep "profiles are in enforce mode" | awk '{print $1}' || echo "?")
+        log_success "AppArmor actif — ${ENFORCING} profils en mode enforcing."
+    else
+        log_warn "AppArmor chargé mais aucun profil en enforcing."
+        log_warn "  Vérifier : sudo aa-status"
+    fi
+else
+    log_warn "AppArmor non détecté — installation manuelle recommandée :"
+    log_warn "  sudo apt-get install apparmor apparmor-utils && sudo aa-enforce /etc/apparmor.d/*"
 fi
 
 # /var/tmp noexec (CIS Benchmark 1.1.x — persiste après reboot, vecteur malware)

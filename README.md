@@ -60,11 +60,6 @@ J'ai conçu **VPS-SECURE** par nécessité : je voulais un outil capable de tran
 1 commande - 15 étapes automatiques - zéro compétence technique requise.
 
 
-<p align="center">
-  <img src="./screenshots/VPS-SECURE_overview.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
-</p>
-
-
 | # | Quoi | Pourquoi |
 |---|---|---|
 | 1 | Crée l'utilisateur `vpsadmin` | Fini le root - impossible de faire une erreur fatale |
@@ -84,12 +79,13 @@ J'ai conçu **VPS-SECURE** par nécessité : je voulais un outil capable de tran
 | 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 - toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram. Après une mise à jour OS, relancer la baseline manuellement (commande fournie). |
 
 
----
+<p align="center">
+  <img src="./screenshots/VPS-SECURE_overview.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
+</p>
 
 <p align="center">
   <img src="./screenshots/sticker2.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
-
 
 <p align="center">
   <img src="./screenshots/sticker1.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">

@@ -1,9 +1,11 @@
+**⚡ +211 bots bloqués en 24h sur un VPS standard - le tien est-il vraiment protégé ?**
+
+
 <p align="center">
   <img src="./screenshots/VPS-SECURE_overview.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
 
-
-**⚡ +211 bots bloqués en 24h sur un VPS standard - le tien est-il vraiment protégé ?**
+---
 
 # VPS-SECURE
 

@@ -484,10 +484,14 @@ def get_rkhunter() -> dict:
         elif len(content) > 100:
             status = "clean"
         if dates:
-            try:
-                dt = datetime.strptime(dates[-1].strip(), "%a %b %d %H:%M:%S %Z %Y")
-                last_scan = dt.strftime("%d/%m/%Y %H:%M")
-            except Exception:
+            for _fmt in ("%a %b %d %I:%M:%S %p %Z %Y", "%a %b %d %H:%M:%S %Z %Y"):
+                try:
+                    dt = datetime.strptime(dates[-1].strip(), _fmt)
+                    last_scan = dt.strftime("%d/%m/%Y %H:%M")
+                    break
+                except Exception:
+                    continue
+            else:
                 last_scan = dates[-1].strip()
     except Exception:
         pass

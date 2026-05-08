@@ -1,4 +1,4 @@
-**⚡ +211 bots bloqués en 24h sur un VPS standard - le tien est-il vraiment protégé ?**
+**⚡ +1597 bots bloqués en 24h sur un VPS standard - le tien est-il vraiment protégé ?**
 
 
 <p align="center">
@@ -54,7 +54,7 @@ J'ai conçu **VPS-SECURE** par nécessité : je voulais un outil capable de tran
 ---
 
 
-## Exemple du Dashboard inclus - 1597 bots m'auraient déjà attaqué en moins de 48H sans VPS-SECURE pour me protéger
+## Exemple du Dashboard inclus - 1597 bots m'auraient déjà attaqué en moins de 24H sans VPS-SECURE pour me protéger
 
 Un cockpit web complet et sécurisé pour visualiser en temps réel l'état de ton serveur :
 bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de rootkits, charge CPU RAM, alertes Telegram.

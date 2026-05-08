@@ -61,7 +61,7 @@ bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de root
 
 
  <p align="center">
-  <img src="./dashboard/dashboard-preview2.png" alt="VPS Secure Dashboard" width="100%">
+  <img src="./dashboard/dashboard-preview3.png" alt="VPS Secure Dashboard" width="100%">
 </p>
 
 

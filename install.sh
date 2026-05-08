@@ -212,6 +212,7 @@ KbdInteractiveAuthentication no
 UsePAM yes
 PermitEmptyPasswords no
 StrictModes yes
+PrintLastLog no
 
 # Limiter les connexions à vpsadmin uniquement
 AllowUsers vpsadmin
@@ -2638,6 +2639,7 @@ log_success "vps-secure-verify installé — commande disponible : sudo vps-secu
 # ── MOTD personnalisé (affiché à chaque connexion SSH) ──
 # Désactiver le MOTD Ubuntu par défaut (publicitaire et verbeux)
 chmod -x /etc/update-motd.d/* 2>/dev/null || true
+rm -f /etc/update-motd.d/50-landscape-sysinfo 2>/dev/null || true  # symlink — chmod -x inefficace
 # Désactiver les timers systemd qui régénèrent le MOTD Ubuntu après chmod -x
 systemctl disable --now motd-news.timer 2>/dev/null || true
 systemctl disable --now update-notifier-motd.timer 2>/dev/null || true

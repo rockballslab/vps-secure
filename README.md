@@ -26,7 +26,7 @@ Un serveur nu ou configuré par défaut est une cible facile, visible et attaqua
 
 
 <p align="center">
-  <img src="./VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
+  <img src="./screenshots/VPS-SECURE.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
 
 

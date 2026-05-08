@@ -51,19 +51,6 @@ J'ai conçu **VPS-SECURE** par nécessité : je voulais un outil capable de tran
 
 > *"Eat your own dog food"* : C'est précisément la configuration que j'utilise pour blinder mes serveurs de production et tester de nouveaux services (comme Hermes Agent) avec une tranquillité d'esprit absolue.
 
----
-
-
-## Exemple du Dashboard inclus - 1597 bots m'auraient déjà attaqué en moins de 24H sans VPS-SECURE pour me protéger
-
-Un cockpit web complet et sécurisé pour visualiser en temps réel l'état de ton serveur :
-bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de rootkits, charge CPU RAM, alertes Telegram.
-
-
- <p align="center">
-  <img src="./dashboard/dashboard-preview2.png" alt="VPS Secure Dashboard" width="100%">
-</p>
-
 
 ---
 
@@ -96,17 +83,6 @@ bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de root
 | 14 | **Endlessh** (honeypot port 22) | SSH est sur le port 2222 - le port 22 est libre. Endlessh le capture et maintient les bots connectés des heures en leur envoyant un banner SSH infini. Ils ne peuvent pas attaquer ailleurs pendant ce temps |
 | 15 | **AIDE** (integrity monitoring) | Hash SHA512 de tous les binaires système à l'installation. Scan quotidien à 03h00 - toute modification (binaire remplacé, backdoor, rootkit) déclenche une alerte dans le rapport Telegram. Après une mise à jour OS, relancer la baseline manuellement (commande fournie). |
 
----
-
-## 🛡️ Réactivité sécurité
-
-> *"VPS-SECURE v2.7.2 — patch CVE-2026-31431 intégré en moins de 24h — une faille kernel  
-> activement exploitée ajoutée à la liste CISA la veille. Le fix a été intégré en moins de 24h  
-> après publication. C'est exactement pour ça que le produit existe."*
-
-**CVE-2026-31431 "Copy Fail"** — CVSS 7.8 · CISA KEV · Exploité in-the-wild  
-Vecteur : escalade de privilèges locale via `algif_aead` (Linux kernel 6.8.0, Ubuntu 24.04)  
-Fix : blacklist permanente du module via `modprobe.d` — intégré dans `install.sh` étape 8.
 
 ---
 
@@ -119,6 +95,18 @@ Fix : blacklist permanente du module via `modprobe.d` — intégré dans `instal
   <img src="./screenshots/sticker1.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
 
+
+---
+
+## 🛡️ Réactivité sécurité
+
+> *"VPS-SECURE v2.7.2 — patch CVE-2026-31431 intégré en moins de 24h — une faille kernel  
+> activement exploitée ajoutée à la liste CISA la veille. Le fix a été intégré en moins de 24h  
+> après publication. C'est exactement pour ça que le produit existe."*
+
+**CVE-2026-31431 "Copy Fail"** — CVSS 7.8 · CISA KEV · Exploité in-the-wild  
+Vecteur : escalade de privilèges locale via `algif_aead` (Linux kernel 6.8.0, Ubuntu 24.04)  
+Fix : blacklist permanente du module via `modprobe.d` — intégré dans `install.sh` étape 8.
 
 ---
 

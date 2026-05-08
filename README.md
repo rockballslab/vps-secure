@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img src="./screenshots/VPS-SECURE_overview.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
+  <img src="./screenshots/VPS-SECURE_header.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
 
 ---
@@ -71,6 +71,12 @@ bots piégés, IP bannies, blocages UFW, intégrité systeme, détection de root
 ## Ce que fait VPS-SECURE
 
 1 commande - 15 étapes automatiques - zéro compétence technique requise.
+
+
+<p align="center">
+  <img src="./screenshots/VPS-SECURE_overview.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
+</p>
+
 
 | # | Quoi | Pourquoi |
 |---|---|---|

@@ -842,22 +842,11 @@ function updateCards(d) {
   const _aidWrap = $('aide-rebase-wrap');
   if (_aidWrap) _aidWrap.style.display = (aiSt === 'changes' || aiSt === 'rebase') ? 'block' : 'none';
 
-  // ✅ VERSION CORRIGÉE
+  // diffBox : contrôlé uniquement via requestAideRebase() — jamais auto-affiché
   const diffBox = $('aide-diff-box'), diffContent = $('aide-diff-content');
-  if (diffBox && diffContent) {
-    if (aiSt === 'rebase') {
-      diffBox.style.display = 'block';
-      // Fetch uniquement si pas encore chargé (évite appel à chaque refresh)
-      if (diffContent.textContent === 'Chargement…') {
-        fetch('/api/aide/diff', { headers: { 'Authorization': AUTH } })
-          .then(r => r.json())
-          .then(d => { diffContent.textContent = d.log || 'Aucun détail'; })
-          .catch(() => { diffContent.textContent = 'Erreur lecture log AIDE'; });
-      }
-    } else {
-      diffBox.style.display = 'none';
-      diffContent.textContent = 'Chargement…'; // reset pour la prochaine fois
-    }
+  if (diffBox && diffContent && aiSt !== 'rebase' && aiSt !== 'changes') {
+    diffBox.style.display = 'none';
+    diffContent.textContent = 'Chargement…';
   }
   $('val-ip').textContent = s.ip || '—';
   $('sys-mem').textContent  = mem.pct  != null ? `${mem.pct}%`  : '—';
@@ -1335,6 +1324,65 @@ function copyCmd(el, cmd) {
 setTab(sessionStorage.getItem('active_tab') || 'cockpit');
 refresh();
 loadTelegramStatus();
+async function requestAideRebase() {
+  const modal   = $('modal-aide-rebase');
+  const content = $('modal-aide-content');
+  if (!modal || !content) return;
+  content.innerHTML = '<span style="opacity:.6">Analyse en cours…</span>';
+  modal.style.display = 'flex';
+  try {
+    const r = await fetch('/api/aide/diff', { cache: 'no-store', headers: { 'Authorization': AUTH } });
+    const d = await r.json();
+    const added   = ((d.log||'').match(/Added entries:\s*(\d+)/)||['','?'])[1];
+    const removed = ((d.log||'').match(/Removed entries:\s*(\d+)/)||['','?'])[1];
+    const changed = ((d.log||'').match(/Changed entries:\s*(\d+)/)||['','?'])[1];
+    const CRITIQUES = ['/bin/','/sbin/','/usr/bin/','/usr/sbin/','/lib/','/usr/lib/',
+                       '/etc/passwd','/etc/shadow','/etc/group','/etc/sudoers','/etc/ssh/','/boot/'];
+    const fichiers = [...(d.log||'').matchAll(/^[fdl][+\-0]+:\s+(.+)$/gm)].map(x => x[1]);
+    const suspects = fichiers.filter(p => CRITIQUES.some(c => p.startsWith(c)));
+    content.innerHTML = suspects.length === 0
+      ? `<span style="color:#22c55e;font-weight:700;">✅ Modifications habituelles</span><br><br>
+         ➕ <b>${added}</b> ajouté(s) &nbsp;·&nbsp; ➖ <b>${removed}</b> supprimé(s) &nbsp;·&nbsp; ✏️ <b>${changed}</b> modifié(s)<br><br>
+         Aucun fichier système critique touché.<br>
+         <span style="opacity:.6;font-size:11px;">Probablement des mises à jour logicielles (CrowdSec, paquets système).</span>`
+      : `<span style="color:#f59e0b;font-weight:700;">⚠️ Fichiers sensibles modifiés</span><br><br>
+         ➕ <b>${added}</b> ajouté(s) &nbsp;·&nbsp; ➖ <b>${removed}</b> supprimé(s) &nbsp;·&nbsp; ✏️ <b>${changed}</b> modifié(s)<br><br>
+         <b>À vérifier avant de confirmer :</b><br>
+         ${suspects.slice(0,5).map(f=>`• <code style="font-size:10px;">${f}</code>`).join('<br>')}<br>
+         <span style="opacity:.6;font-size:11px;">Ces fichiers sont des cibles d'attaque connues.</span>`;
+  } catch(e) {
+    content.innerHTML = '<span style="color:#f87171;">Erreur de lecture du log AIDE</span>';
+  }
+}
+
+async function _executeAideRebase() {
+  const btn = $('btn-modal-confirm'), feedback = $('aide-modal-feedback');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Lancement…'; }
+  try {
+    const r = await fetch('/api/aide/rebase', { method:'POST', cache:'no-store', headers:{'Authorization':AUTH} });
+    const d = await r.json();
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.textContent = r.ok
+        ? '✅ Rebase lancé — baseline mise à jour dans ~2 min'
+        : '❌ Erreur : ' + (d.status || d.error || 'inconnue');
+    }
+    if (r.ok) setTimeout(() => cancelAideRebase(), 3000);
+  } catch(e) {
+    if (feedback) { feedback.style.display='block'; feedback.textContent='❌ Erreur réseau'; }
+  }
+  if (btn) { btn.disabled=false; btn.textContent='✅ Confirmer'; }
+}
+
+function cancelAideRebase() {
+  const modal=$('modal-aide-rebase'), feedback=$('aide-modal-feedback'), content=$('modal-aide-content');
+  if (modal)    modal.style.display='none';
+  if (feedback) { feedback.style.display='none'; feedback.textContent=''; }
+  if (content)  content.innerHTML='';
+}
+
+function _resetAideBtn() {}
+
 </script>
 <!-- Modal AIDE Rebase -->
 <div id="aide-modal-overlay" onclick="closeAideModal()" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);"></div>
@@ -1358,88 +1406,98 @@ loadTelegramStatus();
 <!-- Helper panel — Commandes utiles -->
 <div id="helper-overlay" onclick="closeHelper()" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.35);backdrop-filter:blur(2px);"></div>
 <div id="helper-panel" style="display:none;position:fixed;top:0;right:0;height:100%;width:440px;max-width:96vw;z-index:801;background:var(--card);box-shadow:-6px 0 32px rgba(0,0,0,0.25);overflow-y:auto;transform:translateX(100%);transition:transform 0.28s cubic-bezier(.4,0,.2,1);">
-
-  <!-- Header panel -->
-  <div style="position:sticky;top:0;background:var(--card);z-index:1;padding:18px 24px 14px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <i class="ph ph-terminal" style="font-size:18px;color:var(--muted);"></i>
-      <span style="font-size:14px;font-weight:800;color:var(--text);">Commandes utiles</span>
+    
+    <!-- Header panel -->
+    <div style="position:sticky;top:0;background:var(--card);z-index:1;padding:18px 24px 14px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <i class="ph ph-terminal" style="font-size:18px;color:var(--muted);"></i>
+            <span style="font-size:14px;font-weight:800;color:var(--text);">Commandes utiles</span>
+        </div>
+        <button onclick="closeHelper()" style="padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;">✕</button>
     </div>
-    <button onclick="closeHelper()" style="padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;">✕</button>
-  </div>
-
-  <div style="padding:16px 20px;display:flex;flex-direction:column;gap:18px;">
-
-    <!-- SSH -->
-    <div>
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🔐 SSH</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'ssh vpsadmin@[IP] -p 2222')">ssh vpsadmin@[IP] -p 2222<span class="cmd-chip-hint">Connexion</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'ssh-copy-id -p 2222 vpsadmin@[IP]')">ssh-copy-id -p 2222 vpsadmin@[IP]<span class="cmd-chip-hint">Ajouter clé</span></div>
+    
+    <div style="padding:16px 20px;display:flex;flex-direction:column;gap:18px;">
+        
+        <!-- SSH -->
+        <div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🔐 SSH</div>
+            <div class="cmd-chip" onclick="copyCmd(this,'ssh vpsadmin@[IP] -p 2222')">ssh vpsadmin@[IP] -p 2222<span class="cmd-chip-hint">Connexion</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'ssh-copy-id -p 2222 vpsadmin@[IP]')">ssh-copy-id -p 2222 vpsadmin@[IP]<span class="cmd-chip-hint">Ajouter clé</span></div>
+        </div>
+        
+        <!-- CrowdSec -->
+        <div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🛡️ CrowdSec</div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli decisions list')">sudo cscli decisions list<span class="cmd-chip-hint">IP bannies</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli alerts list')">sudo cscli alerts list<span class="cmd-chip-hint">Alertes récentes</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli hub update && sudo cscli hub upgrade')">sudo cscli hub update && upgrade<span class="cmd-chip-hint">Mise à jour</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli metrics')">sudo cscli metrics<span class="cmd-chip-hint">Métriques</span></div>
+        </div>
+        
+        <!-- AIDE -->
+        <div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🔐 AIDE</div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-aide-rebase')">sudo vps-secure-aide-rebase<span class="cmd-chip-hint">Mettre à jour baseline</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo aide --check')">sudo aide --check<span class="cmd-chip-hint">Scanner changements</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo aide --config-check')">sudo aide --config-check<span class="cmd-chip-hint">Vérifier config</span></div>
+        </div>
+        
+        <!-- rkhunter -->
+        <div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🔍 rkhunter</div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --check --skip-keypress')">sudo rkhunter --check --skip-keypress<span class="cmd-chip-hint">Scan rootkits</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --update')">sudo rkhunter --update<span class="cmd-chip-hint">Màj signatures</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --propupd')">sudo rkhunter --propupd<span class="cmd-chip-hint">Màj propriétés fichiers</span></div>
+        </div>
+        
+        <!-- UFW -->
+        <div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🔥 UFW</div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw status verbose')">sudo ufw status verbose<span class="cmd-chip-hint">État firewall</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw allow 8080/tcp')">sudo ufw allow 8080/tcp<span class="cmd-chip-hint">Ouvrir un port</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw deny 8080')">sudo ufw deny 8080<span class="cmd-chip-hint">Bloquer un port</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw reload')">sudo ufw reload<span class="cmd-chip-hint">Recharger</span></div>
+        </div>
+        
+        <!-- Docker -->
+        <div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🐳 Docker</div>
+            <div class="cmd-chip" onclick="copyCmd(this,'docker ps')">docker ps<span class="cmd-chip-hint">Containers actifs</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'docker logs endlessh --tail 50')">docker logs endlessh --tail 50<span class="cmd-chip-hint">Logs Endlessh</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'docker logs crowdsec --tail 50')">docker logs crowdsec --tail 50<span class="cmd-chip-hint">Logs CrowdSec</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'docker stats --no-stream')">docker stats --no-stream<span class="cmd-chip-hint">Ressources</span></div>
+        </div>
+        
+        <!-- Logs & Audit -->
+        <div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">📋 Logs & Audit</div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo journalctl -f')">sudo journalctl -f<span class="cmd-chip-hint">Logs temps réel</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo ausearch -i -m USER_AUTH -ts today')">sudo ausearch -i -m USER_AUTH -ts today<span class="cmd-chip-hint">Auths aujourd'hui</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo ausearch -i -m PRIV_AUTH -ts today')">sudo ausearch -i -m PRIV_AUTH -ts today<span class="cmd-chip-hint">Escalades privilèges</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo tail -f /var/log/vps-secure/aide-daily.log')">sudo tail -f /var/log/vps-secure/aide-daily.log<span class="cmd-chip-hint">Logs AIDE</span></div>
+        </div>
+        
+        <!-- Système -->
+        <div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">⚙️ Système</div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-stats')">sudo vps-secure-stats<span class="cmd-chip-hint">Dashboard SSH</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-verify')">sudo vps-secure-verify<span class="cmd-chip-hint">Vérifier installation</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'htop')">htop<span class="cmd-chip-hint">CPU / RAM</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'df -h')">df -h<span class="cmd-chip-hint">Espace disque</span></div>
+            <div class="cmd-chip" onclick="copyCmd(this,'free -h')">free -h<span class="cmd-chip-hint">Mémoire</span></div>
+        </div>
+        
     </div>
-
-    <!-- CrowdSec -->
-    <div>
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🛡️ CrowdSec</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli decisions list')">sudo cscli decisions list<span class="cmd-chip-hint">IP bannies</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli alerts list')">sudo cscli alerts list<span class="cmd-chip-hint">Alertes récentes</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli hub update && sudo cscli hub upgrade')">sudo cscli hub update && upgrade<span class="cmd-chip-hint">Mise à jour</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli metrics')">sudo cscli metrics<span class="cmd-chip-hint">Métriques</span></div>
+    <div id="modal-aide-rebase" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;" onclick="if(event.target===this)cancelAideRebase()">
+      <div style="background:#1a1a2e;border:1px solid #374151;border-radius:12px;padding:24px;max-width:400px;width:90%;">
+        <p style="margin:0 0 12px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Baseline AIDE — Vérification</p>
+        <div id="modal-aide-content" style="font-size:13px;color:#e2e8f0;line-height:1.7;margin-bottom:20px;"></div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="cancelAideRebase()" style="flex:1;padding:10px;border-radius:8px;border:1px solid #374151;background:transparent;color:#9ca3af;cursor:pointer;font-size:12px;">Annuler</button>
+          <button id="btn-modal-confirm" onclick="_executeAideRebase()" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #22c55e;background:rgba(34,197,94,.08);color:#22c55e;font-weight:700;cursor:pointer;font-size:12px;">✅ Confirmer</button>
+        </div>
+        <div id="aide-modal-feedback" style="display:none;margin-top:10px;font-size:11px;color:#9ca3af;text-align:center;"></div>
+      </div>
     </div>
-
-    <!-- AIDE -->
-    <div>
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🔐 AIDE</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-aide-rebase')">sudo vps-secure-aide-rebase<span class="cmd-chip-hint">Mettre à jour baseline</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo aide --check')">sudo aide --check<span class="cmd-chip-hint">Scanner changements</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo aide --config-check')">sudo aide --config-check<span class="cmd-chip-hint">Vérifier config</span></div>
-    </div>
-
-    <!-- rkhunter -->
-    <div>
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🔍 rkhunter</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --check --skip-keypress')">sudo rkhunter --check --skip-keypress<span class="cmd-chip-hint">Scan rootkits</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --update')">sudo rkhunter --update<span class="cmd-chip-hint">Màj signatures</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --propupd')">sudo rkhunter --propupd<span class="cmd-chip-hint">Màj propriétés fichiers</span></div>
-    </div>
-
-    <!-- UFW -->
-    <div>
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🔥 UFW</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw status verbose')">sudo ufw status verbose<span class="cmd-chip-hint">État firewall</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw allow 8080/tcp')">sudo ufw allow 8080/tcp<span class="cmd-chip-hint">Ouvrir un port</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw deny 8080')">sudo ufw deny 8080<span class="cmd-chip-hint">Bloquer un port</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw reload')">sudo ufw reload<span class="cmd-chip-hint">Recharger</span></div>
-    </div>
-
-    <!-- Docker -->
-    <div>
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">🐳 Docker</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'docker ps')">docker ps<span class="cmd-chip-hint">Containers actifs</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'docker logs endlessh --tail 50')">docker logs endlessh --tail 50<span class="cmd-chip-hint">Logs Endlessh</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'docker logs crowdsec --tail 50')">docker logs crowdsec --tail 50<span class="cmd-chip-hint">Logs CrowdSec</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'docker stats --no-stream')">docker stats --no-stream<span class="cmd-chip-hint">Ressources</span></div>
-    </div>
-
-    <!-- Logs & Audit -->
-    <div>
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">📋 Logs & Audit</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo journalctl -f')">sudo journalctl -f<span class="cmd-chip-hint">Logs temps réel</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ausearch -i -m USER_AUTH -ts today')">sudo ausearch -i -m USER_AUTH -ts today<span class="cmd-chip-hint">Auths aujourd'hui</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ausearch -i -m PRIV_AUTH -ts today')">sudo ausearch -i -m PRIV_AUTH -ts today<span class="cmd-chip-hint">Escalades privilèges</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo tail -f /var/log/vps-secure/aide-daily.log')">sudo tail -f /var/log/vps-secure/aide-daily.log<span class="cmd-chip-hint">Logs AIDE</span></div>
-    </div>
-
-    <!-- Système -->
-    <div>
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">⚙️ Système</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-stats')">sudo vps-secure-stats<span class="cmd-chip-hint">Dashboard SSH</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-verify')">sudo vps-secure-verify<span class="cmd-chip-hint">Vérifier installation</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'htop')">htop<span class="cmd-chip-hint">CPU / RAM</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'df -h')">df -h<span class="cmd-chip-hint">Espace disque</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'free -h')">free -h<span class="cmd-chip-hint">Mémoire</span></div>
-    </div>
-
-  </div>
-</div>
 </body>
 </html>

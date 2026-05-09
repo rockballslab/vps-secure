@@ -1,5 +1,9 @@
 **⚡ +1597 bots bloqués en 24h sur un VPS standard - le tien est-il vraiment protégé ?**
 
+![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
+![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
+![License](https://img.shields.io/badge/license-Commercial-blue)
+
 
 <p align="center">
   <img src="./screenshots/VPS-SECURE_header.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
@@ -149,7 +153,12 @@ Puis lance cette commande :
 ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_vps
 ```
 
-Appuie sur Entrée 3 fois (pas besoin de mot de passe).
+Appuie sur Entrée 3 fois pour ne pas définir de passphrase (option rapide).
+
+> [!TIP]
+> **Recommandé :** définis une passphrase forte à cette étape. Si ta clé privée
+> est volée, elle sera inutilisable sans ce mot de passe.
+> Si tu utilises ssh-agent, tu ne la retaperas qu'une fois par session.
 
 Récupère la clé publique en lançant cette commande - tu en auras besoin pendant le script :
 ```bash
@@ -425,6 +434,13 @@ VPS-Secure reprend cette logique pour aller au-delà d’un durcissement “de b
 Il attribue un score de durcissement sur 100 et met en évidence les points faibles de la configuration.
 Sur une installation de référence, VPS-Secure atteint un Lynis hardening index de **86/100**, ce qui correspond à un niveau de durcissement très élevé pour un VPS public.
 
+Indicateur	VPS standard	VPS + VPS-SECURE	Plafond atteignable
+Lynis Hardening Index	~54/100	86/100	~90
+CIS Benchmark L1	~30%	~84%	~87%*
+DISA STIG	~20%	~73%	~78%*
+
+*Plafond structurel : certains contrôles (PIV/FIPS, infrastructure DoD) sont hors scope d'un VPS public.*
+
 > ℹ️ Ce que cela couvre concrètement
 >
 > Le script met en place une base de sécurité cohérente : accès SSH durci, pare-feu, détection d’intrusion, journalisation, intégrité système, mises à jour automatiques et supervision.
@@ -594,16 +610,11 @@ cat /var/cache/vps-secure/security-stats.json
 sudo cat /var/log/rkhunter-propupd.log
 ```
 
-```bash
-# Voir le log des scans voidlink-detect quotidiens (02h30 UTC)
-sudo cat /var/log/voidlink-detect.log
-```
-
 ---
 
 ## Compatibilité
 
-Testé et vérifié le 6 mai 2026 sur **Ubuntu 24.04 LTS** - Hostinger KVM2 et Hetzner CPX42
+Testé et vérifié le 6 mai 2026 sur **Ubuntu 24.04 LTS** — **v2.7.2** - Hostinger KVM4 et Hetzner CPX42
 
 Installation complète et 100% fonctionnelle en **13 min** (dashboard inclus)
 

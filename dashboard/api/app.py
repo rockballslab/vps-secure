@@ -408,7 +408,7 @@ def get_telegram_status() -> dict:
     return {"configured": configured, "report": report, "ssh": ssh_alert}
 
 def toggle_telegram(toggle_type: str) -> dict:
-    ALLOWED_SECTIONS = {"pam", "cron", "report", "ssh_alert"}
+    ALLOWED_SECTIONS = {"pam", "cron", "report", "ssh"}
     if toggle_type not in ALLOWED_SECTIONS:
         return {"ok": False, "error": f"Section non autorisée : {toggle_type}"}
     if toggle_type == "report":
@@ -640,7 +640,7 @@ def get_connections() -> dict:
     
 def _load_expected_ports() -> set:
     """Charge les ports attendus depuis le fichier de config + les ports système de base."""
-    BASE = {22, 25, 53, 80, 443, 2222, 5055, 6060, 8081, 9119}
+    BASE = {22, 25, 53, 80, 443, 2222, 5055, 6060, 8081, 9119, 3000, 39783}
     conf_file = "/etc/vps-secure/expected-ports.conf"
     try:
         if os.path.exists(conf_file):

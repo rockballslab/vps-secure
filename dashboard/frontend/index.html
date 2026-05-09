@@ -1229,11 +1229,6 @@ async function fetchContainerUpdates() {
 
 // ── AIDE Rebase (issue #85) ──────────────────────────────────────────────────
 
-function requestAideRebase() {
-  document.getElementById('aide-modal-overlay').style.display = 'block';
-  document.getElementById('aide-modal').style.display = 'block';
-}
-
 function closeAideModal() {
   document.getElementById('aide-modal-overlay').style.display = 'none';
   document.getElementById('aide-modal').style.display = 'none';
@@ -1384,25 +1379,7 @@ function cancelAideRebase() {
 function _resetAideBtn() {}
 
 </script>
-<!-- Modal AIDE Rebase -->
-<div id="aide-modal-overlay" onclick="closeAideModal()" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);"></div>
-<div id="aide-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:901;background:var(--card);border-radius:14px;padding:28px 30px;max-width:420px;width:calc(100% - 40px);box-shadow:0 24px 64px rgba(0,0,0,0.4);">
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
-    <div style="width:42px;height:42px;border-radius:10px;background:rgba(124,58,237,0.15);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🔄</div>
-    <div>
-      <div style="font-size:14px;font-weight:800;color:var(--text);">Mettre à jour la baseline AIDE</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:2px;">Action irréversible — fichiers absorbés dans la référence</div>
-    </div>
-  </div>
-  <p style="font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:22px;">
-    Les modifications détectées vont devenir la <b style="color:var(--text);">nouvelle baseline de sécurité</b>.<br><br>
-    Une notification Telegram sera envoyée <b style="color:var(--text);">avant</b> le lancement (~2-3 min).
-  </p>
-  <div style="display:flex;gap:10px;justify-content:flex-end;">
-    <button onclick="closeAideModal()" style="padding:9px 20px;border-radius:7px;border:1px solid var(--card-border,#e5e7eb);background:transparent;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">Annuler</button>
-    <button onclick="confirmAideRebase()" style="padding:9px 20px;border-radius:7px;border:none;background:#7c3aed;color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">🔄 Confirmer</button>
-  </div>
-</div>
+
 <!-- Helper panel — Commandes utiles -->
 <div id="helper-overlay" onclick="closeHelper()" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.35);backdrop-filter:blur(2px);"></div>
 <div id="helper-panel" style="display:none;position:fixed;top:0;right:0;height:100%;width:440px;max-width:96vw;z-index:801;background:var(--card);box-shadow:-6px 0 32px rgba(0,0,0,0.25);overflow-y:auto;transform:translateX(100%);transition:transform 0.28s cubic-bezier(.4,0,.2,1);">
@@ -1489,14 +1466,56 @@ function _resetAideBtn() {}
         
     </div>
     <div id="modal-aide-rebase" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;" onclick="if(event.target===this)cancelAideRebase()">
-      <div style="background:#1a1a2e;border:1px solid #374151;border-radius:12px;padding:24px;max-width:400px;width:90%;">
-        <p style="margin:0 0 12px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Baseline AIDE — Vérification</p>
-        <div id="modal-aide-content" style="font-size:13px;color:#e2e8f0;line-height:1.7;margin-bottom:20px;"></div>
-        <div style="display:flex;gap:8px;">
-          <button onclick="cancelAideRebase()" style="flex:1;padding:10px;border-radius:8px;border:1px solid #374151;background:transparent;color:#9ca3af;cursor:pointer;font-size:12px;">Annuler</button>
-          <button id="btn-modal-confirm" onclick="_executeAideRebase()" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #22c55e;background:rgba(34,197,94,.08);color:#22c55e;font-weight:700;cursor:pointer;font-size:12px;">✅ Confirmer</button>
+        <div style="background:#1a1a2e;border:1px solid #374151;border-radius:12px;padding:24px;max-width:400px;width:90%;">
+            <p style="margin:0 0 12px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Baseline AIDE — Vérification</p>
+            <div id="modal-aide-content" style="font-size:13px;color:#e2e8f0;line-height:1.7;margin-bottom:20px;"></div>
+            <div style="display:flex;gap:8px;">
+                <button onclick="cancelAideRebase()" style="flex:1;padding:10px;border-radius:8px;border:1px solid #374151;background:transparent;color:#9ca3af;cursor:pointer;font-size:12px;">Annuler</button>
+                <button id="btn-modal-confirm" onclick="_executeAideRebase()" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #22c55e;background:rgba(34,197,94,.08);color:#22c55e;font-weight:700;cursor:pointer;font-size:12px;">✅ Confirmer</button>
+            </div>
+            <div id="aide-modal-feedback" style="display:none;margin-top:10px;font-size:11px;color:#9ca3af;text-align:center;"></div>
         </div>
-        <div id="aide-modal-feedback" style="display:none;margin-top:10px;font-size:11px;color:#9ca3af;text-align:center;"></div>
+    </div>
+    <!-- Modal AIDE Rebase — version avec diff -->
+    <div id="modal-aide-rebase" onclick="if(event.target===this)cancelAideRebase()"
+      style="display:none;position:fixed;inset:0;z-index:900;align-items:center;
+             justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+      <div style="background:var(--card);border-radius:14px;padding:28px 30px;
+                  max-width:480px;width:calc(100% - 40px);box-shadow:0 24px 64px rgba(0,0,0,.4);">
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+          <div style="width:42px;height:42px;border-radius:10px;background:rgba(124,58,237,.15);
+                      display:flex;align-items:center;justify-content:center;font-size:22px;">🔄</div>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:var(--text);">Mettre à jour la baseline AIDE</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Action irréversible</div>
+          </div>
+        </div>
+
+        <!-- Résumé diff AIDE -->
+        <div id="modal-aide-content"
+          style="background:#1a1a2e;border-radius:8px;padding:14px;font-size:12px;
+                 color:#e2e8f0;margin-bottom:18px;line-height:1.7;min-height:56px;"></div>
+
+        <!-- Feedback post-action -->
+        <div id="aide-modal-feedback"
+          style="display:none;font-size:12px;margin-bottom:14px;padding:8px 12px;
+                 border-radius:6px;text-align:center;"></div>
+
+        <!-- Boutons -->
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onclick="cancelAideRebase()"
+            style="padding:9px 18px;border-radius:8px;border:1px solid var(--border);
+                   background:transparent;color:var(--muted);cursor:pointer;font-size:13px;">
+            Annuler
+          </button>
+          <button id="btn-modal-confirm" onclick="_executeAideRebase()"
+            style="padding:9px 18px;border-radius:8px;border:none;
+                   background:#7c3aed;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">
+            ✅ Confirmer le rebase
+          </button>
+        </div>
+
       </div>
     </div>
 </body>

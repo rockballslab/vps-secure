@@ -434,11 +434,6 @@ VPS-Secure reprend cette logique pour aller au-delà d’un durcissement “de b
 Il attribue un score de durcissement sur 100 et met en évidence les points faibles de la configuration.
 Sur une installation de référence, VPS-Secure atteint un Lynis hardening index de **86/100**, ce qui correspond à un niveau de durcissement très élevé pour un VPS public.
 
-Indicateur	VPS standard	VPS + VPS-SECURE	Plafond atteignable
-Lynis Hardening Index	~54/100	86/100	~90
-CIS Benchmark L1	~30%	~84%	~87%*
-DISA STIG	~20%	~73%	~78%*
-
 *Plafond structurel : certains contrôles (PIV/FIPS, infrastructure DoD) sont hors scope d'un VPS public.*
 
 > ℹ️ Ce que cela couvre concrètement

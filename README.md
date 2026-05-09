@@ -53,7 +53,7 @@ Entrepreneur, fondateur de plusieurs SaaS et adepte du "Zero Trust".
 J'ai conçu **VPS-SECURE** par nécessité : je voulais un outil capable de transformer n'importe quel serveur brut en une forteresse imprenable en quelques minutes, sans sacrifier la stabilité de mes services.
 
 
-> *"Eat your own dog food"* : C'est précisément la configuration que j'utilise pour blinder mes serveurs de production et tester de nouveaux services (comme Hermes Agent) avec une tranquillité d'esprit absolue.
+> *"Eat your own dog food"* : C'est précisément la configuration que j'utilise pour blinder mes serveurs de production et tester de nouvelles stacks n8n, des microservices ou des agents IA en production avec une tranquillité d'esprit absolue.
 
 
 ---

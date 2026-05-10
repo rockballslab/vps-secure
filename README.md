@@ -339,6 +339,10 @@ Le script te demande un domaine et un mot de passe. Ton mot de passe sera sauveg
 > Pour générer un mot de passe sécurisé : `openssl rand -base64 32`
 
 <p align="center">
+  <img src="./dashboard/dashboard-login.png" alt="VPS Secure Dashboard" width="100%">
+</p>
+
+<p align="center">
   <img src="./dashboard/dashboard-preview.png" alt="VPS Secure Dashboard" width="100%">
 </p>
 

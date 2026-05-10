@@ -710,8 +710,15 @@ def get_alerts(period_hours: int = 24) -> list:
 
     for auth_path in ["/var/log/sshd.log", "/var/log/auth.log", "/var/log/secure"]:
         try:
-            with open(auth_path, errors="replace") as f:
-                lines = f.readlines()
+            lines = []
+            for candidate in [auth_path + ".1", auth_path]:   # .1 en premier = plus ancien
+                try:
+                    with open(candidate, errors="replace") as f:
+                        lines += f.readlines()
+                except Exception:
+                    pass
+            if not lines:
+                continue
             year = datetime.now().year
             for line in lines:
                 if "sshd" not in line:
@@ -845,7 +852,7 @@ def get_alerts(period_hours: int = 24) -> list:
                     ufw_by_key[key] = {"count": 0, "ts": ts, "ip": ip, "dpt": dpt}
                 ufw_by_key[key]["count"] += 1
                 ufw_by_key[key]["ts"] = max(ufw_by_key[key]["ts"], ts)
-            if found_any:
+            if found_any and log_path.endswith(".log.1"):
                 break
         except Exception:
             continue
@@ -982,21 +989,22 @@ def get_alerts(period_hours: int = 24) -> list:
                 ).timestamp()
             except Exception:
                 pass
-        for w in re.findall(r"Warning:\s+(.+?)(?:\n|$)", content):
-            w = w.strip()
-            if not w or any(fp.lower() in w.lower() for fp in FP):
-                continue
-            is_crit = any(b in w for b in CRIT_BINS)
-            alerts.append({
-                "service":  "rkhunter",
-                "detail":   w[:120],
-                "ip":       "---",
-                "datetime": fmt_dt(scan_ts),
-                "status":   "action" if is_crit else "detected",
-                "icon":     "🔴" if is_crit else "👁️",
-                "label":    "Action requise" if is_crit else "Detectee",
-                "_ts":      scan_ts,
-            })
+        if scan_ts >= cutoff:
+            for w in re.findall(r"Warning:\s+(.+?)(?:\n|$)", content):
+                w = w.strip()
+                if not w or any(fp.lower() in w.lower() for fp in FP):
+                    continue
+                is_crit = any(b in w for b in CRIT_BINS)
+                alerts.append({
+                    "service":  "rkhunter",
+                    "detail":   w[:120],
+                    "ip":       "---",
+                    "datetime": fmt_dt(scan_ts),
+                    "status":   "action" if is_crit else "detected",
+                    "icon":     "🔴" if is_crit else "👁️",
+                    "label":    "Action requise" if is_crit else "Detectee",
+                    "_ts":      scan_ts,
+                })
     except Exception:
         pass
 
@@ -1057,7 +1065,9 @@ def get_alerts(period_hours: int = 24) -> list:
     # ── 8. Endlessh ───────────────────────────────────────────────────────────
     try:
         e_data    = get_endlessh()
-        bot_count = e_data.get("last24h", 0)
+        out_period = run(["docker", "logs", "--since", f"{period_hours}h", ENDLESSH_CONTAINER], timeout=20)
+        pat = re.compile(r"ACCEPT|\"accepted\"", re.IGNORECASE)
+        bot_count = len(pat.findall(out_period))
         if bot_count > 0:
             s = "s" if bot_count > 1 else ""
             alerts.append({

@@ -394,6 +394,28 @@
 
     /* ═══ NUMBER COUNTER ANIMATION ════════════════════════════════════════ */
     .num-anim{animation:numberIn .35s ease both}
+
+    /* ═══ THREAT PULSE ════════════════════════════════════════════════════ */
+    @keyframes tpScan{from{left:0%}to{left:100%}}
+    .threat-pulse-wrap{flex-shrink:0;display:flex;flex-direction:column;gap:7px;min-width:155px}
+    .threat-canvas-box{position:relative;border-radius:var(--r-xs);overflow:hidden;border:1px solid var(--card-border)}
+    .threat-canvas-box::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 10px,var(--scan) 10px,var(--scan) 11px);border-radius:var(--r-xs);z-index:1}
+    .threat-scanline{position:absolute;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,var(--teal),transparent);opacity:.4;animation:tpScan 4s linear infinite;pointer-events:none;z-index:3}
+    #threat-scope{display:block;position:relative;z-index:2}
+    #threat-tooltip{
+      position:absolute;bottom:calc(100% + 8px);right:0;
+      background:var(--card);border:1px solid var(--card-border);
+      border-radius:var(--r-xs);padding:9px 12px;
+      font-size:10px;font-family:'JetBrains Mono',monospace;line-height:1.7;
+      box-shadow:var(--shadow-out);white-space:nowrap;z-index:50;pointer-events:none;
+      opacity:0;transform:translateY(5px);transition:opacity .15s,transform .15s;
+    }
+    body.dark #threat-tooltip{background:var(--card);border-color:rgba(0,255,136,0.18)}
+    #threat-tooltip.tp-visible{opacity:1;transform:translateY(0)}
+    #threat-tooltip .tp-sep{border-top:1px solid var(--card-border);margin:5px 0 4px}
+    #threat-tooltip .tp-row{display:flex;justify-content:space-between;gap:18px}
+    #threat-tooltip .tp-key{color:var(--muted)}
+    #threat-tooltip .tp-val{font-weight:700;color:var(--text)}
   </style>
 </head>
 <body>
@@ -457,6 +479,31 @@
       <div style="flex:1;min-width:0;">
         <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;"><i class="ph ph-list-bullets" style="font-size:12px;margin-right:5px;"></i>Événements récents</div>
         <div id="timeline-inline"></div>
+      </div>
+      <div class="sdiv"></div>
+      <!-- ═══ THREAT PULSE ══════════════════════════════════════════════ -->
+      <div class="threat-pulse-wrap">
+        <div>
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-family:'Orbitron',sans-serif;">
+            <i class="ph-fill ph-waveform" style="font-size:11px;margin-right:4px;"></i>Activité hostile
+          </div>
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;opacity:.6;">Δ SSH traps + UFW · /30s</div>
+        </div>
+        <div class="threat-canvas-box">
+          <canvas id="threat-scope" width="155" height="46"></canvas>
+          <div class="threat-scanline"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;position:relative;">
+          <span id="threat-label" style="font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--muted);">En attente…</span>
+          <span id="threat-delta" style="font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:var(--muted);cursor:default;"
+                onmouseenter="ThreatScope.showTip()" onmouseleave="ThreatScope.hideTip()"></span>
+          <div id="threat-tooltip">
+            <div class="tp-row"><span class="tp-key">🪲 SSH traps</span><span class="tp-val" id="tp-ssh">—</span></div>
+            <div class="tp-row"><span class="tp-key">🔥 UFW blocks</span><span class="tp-val" id="tp-ufw">—</span></div>
+            <div class="tp-sep"></div>
+            <div class="tp-row"><span class="tp-key">⚡ Total</span><span class="tp-val" id="tp-total">—</span></div>
+          </div>
+        </div>
       </div>
       <div class="sdiv"></div>
       <div style="flex-shrink:0;display:flex;flex-direction:column;gap:12px;min-width:175px;padding-right:8px;">
@@ -924,8 +971,135 @@ function updateCards(d) {
   setVal('val-connections', fmt(d.connections?.established ?? '—'), true);
   setCard('card-connections', (d.connections?.established||0) > 500 ? 'a-red' : 'a-green');
   updatePorts(d.open_ports);
+  ThreatScope.push(e.total || 0, u.total || 0);
   if (_firstLoad) { staggerCards(); _firstLoad = false; }
 }
+
+/* ── Threat Pulse ─────────────────────────────────────────────────────── */
+const ThreatScope = {
+  BUF: new Array(20).fill(0),
+  prev: { ssh: null, ufw: null },
+
+  lastBreak: { ssh: 0, ufw: 0 },
+
+  push(sshTotal, ufwTotal) {
+    const s = Number(sshTotal) || 0, u = Number(ufwTotal) || 0;
+    const dSsh = this.prev.ssh != null ? Math.max(0, s - this.prev.ssh) : 0;
+    const dUfw = this.prev.ufw != null ? Math.max(0, u - this.prev.ufw) : 0;
+    this.prev.ssh = s; this.prev.ufw = u;
+    this.lastBreak = { ssh: dSsh, ufw: dUfw };
+    const intensity = dSsh + dUfw;
+    this.BUF.push(intensity); this.BUF.shift();
+    this.draw(); this.updateLabel(intensity);
+  },
+
+  draw() {
+    const cv = document.getElementById('threat-scope');
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height;
+    const dark = document.body.classList.contains('dark');
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = dark ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.03)';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = dark ? 'rgba(0,255,136,0.07)' : 'rgba(26,107,90,0.09)';
+    ctx.lineWidth = 1;
+    [H*0.25, H*0.5, H*0.75].forEach(y => { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); });
+    [W*0.25, W*0.5, W*0.75].forEach(x => { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); });
+
+    const max = Math.max(...this.BUF, 1);
+    const pts = this.BUF.map((v, i) => ({
+      x: (i / (this.BUF.length - 1)) * W,
+      y: H - 5 - (v / max) * (H - 10)
+    }));
+
+    // Color by intensity level
+    const last = this.BUF[this.BUF.length - 1];
+    let lc, fr, gr;
+    if (last === 0) {
+      lc = dark ? '#00ff88' : '#1a6b5a';
+      fr = dark ? 'rgba(0,255,136,0.13)' : 'rgba(26,107,90,0.10)';
+      gr = 'rgba(0,255,136,0.55)';
+    } else if (last <= 5) {
+      lc = dark ? '#f0b429' : '#a8893a';
+      fr = dark ? 'rgba(240,180,41,0.13)' : 'rgba(168,137,58,0.10)';
+      gr = 'rgba(240,180,41,0.55)';
+    } else {
+      lc = dark ? '#ff4d6d' : '#c94a6a';
+      fr = dark ? 'rgba(255,77,109,0.13)' : 'rgba(201,74,106,0.10)';
+      gr = 'rgba(255,77,109,0.55)';
+    }
+
+    // Bezier path builder
+    const drawCurve = () => {
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) {
+        const mx = (pts[i-1].x + pts[i].x) / 2;
+        ctx.bezierCurveTo(mx, pts[i-1].y, mx, pts[i].y, pts[i].x, pts[i].y);
+      }
+    };
+
+    // Fill under curve
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, fr); grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath(); drawCurve();
+    ctx.lineTo(pts[pts.length-1].x, H); ctx.lineTo(pts[0].x, H); ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+
+    // Glowing line
+    ctx.shadowColor = gr; ctx.shadowBlur = dark ? 9 : 4;
+    ctx.beginPath(); drawCurve();
+    ctx.strokeStyle = lc; ctx.lineWidth = 1.8; ctx.stroke();
+
+    // Head dot (latest data point)
+    const lp = pts[pts.length - 1];
+    ctx.shadowBlur = dark ? 16 : 7;
+    ctx.beginPath(); ctx.arc(lp.x, lp.y, 2.8, 0, Math.PI * 2);
+    ctx.fillStyle = lc; ctx.fill();
+    ctx.shadowBlur = 0;
+  },
+
+  updateLabel(delta) {
+    const lEl = document.getElementById('threat-label');
+    const dEl = document.getElementById('threat-delta');
+    if (!lEl || !dEl) return;
+    const dark = document.body.classList.contains('dark');
+    if (delta === 0) {
+      lEl.textContent = 'Calme';
+      lEl.style.color = dark ? '#00ff88' : '#1a6b5a';
+      dEl.textContent = 'Δ 0'; dEl.style.color = 'var(--muted)';
+    } else if (delta <= 5) {
+      lEl.textContent = 'Activité';
+      lEl.style.color = dark ? '#f0b429' : '#a8893a';
+      dEl.textContent = 'Δ +' + delta; dEl.style.color = dark ? '#f0b429' : '#a8893a';
+    } else {
+      lEl.textContent = '⚡ Alerte';
+      lEl.style.color = dark ? '#ff4d6d' : '#c94a6a';
+      dEl.textContent = 'Δ +' + delta; dEl.style.color = dark ? '#ff4d6d' : '#c94a6a';
+    }
+  },
+
+  showTip() {
+    const tip = document.getElementById('threat-tooltip');
+    if (!tip) return;
+    const b = this.lastBreak;
+    const fmt = n => n > 0 ? '+' + n : String(n);
+    document.getElementById('tp-ssh').textContent   = fmt(b.ssh);
+    document.getElementById('tp-ufw').textContent   = fmt(b.ufw);
+    document.getElementById('tp-total').textContent = fmt(b.ssh + b.ufw);
+    tip.classList.add('tp-visible');
+  },
+
+  hideTip() {
+    const tip = document.getElementById('threat-tooltip');
+    if (tip) tip.classList.remove('tp-visible');
+  }
+};
 
 /* ── Refresh ──────────────────────────────────────────────────────────── */
 async function refresh() {
@@ -981,6 +1155,7 @@ function applyTheme(dark) {
   if (mascot && mascot.style.display !== 'none') mascot.src = dark ? '/mascot-dark.png' : '/mascot-light.png';
   // Re-render donuts with correct empty color
   if (donutMem) { const empty=dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)'; [donutMem,donutDisk,donutCpu,donutScore].forEach(d=>{ if(d){ d.data.datasets[0].backgroundColor[1]=empty; d.update(); } }); }
+  ThreatScope.draw();
 }
 function toggleTheme() {
   const dark = !isDark();

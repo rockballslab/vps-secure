@@ -7,7 +7,7 @@
 ![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
 
-**🔐 Sécurise ton serveur en moins de 15 min - honeypot, pare-feu, IPS, integrity monitoring. Une commande.** **Zéro compétence requise.**
+**🔐 VPS-SECURE est le seul script qui transforme un VPS vierge en forteresse opérationnelle — honeypot, IPS collaboratif, dashboard temps réel, alertes Telegram — en 15 minutes et 1 commande, sans aucune compétence Linux requise.**
 
 
 > "Si tu fais tourner n8n, openclaw, ou ton propre SaaS sur un VPS, et que tu tiens à tes données, lance ce script **AVANT D'INSTALLER QUOI QUE CE SOIT.**"

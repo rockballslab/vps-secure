@@ -1,12 +1,12 @@
 **⚡ +1597 bots bloqués en 24h sur un VPS standard - le tien est-il vraiment protégé ?**
 
-![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
-![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
-![License](https://img.shields.io/badge/license-Commercial-blue)
-
 ---
 
 # VPS-SECURE
+
+![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
+![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
+![License](https://img.shields.io/badge/license-Commercial-blue)
 
 **🔐 Sécurise ton serveur en moins de 15 min - honeypot, pare-feu, IPS, integrity monitoring. Une commande.** **Zéro compétence requise.**
 

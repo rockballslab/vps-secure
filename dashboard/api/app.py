@@ -426,7 +426,7 @@ def toggle_telegram(toggle_type: str) -> dict:
         except Exception as e:
             return {"ok": False, "error": str(e)}
 
-    elif toggle_type == "ssh":
+    elif toggle_type in ("ssh", "ssh_alert"):
         pam_path = "/etc/pam.d/sshd"
         try:
             content = Path(pam_path).read_text()

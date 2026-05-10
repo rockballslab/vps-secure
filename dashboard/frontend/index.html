@@ -389,7 +389,7 @@
 
     /* ═══ DONUTS ══════════════════════════════════════════════════════════ */
     .dlabel{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-family:'Orbitron',sans-serif}
-    .dval  {font-size:10px;font-weight:800;letter-spacing:-.5px;font-family:'Orbitron',sans-serif}
+    .dval  {font-size:12px;font-weight:800;letter-spacing:-.5px;font-family:'Orbitron',sans-serif}
     .dsub  {font-size:9px;color:var(--muted);font-family:'DM Mono',monospace}
 
     /* ═══ NUMBER COUNTER ANIMATION ════════════════════════════════════════ */
@@ -965,6 +965,8 @@ function updateDonuts(mem, dsk, load) {
   if(donutDisk) upd(donutDisk,dp);
   if(donutCpu) upd(donutCpu,cp);
   $('sys-cpu').textContent=cp+'%';
+  $('sys-mem').textContent  = mem.pct != null ? Math.round(mem.pct) + '%' : '—';
+  $('sys-disk').textContent = dsk.pct != null ? Math.round(dsk.pct) + '%' : '—';
   $('sys-cpu-cores').textContent=cores+' core'+(cores>1?'s':'');
 }
 

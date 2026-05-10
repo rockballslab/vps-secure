@@ -6,7 +6,6 @@
 
 ![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
-![License](https://img.shields.io/badge/license-Commercial-blue)
 
 **🔐 Sécurise ton serveur en moins de 15 min - honeypot, pare-feu, IPS, integrity monitoring. Une commande.** **Zéro compétence requise.**
 

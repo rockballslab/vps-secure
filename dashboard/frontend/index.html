@@ -918,7 +918,7 @@ function updateCards(d) {
   updateDonuts(mem, dsk, s.load);
   const updCount = upd.count ?? null;
   setVal('val-updates', fmt(updCount), true);
-  $('sub-updates-date').textContent = 'Dernier check : ' + (upd.last_check||'—');
+  $('sub-updates-date').innerHTML = `Dernier check :<br>${upd.last_check || '—'}`;
   if (updCount===0) { $('sub-updates').innerHTML='✅ Serveur à jour'; setCard('card-updates','a-green'); }
   else { $('sub-updates').innerHTML=`paquets <b>disponibles</b>`; setCard('card-updates', updCount>0 ? 'a-gold' : ''); }
   setVal('val-connections', fmt(d.connections?.established ?? '—'), true);

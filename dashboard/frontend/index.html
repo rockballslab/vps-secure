@@ -371,7 +371,7 @@
           </div>
           <div style="display:flex;align-items:center;gap:12px;">
             <span style="font-size:12px;font-weight:600;">Alerte SSH</span>
-            <label class="tg-toggle"><input type="checkbox" id="tg-ssh" onchange="toggleTelegram('ssh_alert',this.checked)"><span class="tg-slider"></span></label>
+            <label class="tg-toggle"><input type="checkbox" id="tg-ssh" onchange="toggleTelegram('ssh',this.checked)"><span class="tg-slider"></span></label>
           </div>
         </div>
       </div>
@@ -1323,6 +1323,7 @@ async function requestAideRebase() {
   const modal   = $('modal-aide-rebase');
   const content = $('modal-aide-content');
   if (!modal || !content) return;
+  if (modal.parentElement !== document.body) document.body.appendChild(modal);
   content.innerHTML = '<span style="opacity:.6">Analyse en cours…</span>';
   modal.style.display = 'flex';
   try {
@@ -1362,7 +1363,16 @@ async function _executeAideRebase() {
         ? '✅ Rebase lancé — baseline mise à jour dans ~2 min'
         : '❌ Erreur : ' + (d.status || d.error || 'inconnue');
     }
-    if (r.ok) setTimeout(() => cancelAideRebase(), 3000);
+    if (r.ok) {
+      const cardBtn = $('btn-aide-rebase');
+      if (cardBtn) {
+        cardBtn.disabled = true;
+        cardBtn.textContent = '⏳ Mise à jour en cours…';
+        cardBtn.style.color = 'var(--muted)';
+        cardBtn.style.borderColor = 'var(--muted)';
+      }
+      setTimeout(() => cancelAideRebase(), 3000);
+    }
   } catch(e) {
     if (feedback) { feedback.style.display='block'; feedback.textContent='❌ Erreur réseau'; }
   }

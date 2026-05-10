@@ -4,11 +4,6 @@
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
 ![License](https://img.shields.io/badge/license-Commercial-blue)
 
-
-<p align="center">
-  <img src="./screenshots/VPS-SECURE_header.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
-</p>
-
 ---
 
 # VPS-SECURE

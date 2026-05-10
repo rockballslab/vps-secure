@@ -389,7 +389,7 @@
 
     /* ═══ DONUTS ══════════════════════════════════════════════════════════ */
     .dlabel{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-family:'Orbitron',sans-serif}
-    .dval  {font-size:14px;font-weight:800;letter-spacing:-.5px;font-family:'Orbitron',sans-serif}
+    .dval  {font-size:10px;font-weight:800;letter-spacing:-.5px;font-family:'Orbitron',sans-serif}
     .dsub  {font-size:9px;color:var(--muted);font-family:'DM Mono',monospace}
 
     /* ═══ NUMBER COUNTER ANIMATION ════════════════════════════════════════ */
@@ -951,7 +951,7 @@ let donutMem=null, donutDisk=null, donutCpu=null, donutScore=null;
 function initDonuts() {
   const mk = id => {
     const ctx = $(id).getContext('2d');
-    return new Chart(ctx, { type:'doughnut', data:{ datasets:[{ data:[0,100], backgroundColor:['#22c55e','rgba(0,0,0,0.06)'], borderWidth:0, hoverOffset:0 }] }, options:{ cutout:'72%', responsive:false, animation:{ duration:700, easing:'easeInOutQuart' }, plugins:{ legend:{display:false}, tooltip:{enabled:false} } } });
+    return new Chart(ctx, { type:'doughnut', data:{ datasets:[{ data:[0,100], backgroundColor:['#22c55e','rgba(0,0,0,0.06)'], borderWidth:0, hoverOffset:0 }] }, options:{ cutout:'68%', responsive:false, animation:{ duration:700, easing:'easeInOutQuart' }, plugins:{ legend:{display:false}, tooltip:{enabled:false} } } });
   };
   donutMem=mk('donut-mem'); donutDisk=mk('donut-disk'); donutCpu=mk('donut-cpu'); donutScore=mk('donut-score');
 }

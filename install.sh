@@ -1485,7 +1485,7 @@ log_info "  Dernier rapport      : /var/log/rkhunter.log"
 # Cron rkhunter quotidien à 00h00 UTC (02h00 Paris) — indépendant de Telegram
 # (si Telegram n'est pas configuré, rkhunter scanne quand même)
 if [[ ! -f /etc/cron.d/rkhunter-daily ]]; then
-    echo "0 0 * * * root rkhunter --check --sk --report-warnings-only --nocolors >> /var/log/rkhunter-cron.log 2>&1" \
+    echo "0 0 * * * root touch /var/log/rkhunter-cron.log && rkhunter --check --sk --report-warnings-only --nocolors >> /var/log/rkhunter-cron.log 2>&1" \
         > /etc/cron.d/rkhunter-daily
     chmod 644 /etc/cron.d/rkhunter-daily
     log_success "Scan rkhunter quotidien configuré à 00h00 UTC (02h00 Paris) (log : /var/log/rkhunter-cron.log)."
@@ -1640,28 +1640,25 @@ else
 "
 fi
 
-# ── rkhunter ──
-# mktemp évite l'attaque symlink (/tmp world-writable, script tourne en root)
-RKHUNTER_LOG=$(mktemp /tmp/rkhunter-XXXXXX.log)
-# FIX B-1 — Lire le scan 00h00 (évite double scan coûteux sur KVM2)
+# ── rkhunter ── FIX #126 — Séparer "scan a-t-il tourné ?" (mtime) de "y a-t-il des warnings ?" (contenu)
 RKHUNTER_CRON_LOG="/var/log/rkhunter-cron.log"
+RK_SCAN_DONE=false
 if [[ -f "$RKHUNTER_CRON_LOG" ]] && find "$RKHUNTER_CRON_LOG" -mmin -480 -quiet 2>/dev/null; then
+    RK_SCAN_DONE=true
     RKHUNTER_LOG="$RKHUNTER_CRON_LOG"
-else
+fi
+
+# Si le cron n'a pas tourné dans les 8h (touch absent ou cron en panne), lancer un scan de secours
+if [[ "$RK_SCAN_DONE" == false ]]; then
     RKHUNTER_LOG=$(mktemp /tmp/rkhunter-XXXXXX.log)
     trap 'rm -f "$RKHUNTER_LOG"' EXIT
-    rkhunter --check --sk --report-warnings-only --nocolors > "$RKHUNTER_LOG" 2>&1
+    rkhunter --check --sk --nocolors > "$RKHUNTER_LOG" 2>&1  # Sans --report-warnings-only pour garantir output non-vide
+    RK_SCAN_DONE=true
 fi
+
 RK_WARNINGS=$(grep -c "Warning" "$RKHUNTER_LOG" 2>/dev/null || true); RK_WARNINGS="${RK_WARNINGS:-0}"
 
-if [[ ! -s "$RKHUNTER_LOG" ]]; then
-    ISSUES=$((ISSUES + 1))
-    DETAILS+="⚠️ rkhunter — log vide (scanner inactif ou erreur)
-  → Vérifier : sudo rkhunter --check --report-warnings-only
-  → Log : /var/log/rkhunter.log
-
-"
-elif [[ "$RK_WARNINGS" -gt 0 ]]; then
+if [[ "$RK_WARNINGS" -gt 0 ]]; then
     ISSUES=$((ISSUES + 1))
     DETAILS+="🔴 rkhunter : ${RK_WARNINGS} anomalie(s) détectée(s)
   → Lance : sudo rkhunter --check --report-warnings-only

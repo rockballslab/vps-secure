@@ -82,6 +82,10 @@ J'ai conçu **VPS-SECURE** par nécessité : je voulais un outil capable de tran
 </p>
 
 <p align="center">
+  <img src="./screenshots/VPS-SECURE_overview.png" alt="VPS-SECURE" width="100%">
+</p>
+
+<p align="center">
   <img src="./screenshots/sticker2.png" alt="Ma Forteresse avec VPS-SECURE" width="100%">
 </p>
 

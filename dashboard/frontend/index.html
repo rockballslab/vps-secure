@@ -1414,9 +1414,9 @@ async function requestAideRebase(){
   try{
     const r=await fetch('/api/aide/diff',{cache:'no-store',headers:{'Authorization':AUTH}});
     const d=await r.json();
-    const added  =((d.log||'').match(/Added entries:\s*(\d+)/)||['','?'])[1];
-    const removed=((d.log||'').match(/Removed entries:\s*(\d+)/)||['','?'])[1];
-    const changed=((d.log||'').match(/Changed entries:\s*(\d+)/)||['','?'])[1];
+    const added   = d.added   ?? ((d.log||'').match(/Added entries:\s*(\d+)/)||['','?'])[1];
+    const removed = d.removed ?? ((d.log||'').match(/Removed entries:\s*(\d+)/)||['','?'])[1];
+    const changed = d.changed ?? ((d.log||'').match(/Changed entries:\s*(\d+)/)||['','?'])[1];
     const CRITIQUES=['/bin/','/sbin/','/usr/bin/','/usr/sbin/','/lib/','/usr/lib/','/etc/passwd','/etc/shadow','/etc/group','/etc/sudoers','/etc/ssh/','/boot/'];
     const fichiers=[...(d.log||'').matchAll(/^[fdl][+\-0]+:\s+(.+)$/gm)].map(x=>x[1]);
     const suspects=fichiers.filter(p=>CRITIQUES.some(c=>p.startsWith(c)));

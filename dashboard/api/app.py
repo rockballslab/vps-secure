@@ -1991,7 +1991,7 @@ def _aide_diff() -> dict:
     log_path = f"{HOSTFS}var/log/aide-daily.log"
     try:
         with open(log_path, "r", errors="replace") as f2:
-            raw = f2.read()
+            raw = f2.read(2_000_000)
         keep, ins = [], False
         for l in raw.splitlines():
             if any(l.startswith(k) for k in ("Summary","Changed","Added","Removed","---")):

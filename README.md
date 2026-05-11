@@ -607,7 +607,7 @@ sudo cat /var/log/rkhunter-propupd.log
 
 ## Compatibilité
 
-Testé et vérifié le 6 mai 2026 sur **Ubuntu 24.04 LTS** — **v2.7.2** - Hostinger KVM4 et Hetzner CPX42
+Testé et vérifié le 11 mai 2026 sur **Ubuntu 24.04 LTS** — **v2.7.3** - Hostinger KVM4 et Hetzner CPX42
 
 Installation complète et 100% fonctionnelle en **13 min** (dashboard inclus)
 

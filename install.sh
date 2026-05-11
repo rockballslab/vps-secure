@@ -923,7 +923,11 @@ Unattended-Upgrade::Allowed-Origins {
 Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
 Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
 Unattended-Upgrade::Remove-Unused-Dependencies "true";
-Unattended-Upgrade::Automatic-Reboot "false";
+// Reboot automatique après kernel update (fenêtre : 03h00 UTC = 05h00 Paris CEST)
+// WithUsers "false" = reboot uniquement si aucune session SSH active
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "false";
+Unattended-Upgrade::Automatic-Reboot-Time "03:00";
 UNATTEOF
 
 systemctl enable unattended-upgrades
@@ -960,7 +964,6 @@ cat > /etc/apt/apt.conf.d/52docker-upgrade << 'DOCKERUPDEOF'
 Unattended-Upgrade::Origins-Pattern {
     "origin=Docker,suite=noble";
 };
-Unattended-Upgrade::Automatic-Reboot "false";
 DOCKERUPDEOF
 log_success "Auto-upgrade Docker CE activé (52docker-upgrade) — live-restore: true actif."
 
@@ -1100,6 +1103,17 @@ echo "install algif_aead /bin/false" > /etc/modprobe.d/disable-algif_aead.conf
 chmod 644 /etc/modprobe.d/disable-algif_aead.conf
 rmmod algif_aead 2>/dev/null || true
 log_success "algif_aead blacklisté — CVE-2026-31431 'Copy Fail' (CVSS 7.8, CISA KEV 2026-05-03)."
+
+# ── Blacklist Dirty Frag — CVE-2026-43284 (CVSS 7.8 — patch kernel non dispo) ──
+{
+    echo "install esp4 /bin/false"
+    echo "install esp6 /bin/false"
+    echo "install rxrpc /bin/false"
+} > /etc/modprobe.d/dirty-frag.conf
+chmod 644 /etc/modprobe.d/dirty-frag.conf
+rmmod esp4 esp6 rxrpc 2>/dev/null || true
+log_success "Dirty Frag mitigé — esp4/esp6/rxrpc blacklistés (CVE-2026-43284, CVSS 7.8)."
+log_warn "  ⚠️ Temporaire — retirer dès patch kernel Noble disponible (USN)."
 
 # Blacklist protocoles réseau inutiles (NETW-3200 — CIS 3.x)
 cat >> /etc/modprobe.d/vps-secure-blacklist.conf << 'EOF'

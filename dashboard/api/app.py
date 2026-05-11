@@ -12,6 +12,7 @@ import subprocess
 import time
 import urllib.error
 import urllib.request
+import hashlib
 import base64
 import hmac
 import threading
@@ -243,6 +244,368 @@ def get_last_update_date():
         return "Inconnue"
     except Exception:
         return "Erreur"
+        
+# ── F5 : Event Log Persistant (historique 30j) ───────────────────────────────
+EVENTS_FILE     = "/var/lib/vps-monitor/events.json"
+EVENTS_MAX_DAYS = 30
+_ev_lock        = threading.Lock()
+_ev_by_fp: dict[str, dict] = {}   # fingerprint → event (index de dédup)
+
+
+def _ev_fp(service: str, ip: str, key: str, day: str) -> str:
+    """Fingerprint unique par événement agrégé (service + ip + clé + jour)."""
+    raw = f"{service}|{ip}|{key}|{day}"
+    return hashlib.md5(raw.encode()).hexdigest()[:16]
+
+
+def _ev_load() -> None:
+    """Charge events.json au démarrage, purge les entrées > 30j."""
+    global _ev_by_fp
+    try:
+        with open(EVENTS_FILE) as f:
+            data = json.load(f)
+        cutoff = time.time() - EVENTS_MAX_DAYS * 86400
+        _ev_by_fp = {fp: ev for fp, ev in data.items() if ev.get("ts", 0) > cutoff}
+        print(f"[VPS Monitor] Events chargés : {len(_ev_by_fp)}", flush=True)
+    except Exception:
+        _ev_by_fp = {}
+
+
+def _ev_save() -> None:
+    """Sauvegarde atomique de _ev_by_fp sur disque."""
+    try:
+        tmp = EVENTS_FILE + ".tmp"
+        os.makedirs(os.path.dirname(EVENTS_FILE), exist_ok=True)
+        with open(tmp, "w") as f:
+            json.dump(_ev_by_fp, f)
+        os.replace(tmp, EVENTS_FILE)
+    except Exception:
+        pass
+
+
+def _ev_upsert(fp: str, event: dict) -> None:
+    """Insère un nouvel événement ou met à jour count + ts si déjà connu."""
+    if fp in _ev_by_fp:
+        existing = _ev_by_fp[fp]
+        if event.get("count", 1) > existing.get("count", 0):
+            existing["count"]  = event["count"]
+            existing["detail"] = event["detail"]
+        existing["ts"] = max(existing.get("ts", 0), event["ts"])
+    else:
+        _ev_by_fp[fp] = dict(event)
+
+
+def _ev_prune() -> None:
+    """Supprime les événements antérieurs à 30 jours."""
+    cutoff = time.time() - EVENTS_MAX_DAYS * 86400
+    stale  = [fp for fp, ev in _ev_by_fp.items() if ev.get("ts", 0) < cutoff]
+    for fp in stale:
+        del _ev_by_fp[fp]
+
+
+def _collect_historical_events() -> None:
+    """
+    Scanne les logs système, détecte les événements de sécurité
+    et les persiste dans _ev_by_fp (30 jours de rétention).
+    Appelé toutes les 5 minutes par le thread de collecte.
+    """
+    now        = time.time()
+    cutoff_30d = now - EVENTS_MAX_DAYS * 86400
+    year       = datetime.now().year
+
+    # ── 1. SSH ───────────────────────────────────────────────────────────────
+    ssh_by_key: dict[tuple, dict] = {}   # (ip, day) → {count, ts, user}
+    ssh_ok_ips: set[str]          = set()
+
+    for auth_path in ["/var/log/sshd.log", "/var/log/auth.log", "/var/log/secure"]:
+        lines: list[str] = []
+        for candidate in [auth_path + ".1", auth_path]:   # .1 d'abord = plus ancien
+            try:
+                with open(candidate, errors="replace") as f:
+                    lines += f.readlines()
+            except Exception:
+                pass
+        if not lines:
+            continue
+
+        for line in lines:
+            if "sshd" not in line:
+                continue
+            ts  = 0.0
+            m_iso = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+            m_sys = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
+            if m_iso:
+                try:    ts = datetime.fromisoformat(m_iso.group(1)).timestamp()
+                except: continue
+            elif m_sys:
+                try:    ts = datetime.strptime(f"{year} {m_sys.group(1).strip()}", "%Y %b %d %H:%M:%S").timestamp()
+                except: continue
+            else:
+                continue
+            if ts < cutoff_30d:
+                continue
+
+            day  = datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
+            m_ip = re.search(r"from\s+(\S+)\s+port", line)
+            ip   = m_ip.group(1) if m_ip else ""
+
+            if "Accepted publickey" in line or "Accepted password" in line:
+                if ip:
+                    ssh_ok_ips.add(ip)
+            elif any(kw in line for kw in [
+                "Failed password", "Failed publickey",
+                "Invalid user", "Connection closed by invalid user"
+            ]):
+                if not ip:
+                    continue
+                m_user = re.search(r"(?:for invalid user|for)\s+(\S+)\s+from", line)
+                user   = m_user.group(1) if m_user else "inconnu"
+                k      = (ip, day)
+                if k not in ssh_by_key:
+                    ssh_by_key[k] = {"count": 0, "ts": ts, "user": user}
+                ssh_by_key[k]["count"] += 1
+                ssh_by_key[k]["ts"]     = max(ssh_by_key[k]["ts"], ts)
+        break   # Premier fichier trouvé = source de vérité (évite les doublons)
+
+    with _ev_lock:
+        for (ip, day), data in ssh_by_key.items():
+            if ip in ssh_ok_ips:
+                continue   # IP avec connexion réussie → pas hostile
+            count = data["count"]
+            fp    = _ev_fp("SSH", ip, f"fail_{day}", day)
+            _ev_upsert(fp, {
+                "ts":      data["ts"],
+                "service": "SSH :2222",
+                "detail":  f"{count} tentative(s) échouée(s) — user cible : {data['user']}",
+                "ip":      ip,
+                "status":  "action" if count >= 20 else "detected",
+                "icon":    "🔴" if count >= 20 else "👁️",
+                "label":   "Action requise" if count >= 20 else "Détectée",
+                "count":   count,
+            })
+
+    # ── 2. UFW ───────────────────────────────────────────────────────────────
+    PORTS_WATCHED  = {"2222", "22", "80", "443", "3389", "5900", "6379", "8080", "27017"}
+    ufw_by_key: dict[tuple, dict] = {}
+
+    # Toujours lire ufw.log ET ufw.log.1 (pas de break prématuré)
+    for log_path in ["/var/log/ufw.log", "/var/log/ufw.log.1"]:
+        try:
+            with open(log_path, errors="replace") as f:
+                lines = f.readlines()
+            for line in lines:
+                if "UFW BLOCK" not in line:
+                    continue
+                m_iso = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+                m_sys = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
+                if m_iso:
+                    try:    ts = datetime.fromisoformat(m_iso.group(1)).timestamp()
+                    except: continue
+                elif m_sys:
+                    try:    ts = datetime.strptime(f"{year} {m_sys.group(1).strip()}", "%Y %b %d %H:%M:%S").timestamp()
+                    except: continue
+                else:
+                    continue
+                if ts < cutoff_30d:
+                    continue
+                m_src = re.search(r"SRC=(\S+)", line)
+                m_dpt = re.search(r"DPT=(\d+)", line)
+                if not m_src:
+                    continue
+                ip  = m_src.group(1)
+                dpt = m_dpt.group(1) if m_dpt else "?"
+                if dpt not in PORTS_WATCHED:
+                    continue
+                day = datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
+                k   = (ip, dpt, day)
+                if k not in ufw_by_key:
+                    ufw_by_key[k] = {"count": 0, "ts": ts, "ip": ip, "dpt": dpt}
+                ufw_by_key[k]["count"] += 1
+                ufw_by_key[k]["ts"]     = max(ufw_by_key[k]["ts"], ts)
+        except Exception:
+            continue
+
+    # Fallback kern.log/syslog uniquement si aucune entrée UFW trouvée
+    if not ufw_by_key:
+        for log_path in ["/var/log/kern.log", "/var/log/syslog"]:
+            try:
+                with open(log_path, errors="replace") as f:
+                    lines = f.readlines()
+                found = False
+                for line in lines:
+                    if "UFW BLOCK" not in line:
+                        continue
+                    found = True
+                    # (même parsing que ci-dessus)
+                    m_iso = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+                    m_sys = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
+                    if m_iso:
+                        try:    ts = datetime.fromisoformat(m_iso.group(1)).timestamp()
+                        except: continue
+                    elif m_sys:
+                        try:    ts = datetime.strptime(f"{year} {m_sys.group(1).strip()}", "%Y %b %d %H:%M:%S").timestamp()
+                        except: continue
+                    else:
+                        continue
+                    if ts < cutoff_30d:
+                        continue
+                    m_src = re.search(r"SRC=(\S+)", line)
+                    m_dpt = re.search(r"DPT=(\d+)", line)
+                    if not m_src:
+                        continue
+                    ip  = m_src.group(1)
+                    dpt = m_dpt.group(1) if m_dpt else "?"
+                    if dpt not in PORTS_WATCHED:
+                        continue
+                    day = datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
+                    k   = (ip, dpt, day)
+                    if k not in ufw_by_key:
+                        ufw_by_key[k] = {"count": 0, "ts": ts, "ip": ip, "dpt": dpt}
+                    ufw_by_key[k]["count"] += 1
+                    ufw_by_key[k]["ts"]     = max(ufw_by_key[k]["ts"], ts)
+                if found:
+                    break
+            except Exception:
+                continue
+
+    with _ev_lock:
+        for (ip, dpt, day), data in ufw_by_key.items():
+            fp         = _ev_fp("UFW", ip, f"{dpt}_{day}", day)
+            port_label = "SSH :2222" if dpt == "2222" else f"port {dpt}"
+            _ev_upsert(fp, {
+                "ts":      data["ts"],
+                "service": "UFW",
+                "detail":  f"Bloqué sur {port_label} — {data['count']}x",
+                "ip":      ip,
+                "status":  "neutralized",
+                "icon":    "✅",
+                "label":   "Neutralisée",
+                "count":   data["count"],
+            })
+
+    # ── 3. CrowdSec ──────────────────────────────────────────────────────────
+    try:
+        out = run(
+            ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "alerts",
+             "list", "--since", f"{EVENTS_MAX_DAYS * 24}h", "-o", "json"],
+            timeout=15,
+        )
+        raw     = out.strip()
+        cs_list = (json.loads(raw) if raw.startswith("[") else []) or []
+        with _ev_lock:
+            for a in cs_list:
+                ts = _parse_ts(a.get("created_at", ""))
+                if ts < cutoff_30d:
+                    continue
+                src    = a.get("source", {})
+                ip     = src.get("ip", "IP inconnue")
+                reason = a.get("scenario", a.get("reason", "Règle CrowdSec"))
+                day    = datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
+                fp     = _ev_fp("CrowdSec", ip, reason[:40], day)
+                _ev_upsert(fp, {
+                    "ts":      ts,
+                    "service": "CrowdSec",
+                    "detail":  reason[:80],
+                    "ip":      ip,
+                    "status":  "neutralized",
+                    "icon":    "✅",
+                    "label":   "Neutralisée",
+                    "count":   1,
+                })
+    except Exception:
+        pass
+
+    # ── 4. Endlessh (par jour) ────────────────────────────────────────────────
+    try:
+        out_all    = run(["docker", "logs", "--since", f"{EVENTS_MAX_DAYS * 24}h",
+                          ENDLESSH_CONTAINER], timeout=30)
+        pat_accept = re.compile(r"ACCEPT|\"accepted\"", re.IGNORECASE)
+        day_counts: dict[str, int] = {}
+        for line in out_all.splitlines():
+            if not pat_accept.search(line):
+                continue
+            m_d = re.search(r"(\d{4}-\d{2}-\d{2})", line)
+            day_str = m_d.group(1) if m_d else datetime.now().strftime("%Y-%m-%d")
+            day_counts[day_str] = day_counts.get(day_str, 0) + 1
+        with _ev_lock:
+            for day_str, count in day_counts.items():
+                try:
+                    ts = datetime.strptime(day_str, "%Y-%m-%d").replace(hour=12).timestamp()
+                except Exception:
+                    ts = now
+                fp = _ev_fp("Endlessh", "---", "bots", day_str)
+                _ev_upsert(fp, {
+                    "ts":      ts,
+                    "service": "Endlessh",
+                    "detail":  f"{count} bot(s) piégé(s) sur port 22",
+                    "ip":      "---",
+                    "status":  "neutralized",
+                    "icon":    "✅",
+                    "label":   "Neutralisée",
+                    "count":   count,
+                })
+    except Exception:
+        pass
+
+    # ── 5. rkhunter (toutes les sessions du log) ──────────────────────────────
+    CRIT_BINS = ["/bin/", "/sbin/", "/usr/bin/", "/usr/sbin/"]
+    RK_FP     = ["lwp-request", "lwp-rget", "GET", "HEAD", "POST", "mail", "mailx",
+                 "hidden files", "hidden directories", "package manager",
+                 "gpg", "passwd file", "group file"]
+    try:
+        with open("/var/log/rkhunter.log", errors="replace") as f:
+            content = f.read()
+        dates = re.findall(r"Start date is\s+(.+?)\n", content)
+        for i, date_str in enumerate(dates):
+            idx_s   = content.find(f"Start date is {date_str}")
+            idx_e   = content.find(f"Start date is {dates[i+1]}") if i + 1 < len(dates) else len(content)
+            session = content[idx_s:idx_e]
+            scan_ts = now - 3600
+            for fmt in ("%a %b %d %I:%M:%S %p %Z %Y", "%a %b %d %H:%M:%S %Z %Y"):
+                try:
+                    scan_ts = datetime.strptime(date_str.strip(), fmt).timestamp()
+                    break
+                except Exception:
+                    pass
+            if scan_ts < cutoff_30d:
+                continue
+            day_str = datetime.fromtimestamp(scan_ts).strftime("%Y-%m-%d")
+            for w in re.findall(r"Warning:\s+(.+?)(?:\n|$)", session):
+                w = w.strip()
+                if not w or any(fp_str.lower() in w.lower() for fp_str in RK_FP):
+                    continue
+                is_crit = any(b in w for b in CRIT_BINS)
+                w_hash  = hashlib.md5(w.encode()).hexdigest()[:8]
+                fp      = _ev_fp("rkhunter", "---", w_hash, day_str)
+                with _ev_lock:
+                    _ev_upsert(fp, {
+                        "ts":      scan_ts,
+                        "service": "rkhunter",
+                        "detail":  w[:120],
+                        "ip":      "---",
+                        "status":  "action" if is_crit else "detected",
+                        "icon":    "🔴" if is_crit else "👁️",
+                        "label":   "Action requise" if is_crit else "Détectée",
+                        "count":   1,
+                    })
+    except Exception:
+        pass
+
+    # ── Prune + Save ─────────────────────────────────────────────────────────
+    with _ev_lock:
+        _ev_prune()
+        _ev_save()
+    print(f"[VPS Monitor] Events collectés : {len(_ev_by_fp)} en mémoire", flush=True)
+
+
+def _events_collector_loop() -> None:
+    """Thread daemon — collecte les événements toutes les 5 minutes."""
+    while True:
+        try:
+            _collect_historical_events()
+        except Exception as e:
+            print(f"[VPS Monitor] Event collector error: {e}", flush=True)
+        time.sleep(300)   # 5 minutes
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def run(cmd: list[str], timeout: int = 10) -> str:
@@ -592,8 +955,15 @@ def get_ssh_last() -> dict:
     last_time = "---"
     for path in ["/var/log/sshd.log", "/var/log/auth.log", "/var/log/secure"]:
         try:
-            with open(path, errors="replace") as f:
-                lines = f.readlines()
+            lines = []
+            for candidate in [path + ".1", path]:
+                try:
+                    with open(candidate, errors="replace") as f:
+                        lines += f.readlines()
+                except Exception:
+                    pass
+            if not lines:
+                continue
             for line in reversed(lines):
                 if "Accepted" in line and "sshd" in line:
                     m = re.search(r"from\s+(\S+)\s+port", line)
@@ -609,8 +979,9 @@ def get_ssh_last() -> dict:
                             last_time = dt.strftime("%d/%m/%Y %H:%M")
                         except Exception:
                             pass
-                    break
-            break
+                    break  # ligne trouvée → stop boucle interne
+            if last_ip != "---":
+                break  # résultat trouvé → stop boucle fichiers
         except Exception:
             continue
     return {"ip": last_ip, "time": last_time}
@@ -695,320 +1066,69 @@ def get_open_ports() -> dict:
     }
 
 def get_alerts(period_hours: int = 24) -> list:
-    """Journal de securite — period_hours : 24 (1j)  168 (7j)  720 (30j)"""
-    alerts = []
+    """
+    Journal de sécurité — lit depuis l'event log persistant (SSH, UFW,
+    CrowdSec, Endlessh, rkhunter) + état système live (Telegram, Ports,
+    Bouncer, Disque, RAM, AIDE, MAJ).
+    """
     now    = time.time()
     cutoff = now - (period_hours * 3600)
 
     def fmt_dt(ts: float) -> str:
         return datetime.fromtimestamp(ts).strftime("%d/%m %H:%M")
-        
 
-    # ── 1. SSH ────────────────────────────────────────────────────────────────
-    ssh_fails: dict = {}
-    ssh_ok:    dict = {}
+    # ── 1. Événements historiques (depuis event log persistant) ──────────────
+    with _ev_lock:
+        historical = [
+            {**ev, "datetime": fmt_dt(ev["ts"])}
+            for ev in _ev_by_fp.values()
+            if ev.get("ts", 0) >= cutoff
+        ]
 
-    for auth_path in ["/var/log/sshd.log", "/var/log/auth.log", "/var/log/secure"]:
-        try:
-            lines = []
-            for candidate in [auth_path + ".1", auth_path]:   # .1 en premier = plus ancien
-                try:
-                    with open(candidate, errors="replace") as f:
-                        lines += f.readlines()
-                except Exception:
-                    pass
-            if not lines:
-                continue
-            year = datetime.now().year
-            for line in lines:
-                if "sshd" not in line:
-                    continue
-                ts = 0.0
-                m_iso = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
-                m_sys = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
-                if m_iso:
-                    try:
-                        ts = datetime.fromisoformat(m_iso.group(1)).timestamp()
-                    except Exception:
-                        continue
-                elif m_sys:
-                    try:
-                        ts = datetime.strptime(
-                            f"{year} {m_sys.group(1).strip()}", "%Y %b %d %H:%M:%S"
-                        ).timestamp()
-                    except Exception:
-                        continue
-                else:
-                    continue
-                if ts < cutoff:
-                    continue
+    # ── 2. État système live (toujours calculé en temps réel) ────────────────
+    live: list[dict] = []
 
-                m_ip = re.search(r"from\s+(\S+)\s+port", line)
-                ip   = m_ip.group(1) if m_ip else ""
-
-                if any(kw in line for kw in [
-                    "Failed password", "Failed publickey",
-                    "Invalid user", "Connection closed by invalid user"
-                ]):
-                    if not ip:
-                        continue
-                    m_user = re.search(r"(?:for invalid user|for)\s+(\S+)\s+from", line)
-                    user   = m_user.group(1) if m_user else "inconnu"
-                    if ip not in ssh_fails:
-                        ssh_fails[ip] = {"count": 0, "ts": ts, "user": user}
-                    ssh_fails[ip]["count"] += 1
-                    ssh_fails[ip]["ts"] = max(ssh_fails[ip]["ts"], ts)
-
-                elif "Accepted publickey" in line or "Accepted password" in line:
-                    if not ip:
-                        continue
-                    m_user = re.search(r"for\s+(\S+)\s+from", line)
-                    user   = m_user.group(1) if m_user else "inconnu"
-                    if ip not in ssh_ok:
-                        ssh_ok[ip] = {"count": 0, "ts": ts, "user": user}
-                    ssh_ok[ip]["count"] += 1
-                    ssh_ok[ip]["ts"] = max(ssh_ok[ip]["ts"], ts)
-            break
-        except Exception:
-            continue
-
-    bouncer_active = get_bouncer_status().get("status") == "active"
-    # Filtrer faux positifs : IP avec connexion réussie n'est pas hostile
-    for ip in list(ssh_fails.keys()):
-        if ip in ssh_ok:
-            del ssh_fails[ip]
-    for ip, data in sorted(ssh_fails.items(), key=lambda x: -x[1]["count"])[:15]:
-        count = data["count"]
-        if count >= 20 and not bouncer_active:
-            status, icon, label = "action", "🔴", "Action requise"
-        else:
-            status, icon, label = "detected", "👁️", "Detectee"
-        alerts.append({
-            "service":  "SSH :2222",
-            "detail":   f"{count} tentative(s) echouee(s) — user cible : {data['user']}",
-            "ip":       ip,
-            "datetime": fmt_dt(data["ts"]),
-            "status":   status,
-            "icon":     icon,
-            "label":    label,
-            "_ts":      data["ts"],
-        })
-
-    for ip, data in sorted(ssh_ok.items(), key=lambda x: -x[1]["ts"])[:5]:
-        alerts.append({
-            "service":  "SSH :2222",
-            "detail":   f"Connexion reussie — {data['user']} ({data['count']}x)",
-            "ip":       ip,
-            "datetime": fmt_dt(data["ts"]),
-            "status":   "reported",
-            "icon":     "🔑",
-            "label":    "Signalee",
-            "_ts":      data["ts"],
-        })
-
-    # ── 2. UFW ────────────────────────────────────────────────────────────────
-    ufw_by_key: dict = {}
-    PORTS_WATCHED = {"2222", "22", "80", "443", "3389", "5900", "6379", "8080", "27017"}
-
-    for log_path in ["/var/log/ufw.log", "/var/log/ufw.log.1",
-                     "/var/log/kern.log", "/var/log/syslog"]:
-        try:
-            with open(log_path, errors="replace") as f:
-                lines = f.readlines()
-            year = datetime.now().year
-            found_any = False
-            for line in lines:
-                if "UFW BLOCK" not in line:
-                    continue
-                found_any = True
-                m_iso = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
-                m_sys = re.search(r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})", line)
-                if m_iso:
-                    try:
-                        ts = datetime.fromisoformat(m_iso.group(1)).timestamp()
-                    except Exception:
-                        continue
-                elif m_sys:
-                    try:
-                        ts = datetime.strptime(
-                            f"{year} {m_sys.group(1).strip()}", "%Y %b %d %H:%M:%S"
-                        ).timestamp()
-                    except Exception:
-                        continue
-                else:
-                    continue
-                if ts < cutoff:
-                    continue
-                m_src = re.search(r"SRC=(\S+)", line)
-                m_dpt = re.search(r"DPT=(\d+)", line)
-                if not m_src:
-                    continue
-                ip  = m_src.group(1)
-                dpt = m_dpt.group(1) if m_dpt else "?"
-                if dpt not in PORTS_WATCHED:
-                    continue
-                key = f"{ip}:{dpt}"
-                if key not in ufw_by_key:
-                    ufw_by_key[key] = {"count": 0, "ts": ts, "ip": ip, "dpt": dpt}
-                ufw_by_key[key]["count"] += 1
-                ufw_by_key[key]["ts"] = max(ufw_by_key[key]["ts"], ts)
-            if found_any and log_path.endswith(".log.1"):
-                break
-        except Exception:
-            continue
-
-    if ufw_by_key:
-        for key, data in sorted(ufw_by_key.items(), key=lambda x: -x[1]["count"])[:15]:
-            port_label = "SSH :2222" if data["dpt"] == "2222" else f"port {data['dpt']}"
-            alerts.append({
-                "service":  "UFW",
-                "detail":   f"Bloquee sur {port_label} — {data['count']}x sur la periode",
-                "ip":       data["ip"],
-                "datetime": fmt_dt(data["ts"]),
-                "status":   "neutralized",
-                "icon":     "✅",
-                "label":    "Neutralisee",
-                "_ts":      data["ts"],
-            })
-    else:
-        ufw_total = 0
-        for p in ["/var/log/ufw.log", "/var/log/ufw.log.1"]:
-            try:
-                with open(p, errors="replace") as f:
-                    ufw_total += f.read().count("UFW BLOCK")
-            except Exception:
-                pass
-        if ufw_total > 0:
-            s = "s" if ufw_total > 1 else ""
-            alerts.append({
-                "service":  "UFW",
-                "detail":   f"{ufw_total} connexion{s} bloquee{s} (cumul {period_hours}h)",
-                "ip":       "---",
-                "datetime": fmt_dt(now),
-                "status":   "neutralized",
-                "icon":     "✅",
-                "label":    "Neutralisee",
-                "_ts":      now,
-            })
-
-    # ── 3. CrowdSec ───────────────────────────────────────────────────────────
-    try:
-        since_str = f"{period_hours}h"
-        out = run(
-            ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "alerts",
-             "list", "--since", since_str, "-o", "json"],
-            timeout=15,
-        )
-        raw = out.strip()
-        cs_list = (json.loads(raw) if raw.startswith("[") else []) or []
-        ips_seen = set()
-        for a in (cs_list or [])[:30]:
-            ts = _parse_ts(a.get("created_at", ""))
-            if ts < cutoff:
-                continue
-            src    = a.get("source", {})
-            ip     = src.get("ip", "IP inconnue")
-            reason = a.get("scenario", a.get("reason", "Regle CrowdSec"))
-            if ip in ips_seen:
-                continue
-            ips_seen.add(ip)
-            alerts.append({
-                "service":  "CrowdSec",
-                "detail":   reason[:80],
-                "ip":       ip,
-                "datetime": fmt_dt(ts),
-                "status":   "neutralized",
-                "icon":     "✅",
-                "label":    "Neutralisee",
-                "_ts":      ts,
-            })
-        if not ips_seen and cs_list:
-            ban_count = len(cs_list)
-            s = "s" if ban_count > 1 else ""
-            alerts.append({
-                "service":  "CrowdSec",
-                "detail":   f"{ban_count} IP{s} bannie{s} automatiquement",
-                "ip":       "---",
-                "datetime": fmt_dt(now),
-                "status":   "neutralized",
-                "icon":     "✅",
-                "label":    "Neutralisee",
-                "_ts":      now,
-            })
-    except Exception:
-        pass
-
-    # ── 4. Telegram ───────────────────────────────────────────────────────────
+    # Telegram
     try:
         tg = get_telegram_status()
         if tg.get("configured") and tg.get("report"):
-            alerts.append({
-                "service":  "Telegram",
-                "detail":   "Rapport quotidien actif — notifie chaque matin a 09h00",
-                "ip":       "---",
-                "datetime": fmt_dt(now),
-                "status":   "reported",
-                "icon":     "📢",
-                "label":    "Signalee",
-                "_ts":      now,
+            live.append({
+                "service": "Telegram", "ip": "---", "datetime": fmt_dt(now),
+                "detail":  "Rapport quotidien actif — notifie chaque matin à 09h00",
+                "status":  "reported", "icon": "📢", "label": "Signalée", "ts": now,
             })
         if tg.get("configured") and tg.get("ssh"):
-            alerts.append({
-                "service":  "Telegram",
-                "detail":   "Alerte SSH active — notifie a chaque connexion",
-                "ip":       "---",
-                "datetime": fmt_dt(now),
-                "status":   "reported",
-                "icon":     "📢",
-                "label":    "Signalee",
-                "_ts":      now,
+            live.append({
+                "service": "Telegram", "ip": "---", "datetime": fmt_dt(now),
+                "detail":  "Alerte SSH active — notifie à chaque connexion",
+                "status":  "reported", "icon": "📢", "label": "Signalée", "ts": now,
             })
     except Exception:
         pass
 
-    # ── 5. rkhunter ───────────────────────────────────────────────────────────
-    CRIT_BINS = ["/bin/", "/sbin/", "/usr/bin/", "/usr/sbin/"]
-    FP = [
-        "lwp-request", "lwp-rget", "GET", "HEAD", "POST", "mail", "mailx",
-        "hidden files", "hidden directories", "package manager",
-        "gpg", "passwd file", "group file",
-    ]
+    # Bouncer inactif
     try:
-        with open("/var/log/rkhunter.log", errors="replace") as f:
-            content = f.read()
-        # FIX M-3 — Dernière session uniquement
-        dates = re.findall(r"Start date is\s+(.+?)\n", content)
-        scan_ts = now - 3600
-        if dates:
-            idx = content.rfind(f"Start date is {dates[-1]}")
-            if idx != -1:
-                content = content[idx:]
-            try:
-                scan_ts = datetime.strptime(
-                    dates[-1].strip(), "%a %b %d %H:%M:%S %Z %Y"
-                ).timestamp()
-            except Exception:
-                pass
-        if scan_ts >= cutoff:
-            for w in re.findall(r"Warning:\s+(.+?)(?:\n|$)", content):
-                w = w.strip()
-                if not w or any(fp.lower() in w.lower() for fp in FP):
-                    continue
-                is_crit = any(b in w for b in CRIT_BINS)
-                alerts.append({
-                    "service":  "rkhunter",
-                    "detail":   w[:120],
-                    "ip":       "---",
-                    "datetime": fmt_dt(scan_ts),
-                    "status":   "action" if is_crit else "detected",
-                    "icon":     "🔴" if is_crit else "👁️",
-                    "label":    "Action requise" if is_crit else "Detectee",
-                    "_ts":      scan_ts,
-                })
+        if get_bouncer_status().get("status") != "active":
+            live.append({
+                "service": "CrowdSec", "ip": "---", "datetime": fmt_dt(now),
+                "detail":  "Bouncer inactif — IPs malveillantes plus bannies",
+                "status":  "action", "icon": "🔴", "label": "Action requise", "ts": now,
+            })
     except Exception:
         pass
 
-    # ── 6. AIDE ───────────────────────────────────────────────────────────────
+    # Ports inattendus
+    try:
+        for p in get_open_ports().get("unexpected", []):
+            live.append({
+                "service": "Ports", "ip": "---", "datetime": fmt_dt(now),
+                "detail":  f"Port inattendu en écoute : {p['port']}",
+                "status":  "action", "icon": "🔴", "label": "Action requise", "ts": now,
+            })
+    except Exception:
+        pass
+
+    # AIDE
     try:
         with open("/var/log/aide-daily.exit") as f:
             exit_code = int(f.read().strip())
@@ -1021,107 +1141,40 @@ def get_alerts(period_hours: int = 24) -> list:
             pass
         if aide_ts >= cutoff and (exit_code & 7) != 0:
             has_ctx = os.path.exists("/var/log/aide-daily.exit.context")
-            if has_ctx:
-                alerts.append({
-                    "service":  "AIDE",
-                    "detail":   "Modifications liees a une MAJ apt — comportement attendu",
-                    "ip":       "---",
-                    "datetime": fmt_dt(aide_ts),
-                    "status":   "reported",
-                    "icon":     "📢",
-                    "label":    "Signalee",
-                    "_ts":      aide_ts,
-                })
-            else:
-                alerts.append({
-                    "service":  "AIDE",
-                    "detail":   "Fichiers systeme modifies hors MAJ — verification requise",
-                    "ip":       "---",
-                    "datetime": fmt_dt(aide_ts),
-                    "status":   "action",
-                    "icon":     "🔴",
-                    "label":    "Action requise",
-                    "_ts":      aide_ts,
-                })
-    except Exception:
-        pass
-
-    # ── 7. Ports inattendus ────────────────────────────────────────────────────
-    try:
-        for p in get_open_ports().get("unexpected", []):
-            alerts.append({
-                "service":  "Ports",
-                "detail":   f"Port inattendu en ecoute : {p['port']}",
-                "ip":       "---",
-                "datetime": fmt_dt(now),
-                "status":   "action",
-                "icon":     "🔴",
-                "label":    "Action requise",
-                "_ts":      now,
+            live.append({
+                "service": "AIDE", "ip": "---", "datetime": fmt_dt(aide_ts),
+                "detail":  "Modifications liées à une MAJ apt — comportement attendu"
+                           if has_ctx else "Fichiers système modifiés hors MAJ — vérification requise",
+                "status":  "reported" if has_ctx else "action",
+                "icon":    "📢"       if has_ctx else "🔴",
+                "label":   "Signalée" if has_ctx else "Action requise",
+                "ts":      aide_ts,
             })
     except Exception:
         pass
 
-    # ── 8. Endlessh ───────────────────────────────────────────────────────────
-    try:
-        e_data    = get_endlessh()
-        out_period = run(["docker", "logs", "--since", f"{period_hours}h", ENDLESSH_CONTAINER], timeout=20)
-        pat = re.compile(r"ACCEPT|\"accepted\"", re.IGNORECASE)
-        bot_count = len(pat.findall(out_period))
-        if bot_count > 0:
-            s = "s" if bot_count > 1 else ""
-            alerts.append({
-                "service":  "Endlessh",
-                "detail":   f"{bot_count} bot{s} piege{s} sur port 22 (24h)",
-                "ip":       "---",
-                "datetime": fmt_dt(now),
-                "status":   "neutralized",
-                "icon":     "✅",
-                "label":    "Neutralisee",
-                "_ts":      now - 60,
-            })
-    except Exception:
-        pass
-
-    # ── 9. Bouncer inactif ────────────────────────────────────────────────────
-    try:
-        if get_bouncer_status().get("status") != "active":
-            alerts.append({
-                "service":  "CrowdSec",
-                "detail":   "Bouncer inactif — IPs malveillantes plus bannies",
-                "ip":       "---",
-                "datetime": fmt_dt(now),
-                "status":   "action",
-                "icon":     "🔴",
-                "label":    "Action requise",
-                "_ts":      now,
-            })
-    except Exception:
-        pass
-
-    # ── 10. Disque / Memoire ──────────────────────────────────────────────────
+    # Disque
     try:
         du  = shutil.disk_usage(HOSTFS)
         pct = round(du.used / du.total * 100, 1)
         ugb = round(du.used  / 1e9, 1)
         tgb = round(du.total / 1e9, 1)
         if pct > 90:
-            alerts.append({
-                "service": "Disque", "ip": "---",
-                "detail":  f"Espace disque a {pct}% ({ugb}Go / {tgb}Go) — risque crash",
-                "datetime": fmt_dt(now), "status": "action",
-                "icon": "🔴", "label": "Action requise", "_ts": now,
+            live.append({
+                "service": "Disque", "ip": "---", "datetime": fmt_dt(now),
+                "detail":  f"Espace disque à {pct}% ({ugb}Go / {tgb}Go) — risque crash",
+                "status":  "action", "icon": "🔴", "label": "Action requise", "ts": now,
             })
         elif pct > 80:
-            alerts.append({
-                "service": "Disque", "ip": "---",
-                "detail":  f"Espace disque a {pct}% ({ugb}Go / {tgb}Go) — prevoir nettoyage",
-                "datetime": fmt_dt(now), "status": "detected",
-                "icon": "👁️", "label": "Detectee", "_ts": now,
+            live.append({
+                "service": "Disque", "ip": "---", "datetime": fmt_dt(now),
+                "detail":  f"Espace disque à {pct}% ({ugb}Go / {tgb}Go) — prévoir nettoyage",
+                "status":  "detected", "icon": "👁️", "label": "Détectée", "ts": now,
             })
     except Exception:
         pass
 
+    # RAM
     try:
         mem: dict[str, int] = {}
         with open("/proc/meminfo") as f:
@@ -1132,38 +1185,37 @@ def get_alerts(period_hours: int = 24) -> list:
         used  = total - mem["MemAvailable"]
         pct   = round(used / total * 100, 1)
         if pct > 95:
-            alerts.append({
-                "service": "Memoire", "ip": "---",
-                "detail":  f"RAM a {pct}% ({used // 1024}Mo / {total // 1024}Mo) — risque crash",
-                "datetime": fmt_dt(now), "status": "action",
-                "icon": "🔴", "label": "Action requise", "_ts": now,
+            live.append({
+                "service": "Mémoire", "ip": "---", "datetime": fmt_dt(now),
+                "detail":  f"RAM à {pct}% ({used // 1024}Mo / {total // 1024}Mo) — risque crash",
+                "status":  "action", "icon": "🔴", "label": "Action requise", "ts": now,
             })
         elif pct > 85:
-            alerts.append({
-                "service": "Memoire", "ip": "---",
-                "detail":  f"RAM a {pct}% ({used // 1024}Mo / {total // 1024}Mo) — surveiller",
-                "datetime": fmt_dt(now), "status": "detected",
-                "icon": "👁️", "label": "Detectee", "_ts": now,
+            live.append({
+                "service": "Mémoire", "ip": "---", "datetime": fmt_dt(now),
+                "detail":  f"RAM à {pct}% ({used // 1024}Mo / {total // 1024}Mo) — surveiller",
+                "status":  "detected", "icon": "👁️", "label": "Détectée", "ts": now,
             })
     except Exception:
         pass
 
-    # ── 11. MAJ critiques ─────────────────────────────────────────────────────
+    # MAJ en retard
     try:
         out   = run(["apt", "list", "--upgradable"], timeout=15)
         count = len([l for l in out.splitlines() if "upgradable from" in l])
         if count > 30:
-            alerts.append({
-                "service": "Mises a jour", "ip": "---",
-                "detail":  f"{count} paquets en retard — MAJ manuelle recommandee",
-                "datetime": fmt_dt(now), "status": "detected",
-                "icon": "👁️", "label": "Detectee", "_ts": now,
+            live.append({
+                "service": "Mises à jour", "ip": "---", "datetime": fmt_dt(now),
+                "detail":  f"{count} paquets en retard — MAJ manuelle recommandée",
+                "status":  "detected", "icon": "👁️", "label": "Détectée", "ts": now,
             })
     except Exception:
         pass
 
-    # ── Geolocalisation ───────────────────────────────────────────────────────
-    all_ips = [a["ip"] for a in alerts if a.get("ip") and a["ip"] not in ("---", "")]
+    # ── 3. Merge, géolocalisation, tri ───────────────────────────────────────
+    alerts = historical + live
+
+    all_ips = [a.get("ip", "") for a in alerts if a.get("ip") and a["ip"] not in ("---", "")]
     if all_ips:
         _prefetch_geo(all_ips)
         for a in alerts:
@@ -1174,23 +1226,27 @@ def get_alerts(period_hours: int = 24) -> list:
                     a["ip"] = ip + tag
 
     ORDER = {"action": 0, "detected": 1, "reported": 2, "neutralized": 3}
-    alerts.sort(key=lambda x: (ORDER.get(x["status"], 9), -x.get("_ts", 0)))
+    alerts.sort(key=lambda x: (ORDER.get(x.get("status", ""), 9), -x.get("ts", 0)))
+
+    # Nettoyer les champs internes avant envoi
     for a in alerts:
-        a.pop("_ts", None)
+        a.pop("ts",    None)
+        a.pop("count", None)
 
     return alerts[:100]
-    
+
+
 def get_alerts_cached(period_hours: int = 24) -> list:
+    """Cache court (ALERTS_CACHE_TTL) par période — évite les scans répétés."""
     global _alerts_cache, _alerts_cache_time
     now = time.time()
     if (period_hours in _alerts_cache and
             (now - _alerts_cache_time.get(period_hours, 0)) < ALERTS_CACHE_TTL):
         return _alerts_cache[period_hours]
-    result = get_alerts(period_hours)
-    _alerts_cache[period_hours] = result
+    result                        = get_alerts(period_hours)
+    _alerts_cache[period_hours]   = result
     _alerts_cache_time[period_hours] = now
     return result
-
 
 def get_timeline() -> list:
     """25 derniers evenements securite (SSH, bans CrowdSec, sudo critique, rkhunter)."""
@@ -1935,18 +1991,29 @@ def _aide_diff() -> dict:
     log_path = f"{HOSTFS}var/log/aide-daily.log"
     try:
         with open(log_path, "r", errors="replace") as f2:
-            raw = f2.read(30000)
+            raw = f2.read()
         keep, ins = [], False
         for l in raw.splitlines():
             if any(l.startswith(k) for k in ("Summary","Changed","Added","Removed","---")):
                 ins = True
             if ins: keep.append(l)
             if len(keep) > 200: keep.append("... (tronque)"); break
-        return {"available": True, "log": chr(10).join(keep) if keep else raw[:3000]}
+        _added   = re.search(r'Added entries:\s+(\d+)',   raw)
+        _removed = re.search(r'Removed entries:\s+(\d+)', raw)
+        _changed = re.search(r'Changed entries:\s+(\d+)', raw)
+        return {
+            "available": True,
+            "log":     chr(10).join(keep) if keep else raw[:3000],
+            "added":   int(_added.group(1))   if _added   else None,
+            "removed": int(_removed.group(1)) if _removed else None,
+            "changed": int(_changed.group(1)) if _changed else None,
+        }
     except FileNotFoundError:
-        return {"available": False, "log": "Log AIDE non trouve"}
+        return {"available": False, "log": "Log AIDE non trouve",
+                "added": None, "removed": None, "changed": None}
     except Exception as e:
-        return {"available": False, "log": f"Erreur: {e}"}
+        return {"available": False, "log": f"Erreur: {e}",
+                "added": None, "removed": None, "changed": None}
 
 ROUTES = {
     "/api/metrics":             lambda: get_metrics(),
@@ -2091,6 +2158,12 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     _load_history()
     _load_rl_state()
+    _ev_load()   # ← AJOUT : charge l'event log persistant
+
+    # Thread collecte événements (premier run immédiat + boucle 5 min)
+    threading.Thread(target=_collect_historical_events, daemon=True).start()   # ← AJOUT
+    threading.Thread(target=_events_collector_loop, daemon=True).start()       # ← AJOUT
+
     srv = ThreadingHTTPServer((API_HOST, API_PORT), Handler)
     print(f"[VPS Monitor] API on {API_HOST}:{API_PORT} — cache TTL {CACHE_TTL}s", flush=True)
     srv.serve_forever()

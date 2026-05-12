@@ -2648,10 +2648,18 @@ chmod +x /usr/local/bin/vps-secure-stats
 log_success "Tableau de bord installé — commande disponible : sudo vps-secure-stats"
 
 # Installer vps-secure-verify pour usage post-reboot (évite le curl manuel)
+# Téléchargement + vérification GPG (cohérent avec install-secure.sh)
 curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh \
-    -o /usr/local/bin/vps-secure-verify 2>/dev/null || true  # optionnel : réseau peut échouer — non bloquant
-chmod +x /usr/local/bin/vps-secure-verify 2>/dev/null || true
-log_success "vps-secure-verify installé — commande disponible : sudo vps-secure-verify"
+    -o /usr/local/bin/vps-secure-verify
+curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/vps-secure-verify.sh.asc \
+    -o /tmp/vps-secure-verify.sh.asc
+
+gpg --verify /tmp/vps-secure-verify.sh.asc /usr/local/bin/vps-secure-verify \
+  || { log_error "Signature GPG vps-secure-verify invalide — abandon."; exit 1; }
+
+rm -f /tmp/vps-secure-verify.sh.asc
+chmod +x /usr/local/bin/vps-secure-verify
+log_success "vps-secure-verify installé (signature GPG vérifiée)."
 
 # ── MOTD personnalisé (affiché à chaque connexion SSH) ──
 # Désactiver le MOTD Ubuntu par défaut (publicitaire et verbeux)

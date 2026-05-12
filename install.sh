@@ -215,7 +215,7 @@ StrictModes yes
 PrintLastLog yes
 
 # Limiter les connexions à vpsadmin uniquement
-AllowUsers vpsadmin
+AllowUsers ${USERNAME}
 
 # Logging renforcé (fingerprint des clés utilisées — utile en forensique)
 LogLevel VERBOSE
@@ -2816,3 +2816,6 @@ else
     echo -e "    ${VERT}sudo vps-secure-verify${RESET}"
     echo ""
 fi
+# À la fin de install.sh, après tout :
+date +%s > /etc/vps-secure/install.timestamp
+chmod 600 /etc/vps-secure/install.timestamp

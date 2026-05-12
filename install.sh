@@ -212,7 +212,7 @@ KbdInteractiveAuthentication no
 UsePAM yes
 PermitEmptyPasswords no
 StrictModes yes
-PrintLastLog no
+PrintLastLog yes
 
 # Limiter les connexions à vpsadmin uniquement
 AllowUsers vpsadmin
@@ -496,6 +496,9 @@ if ! grep -q "/dev/shm" /etc/fstab; then
     echo "tmpfs /dev/shm tmpfs defaults,noexec,nosuid,nodev 0 0" >> /etc/fstab
     mount -o remount /dev/shm 2>/dev/null || true  # optionnel : remount échoue si le noyau n'a pas encore pris en compte l'entrée fstab — effectif au prochain reboot
     log_success "/dev/shm sécurisé (noexec, nosuid, nodev)."
+    log_warn "/dev/shm : noexec actif — si un container JVM (Keycloak, Elasticsearch, Kafka) crashe au démarrage :"
+    log_warn "  sudo mount -o remount,exec /dev/shm"
+    log_warn "  (ou ajouter 'exec' à la ligne /dev/shm dans /etc/fstab)"
 else
     log_warn "/dev/shm déjà configuré dans fstab — on continue."
 fi
@@ -883,6 +886,12 @@ else
         if grep -q "DOCKER-MASQ" /etc/ufw/before.rules; then
             if ufw reload >/dev/null 2>&1; then
                 log_success "Règle NAT Docker ajoutée et UFW rechargé (subnet : $DOCKER_SUBNET) — containers avec accès internet."
+                # ── Issue #135 — warning subnets custom ──
+                log_info "  ⚠️  Réseaux Docker custom (docker network create, docker-compose) utilisent d'autres subnets"
+                log_info "  et n'auront PAS accès internet sans règle NAT supplémentaire."
+                log_info "  Si un container n'a pas accès internet après install, ajoute dans /etc/ufw/before.rules (avant COMMIT) :"
+                log_info "  -A POSTROUTING -s <SUBNET_CUSTOM> ! -o docker0 -j MASQUERADE -m comment --comment \"DOCKER-MASQ-custom\""
+                log_info "  Puis : sudo ufw reload"
             else
                 log_warn "Règle NAT Docker écrite dans before.rules mais ufw reload a échoué."
                 log_warn "  Relance : sudo ufw reload"
@@ -1044,8 +1053,8 @@ net.core.bpf_jit_harden = 2
 # Interdire eBPF aux non-root — vecteur d'exploitation connu (CIS 1.5.5)
 kernel.unprivileged_bpf_disabled = 1
 
-# Port non-privilégié minimum abaissé à 22 — requis pour Endlessh (honeypot port 22)
-net.ipv4.ip_unprivileged_port_start = 22
+# ip_unprivileged_port_start : NON requis — Endlessh bind :22 via CAP_NET_BIND_SERVICE
+# (--cap-add NET_BIND_SERVICE dans docker run — les deux mécanismes sont orthogonaux)
 
 
 # ── KRNL-6000 — sysctl manquants Lynis 3.1.6 ──────────────────
@@ -1057,9 +1066,6 @@ fs.protected_fifos = 2
 kernel.core_uses_pid = 1
 # SysRq — désactivé sur VPS (pas d'accès physique clavier)
 kernel.sysrq = 0
-# Log martians — journaliser les paquets à adresse source impossible
-net.ipv4.conf.all.log_martians = 1
-net.ipv4.conf.default.log_martians = 1
 # NOTE : kernel.modules_disabled=1 et net.ipv4.conf.all.forwarding=0
 #        intentionnellement exclus — Docker dépendant
 
@@ -1117,10 +1123,10 @@ log_warn "  ⚠️ Temporaire — retirer dès patch kernel Noble disponible (US
 
 # Blacklist protocoles réseau inutiles (NETW-3200 — CIS 3.x)
 cat >> /etc/modprobe.d/vps-secure-blacklist.conf << 'EOF'
-install dccp /bin/true
-install sctp /bin/true
-install rds /bin/true
-install tipc /bin/true
+install dccp /bin/false
+install sctp /bin/false
+install rds /bin/false
+install tipc /bin/false
 EOF
 log_success "Protocoles réseau inutiles blacklistés (dccp, sctp, rds, tipc)."
 
@@ -1279,7 +1285,7 @@ fi
 # ── voidlink-detect (issue #46) ──────────────────────────────────────────
 cat > /usr/local/bin/voidlink-detect << 'VOIDLINKEOF'
 #!/usr/bin/env bash
-set -uo pipefail
+set -euo pipefail
 ALERTS=()
 
 for pid_dir in /proc/[0-9]*/; do

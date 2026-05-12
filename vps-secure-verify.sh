@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ==========================================================
+# ============================================================
 # vps-secure-verify.sh — Vérification post-installation
 # Vérifie chaque composant installé par install.sh
 #
@@ -9,7 +9,7 @@
 #
 # Ce script ne modifie rien — lecture seule.
 # Repo : https://github.com/rockballslab/vps-secure
-# ==========================================================
+# ============================================================
 set -uo pipefail
 # Pas de set -e : chaque vérification peut échouer sans arrêter le script
 

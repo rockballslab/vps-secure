@@ -288,6 +288,26 @@ If an anomaly is detected in the daily report, the message includes the details 
 
 ---
 
+> [!WARNING]
+> **Docker & Firewall: The "UFW Bypass" — fixed**
+>
+> By default, Docker manipulates iptables and completely ignores your firewall (UFW) rules, exposing your ports directly to the internet. This script fixes this critical vulnerability present in virtually all standard installations.
+>
+> The fix: The script disables automatic iptables management by the Docker daemon (`iptables: false`).
+>
+> Internet access: A NAT rule (MASQUERADE) is automatically injected into before.rules so your containers keep outbound internet access (updates, APIs, etc.).
+>
+> Total control: Nothing gets in without your explicit approval.
+
+Direct consequence: If you launch a container on port 8080, it will remain invisible from outside by default. To open it, you must do it manually:
+
+```bash
+sudo ufw allow 8080/tcp comment 'My application'
+```
+
+---
+
+
 ## Optional but useful
 
 ### Quick connect
@@ -367,24 +387,6 @@ Automatic detection of all Docker containers via socket. Cards per service with 
 
 ---
 
-> [!WARNING]
-> **Docker & Firewall: The "UFW Bypass" — fixed**
->
-> By default, Docker manipulates iptables and completely ignores your firewall (UFW) rules, exposing your ports directly to the internet. This script fixes this critical vulnerability present in virtually all standard installations.
->
-> The fix: The script disables automatic iptables management by the Docker daemon (`iptables: false`).
->
-> Internet access: A NAT rule (MASQUERADE) is automatically injected into before.rules so your containers keep outbound internet access (updates, APIs, etc.).
->
-> Total control: Nothing gets in without your explicit approval.
-
-Direct consequence: If you launch a container on port 8080, it will remain invisible from outside by default. To open it, you must do it manually:
-
-```bash
-sudo ufw allow 8080/tcp comment 'My application'
-```
-
----
 
 ## :shield: Security level
 

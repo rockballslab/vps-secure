@@ -712,6 +712,30 @@ def get_crowdsec() -> dict:
         pass
 
     return {"active_bans": active_bans, "alerts_24h": alerts_24h}
+    
+def get_top_countries(limit: int = 5) -> list:
+    """Top pays attaquants depuis les décisions CrowdSec actives."""
+    out = run(
+        ["cscli", "decisions", "list", "--limit", "1000", "-o", "json"],
+        timeout=20,
+    )
+    try:
+        decisions = json.loads(out.strip()) or []
+        counts: dict[str, int] = {}
+        for d in decisions:
+            cc = (d.get("country") or "").strip().upper()
+            if cc and len(cc) == 2:
+                counts[cc] = counts.get(cc, 0) + 1
+        if not counts:
+            return []
+        total = sum(counts.values())
+        top = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:limit]
+        return [
+            {"code": cc, "flag": _flag(cc), "count": n, "pct": round(n / total * 100)}
+            for cc, n in top
+        ]
+    except Exception:
+        return []
 
 def get_bouncer_status() -> dict:
     # Priorité 1 : service systemd (source de vérité réelle)
@@ -2018,6 +2042,7 @@ ROUTES = {
     "/api/containers":          lambda: get_containers_cached(),
     "/api/containers/updates":  lambda: get_container_updates(),
     "/api/geomap":              api_geomap,
+    "/api/top-countries": get_top_countries,
 }
 
 

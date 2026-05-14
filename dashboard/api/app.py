@@ -1316,6 +1316,7 @@ def get_timeline() -> list:
     cutoff = now - 86400
 
     ssh_by_ip: dict = {}
+    ssh_fail_by_ip: dict = {}
 
     for path in ["/var/log/sshd.log", "/var/log/auth.log", "/var/log/secure"]:
         try:
@@ -1368,16 +1369,12 @@ def get_timeline() -> list:
                             continue
                     if ts < cutoff:
                         continue
-                    events.append({
-                        "ts":    ts,
-                        "type":  "ssh_fail",
-                        "icon":  "⚠️",
-                        "color": "rose",
-                        "title": "Tentative SSH echouee",
-                        "detail": m_ip.group(1) if m_ip else "IP inconnue",
-                        "_ip":   m_ip.group(1) if m_ip else "",
-                        "count": 1,
-                    })
+                    ip = m_ip.group(1) if m_ip else ""
+                    if ip not in ssh_fail_by_ip:
+                        ssh_fail_by_ip[ip] = {"ts": ts, "count": 0}
+                    ssh_fail_by_ip[ip]["count"] += 1
+                    if ts > ssh_fail_by_ip[ip]["ts"]:
+                        ssh_fail_by_ip[ip]["ts"] = ts
         except Exception:
             continue
 
@@ -1392,7 +1389,18 @@ def get_timeline() -> list:
             "_ip":   ip,
             "count": data["count"],
         })
-        
+
+    for ip, data in ssh_fail_by_ip.items():
+        events.append({
+            "ts":    data["ts"],
+            "type":  "ssh_fail",
+            "icon":  "⚠️",
+            "color": "rose",
+            "title": "Tentative SSH echouee",
+            "detail": ip or "IP inconnue",
+            "_ip":   ip,
+            "count": data["count"],
+        })
 
     # ── CrowdSec bans ─────────────────────────────────────────────────────────
     try:

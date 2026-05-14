@@ -324,12 +324,12 @@ sudo ufw allow 8080/tcp comment 'My application'
 
 ---
 
-## Monitoring dashboard (optional but highly recommended)
+## Monitoring  (optional but highly recommended)
 
-A web dashboard to visualize your server's status in real time.
+A web  to visualize your server's status in real time.
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main//install--secure.sh)
 ```
 
 The script asks for a domain name and a password. Your password will be saved in `~/vps-monitor/.env`.
@@ -343,7 +343,7 @@ The script asks for a domain name and a password. Your password will be saved in
 </p>
 
 <p align="center">
-  <img src="./dashboard/dashboard-preview.png" alt="VPS Secure Dashboard" width="100%">
+  <img src="./dashboard/dashboard-preview2.jpg" alt="VPS Secure Dashboard" width="100%">
 </p>
 
 ### Cockpit tab

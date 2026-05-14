@@ -506,6 +506,28 @@
         </div>
       </div>
       <div class="sdiv"></div>
+      <!-- ═══ RÉSEAU I/O ══════════════════════════════════════════════ -->
+      <div class="threat-pulse-wrap">
+        <div>
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-family:'Orbitron',sans-serif;">
+            <i class="ph-fill ph-arrows-down-up" style="font-size:11px;margin-right:4px;"></i>Réseau I/O
+          </div>
+          <div style="display:flex;gap:16px;margin-top:5px;">
+            <div>
+              <div style="font-size:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;">↓ IN</div>
+              <div id="net-rx" style="font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#fff;">—</div>
+            </div>
+            <div>
+              <div style="font-size:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;">↑ OUT</div>
+              <div id="net-tx" style="font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:rgba(255,200,60,0.9);">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="threat-canvas-box">
+          <canvas id="net-sparkline" width="155" height="46"></canvas>
+        </div>
+      </div>
+      <div class="sdiv"></div>
       <div style="flex-shrink:0;display:flex;flex-direction:column;gap:12px;min-width:175px;padding-right:8px;">
         <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-family:'Orbitron',sans-serif;"><i class="ph-fill ph-telegram-logo" style="font-size:12px;margin-right:5px;"></i>Alertes Telegram</div>
         <div id="tg-not-configured" style="display:none;"><span style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;">Non configuré</span></div>
@@ -886,6 +908,37 @@ function updatePorts(op) {
   setCard('card-ports', op.alert ? 'a-red' : 'a-green');
 }
 
+async function refreshNetworkIO() {
+  try {
+    const d = await apiFetch('/api/network');
+    if (!d) return;
+    const rx = document.getElementById('net-rx');
+    const tx = document.getElementById('net-tx');
+    if (rx) rx.textContent = d.rx_label || '—';
+    if (tx) tx.textContent = d.tx_label || '—';
+    const cv = document.getElementById('net-sparkline');
+    if (!cv || !d.hist_rx?.length) return;
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    const combined = [...(d.hist_rx || []), ...(d.hist_tx || [])];
+    const maxV = Math.max(...combined, 1);
+    const draw = (hist, color) => {
+     if (!hist?.length) return;
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      hist.forEach((v, i) => {
+        const x = i * (W / (hist.length - 1 || 1));
+        const y = H - (v / maxV) * (H - 3) - 1;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    };
+    draw(d.hist_rx, 'rgba(0,255,136,0.85)');   // RX vert
+    draw(d.hist_tx, 'rgba(255,200,60,0.75)');  // TX jaune
+  } catch(e) {}
+}
 /* ── Timeline ─────────────────────────────────────────────────────────── */
 async function refreshTimeline() {
   try {
@@ -922,6 +975,7 @@ function renderTimeline(events) {
   styleEl.innerHTML = `${kf} #tl-box{animation:tlScroll ${n*4}s cubic-bezier(0.65,0,0.35,1) infinite;}`;
   list.innerHTML = `<div id="tl-box" class="tl-wrapper">${events.map(e=>drawItem(e)).join('')}${drawItem(events[0])}</div>`;
 }
+
 
 /* ── updateCards ──────────────────────────────────────────────────────── */
 function setVal(id, val, animate) {
@@ -1119,6 +1173,7 @@ async function refresh() {
     updateCards(await res.json()); setStatus(true);
     $('last-update').textContent = new Date().toLocaleTimeString('fr-FR');
     refreshTimeline();
+    refreshNetworkIO();
     if (sessionStorage.getItem('active_tab') === 'journal') fetchJournal();
   } catch(err) { console.error('[VPS Monitor]', err); setStatus(false); }
   finally {
@@ -1126,6 +1181,7 @@ async function refresh() {
     startCountdown(); refreshTimer = setTimeout(refresh, 30_000);
   }
 }
+    
 
 /* ── Donuts ───────────────────────────────────────────────────────────── */
 let donutMem=null, donutDisk=null, donutCpu=null, donutScore=null;

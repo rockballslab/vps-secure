@@ -137,7 +137,7 @@
     .header-nav-link.active-tab{color:var(--teal)}
     .header-nav-link.active-tab::after{transform:scaleX(1)}
     body.dark .header-nav-link.active-tab{text-shadow:0 0 8px rgba(0,255,136,0.4)}
-    .header-nav-link-soon{opacity:.32;cursor:default}
+    .header-nav-link-soon{opacity:.32;cursor:not-allowed;pointer-events: none}
     .header-nav-link-soon:hover{color:var(--muted)!important;opacity:.32}
     .header-nav-sep{flex:1}
     .header-nav-version{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;opacity:.45;letter-spacing:.5px}
@@ -453,6 +453,22 @@
       <button class="btn-theme" onclick="openHelper()" title="Commandes utiles"><i class="ph ph-terminal"></i></button>
       <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion"><i class="ph ph-power"></i></button>
       <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Thème"><i id="theme-icon" class="ph ph-sun"></i></button>
+
+      <!-- Séparateur -->
+      <div style="width:1px;height:20px;background:var(--card-border);margin:0 4px;"></div>
+
+      <!-- Toggles Telegram -->
+      <div id="tg-not-configured" style="display:none;"><span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">Telegram non configuré</span></div>
+      <div id="tg-toggles" style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--muted);">Rapport</span>
+          <label class="tg-toggle"><input type="checkbox" id="tg-report" onchange="toggleTelegram('report',this.checked)"><span class="tg-slider"></span></label>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--muted);">SSH</span>
+          <label class="tg-toggle"><input type="checkbox" id="tg-ssh" onchange="toggleTelegram('ssh',this.checked)"><span class="tg-slider"></span></label>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -515,11 +531,11 @@
           <div style="display:flex;gap:16px;margin-top:5px;">
             <div>
               <div style="font-size:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;">↓ IN</div>
-              <div id="net-rx" style="font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#fff;">—</div>
+              <div id="net-rx" style="font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text);">—</div>
             </div>
             <div>
               <div style="font-size:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;">↑ OUT</div>
-              <div id="net-tx" style="font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:rgba(255,200,60,0.9);">—</div>
+              <div id="net-tx" style="font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--gold);">—</div>
             </div>
           </div>
         </div>
@@ -528,20 +544,6 @@
         </div>
       </div>
       <div class="sdiv"></div>
-      <div style="flex-shrink:0;display:flex;flex-direction:column;gap:12px;min-width:175px;padding-right:8px;">
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-family:'Orbitron',sans-serif;"><i class="ph-fill ph-telegram-logo" style="font-size:12px;margin-right:5px;"></i>Alertes Telegram</div>
-        <div id="tg-not-configured" style="display:none;"><span style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;">Non configuré</span></div>
-        <div id="tg-toggles" style="display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-            <span style="font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;">Rapport 09h00</span>
-            <label class="tg-toggle"><input type="checkbox" id="tg-report" onchange="toggleTelegram('report',this.checked)"><span class="tg-slider"></span></label>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-            <span style="font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;">Alerte SSH</span>
-            <label class="tg-toggle"><input type="checkbox" id="tg-ssh" onchange="toggleTelegram('ssh',this.checked)"><span class="tg-slider"></span></label>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Row 1 : Globe / Endlessh / CrowdSec / Système -->
@@ -560,7 +562,7 @@
         </div>
       </div>
 
-      <div class="card a-rose" id="card-endlessh">
+      <div class="card" id="card-endlessh">
         <div class="card-header">
           <div><div class="card-label">Endlessh</div><div class="card-desc">Piège les bots SSH port 22</div></div>
           <div class="icon-chip" id="icon-endlessh"><i class="ph-fill ph-bug-beetle"></i></div>
@@ -636,7 +638,7 @@
           <div class="icon-chip"><i class="ph-fill ph-fire"></i></div>
         </div>
         <div class="card-value" id="val-ufw"><span class="skel"></span></div>
-        <div class="card-sub">blocages <b>totaux</b></div>
+        <div class="card-sub">blocages <b>totaux depuis install</b></div>
       </div>
       <div class="card" id="card-audit">
         <div class="card-header">
@@ -644,7 +646,7 @@
           <div class="icon-chip"><i class="ph-fill ph-clipboard-text"></i></div>
         </div>
         <div class="card-value" id="val-audit"><span class="skel"></span></div>
-        <div class="card-sub">escalades <b>aujourd'hui</b></div>
+        <div class="card-sub" id="sub-audit-label">commandes sudo aujourd'hui</div>
       </div>
       <div class="card" id="card-rkhunter">
         <div class="card-header">
@@ -996,7 +998,7 @@ function updateCards(d) {
   const iconE = $('icon-endlessh');
   if (iconE) iconE.className = 'icon-chip'; // teal par défaut, jamais rose
   setVal('val-crowdsec', fmt(c.active_bans), true);
-  $('sub-crowdsec').innerHTML = `Alertes 24h : <b style="font-size:22px;color:#ffffff;">${fmt(c.alerts_24h)}</b>`;
+  $('sub-crowdsec').innerHTML = `Alertes 24h : <b style="font-size:22px;color:var(--text);">${fmt(c.alerts_24h)}</b>`;
   updateBouncer(d.bouncer);
   setVal('val-ufw', fmt(u.total), true);
   setVal('val-audit', fmt(a.sudo_today), true);
@@ -1615,6 +1617,5 @@ function cancelAideRebase(){
     </div>
   </div>
 
-</div>
-</body>
+  </body>
 </html>

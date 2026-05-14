@@ -207,7 +207,7 @@
     body.dark .pill-warn{color:#ff7090;background:rgba(255,77,109,0.12);border-color:rgba(255,77,109,0.25)}
 
     /* ═══ SCORE BAR ═══════════════════════════════════════════════════════ */
-    .score-bar{padding:20px 24px;background:var(--glass);backdrop-filter:var(--blur);border-radius:var(--r);border:1px solid var(--card-border);box-shadow:var(--shadow-out);display:flex;align-items:flex-start;gap:0;opacity:0}
+    .score-bar{padding:20px 24px;background:var(--glass);backdrop-filter:var(--blur);border-radius:var(--r);border:1px solid var(--card-border);box-shadow:var(--shadow-out);display:flex;align-items:center;gap:0;opacity:0}
     .score-bar.visible{animation:cardIn .5s ease .04s forwards}
 
     /* Score ring + radar */
@@ -492,7 +492,7 @@
         </div>
       </div>
       <div class="sdiv"></div>
-      <div style="flex:1;min-width:0;">
+      <div style="flex:0 0 380px;margin-left:auto;">
         <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;"><i class="ph ph-list-bullets" style="font-size:12px;margin-right:5px;"></i>Événements récents</div>
         <div id="timeline-inline"></div>
       </div>

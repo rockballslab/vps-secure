@@ -346,7 +346,7 @@ Le script te demande un domaine et un mot de passe. Ton mot de passe sera sauveg
 </p>
 
 <p align="center">
-  <img src="./dashboard/dashboard-preview.png" alt="VPS Secure Dashboard" width="100%">
+  <img src="./dashboard/dashboard-preview2.jpg" alt="VPS Secure Dashboard" width="100%">
 </p>
 
 ### Onglet Cockpit

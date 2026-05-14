@@ -682,6 +682,52 @@ def get_endlessh() -> dict:
         "avg_duration_fmt": fmt_duration(avg_duration_s),
         "trap_count": len(durations),
     }
+    
+# ── Network I/O state ────────────────────────────────────────────
+_net_state: dict = {"rx": 0, "tx": 0, "ts": 0.0, "hist_rx": [], "hist_tx": []}
+
+def _read_net_dev() -> tuple[int, int]:
+    skip = ("lo", "docker", "veth", "br-", "virbr", "tun", "dummy")
+    try:
+        with open("/proc/net/dev") as f:
+            for line in f.readlines()[2:]:
+                parts = line.split(":")
+                if len(parts) < 2:
+                    continue
+                iface = parts[0].strip()
+                if any(iface.startswith(p) for p in skip):
+                    continue
+                fields = parts[1].split()
+                return int(fields[0]), int(fields[8])  # rx_bytes, tx_bytes
+    except Exception:
+        pass
+    return 0, 0
+
+def get_network_io() -> dict:
+    global _net_state
+    now = time.time()
+    rx, tx = _read_net_dev()
+    rx_rate = tx_rate = 0.0
+    if _net_state["ts"] > 0:
+        dt = now - _net_state["ts"]
+        if dt > 0:
+            rx_rate = max(0.0, (rx - _net_state["rx"]) / dt)
+            tx_rate = max(0.0, (tx - _net_state["tx"]) / dt)
+            _net_state["hist_rx"] = (_net_state["hist_rx"] + [round(rx_rate / 1024, 1)])[-30:]
+            _net_state["hist_tx"] = (_net_state["hist_tx"] + [round(tx_rate / 1024, 1)])[-30:]
+    _net_state.update({"rx": rx, "tx": tx, "ts": now})
+
+    def fmt(bps: float) -> str:
+        if bps < 1024:      return f"{bps:.0f} B/s"
+        if bps < 1048576:   return f"{bps/1024:.1f} KB/s"
+        return f"{bps/1048576:.1f} MB/s"
+
+    return {
+        "rx_label": fmt(rx_rate),
+        "tx_label": fmt(tx_rate),
+        "hist_rx": _net_state["hist_rx"],
+        "hist_tx": _net_state["hist_tx"],
+    }
 
 def get_crowdsec() -> dict:
     active_bans = 0
@@ -2043,6 +2089,7 @@ ROUTES = {
     "/api/containers/updates":  lambda: get_container_updates(),
     "/api/geomap":              api_geomap,
     "/api/top-countries": get_top_countries,
+    "/api/network": get_network_io,
 }
 
 

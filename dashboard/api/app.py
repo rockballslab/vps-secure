@@ -688,36 +688,28 @@ def get_crowdsec() -> dict:
     alerts_24h  = 0
 
     if CROWDSEC_KEY:
+        # Bouncer key → LAPI pour decisions uniquement (pas d'accès /v1/alerts)
         decisions = _lapi("/v1/decisions?limit=50000")
         active_bans = len(decisions) if decisions else 0
-        alerts = _lapi("/v1/alerts?limit=500")
-        if alerts:
-            cutoff = time.time() - 86400
-            alerts_24h = sum(
-                1 for a in alerts
-                if _parse_ts(a.get("created_at", "")) > cutoff
-            )
     else:
-        out = run(
-            ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "decisions", "list", "-o", "json"],
-            timeout=15,
-        )
+        # Pas de clé → cscli direct (CrowdSec natif, binaire monté)
+        out = run(["cscli", "decisions", "list", "-o", "json"], timeout=15)
         try:
             d = json.loads(out)
             active_bans = len(d) if d else 0
         except Exception:
             pass
 
-        out2 = run(
-            ["docker", "exec", CROWDSEC_CONTAINER, "cscli", "alerts", "list",
-             "--since", "24h", "-o", "json"],
-            timeout=15,
-        )
-        try:
-            d2 = json.loads(out2)
-            alerts_24h = len(d2) if d2 else 0
-        except Exception:
-            pass
+    # Alerts : toujours cscli direct (bouncer key bloquée par 401 sur /v1/alerts)
+    out2 = run(
+        ["cscli", "alerts", "list", "--since", "24h", "-o", "json"],
+        timeout=15,
+    )
+    try:
+        d2 = json.loads(out2)
+        alerts_24h = len(d2) if d2 else 0
+    except Exception:
+        pass
 
     return {"active_bans": active_bans, "alerts_24h": alerts_24h}
 

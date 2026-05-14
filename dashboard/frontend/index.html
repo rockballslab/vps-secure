@@ -293,7 +293,7 @@
     body.dark .port-alert{color:#f87171}
 
     /* ═══ TIMELINE ════════════════════════════════════════════════════════ */
-    #timeline-inline{height:45px;overflow:hidden;position:relative;width:100%}
+    #timeline-inline{height:90px;overflow:hidden;position:relative;width:100%}
     #timeline-inline::before,
     #timeline-inline::after{content:'';position:absolute;top:0;bottom:0;width:32px;z-index:2;pointer-events:none}
     #timeline-inline::before{left:0;background:linear-gradient(90deg,var(--glass),transparent)}
@@ -942,6 +942,8 @@ async function refreshNetworkIO() {
 }
     
 /* ── Timeline ─────────────────────────────────────────────────────────── */
+let _tlKey = null;
+
 async function refreshTimeline() {
   try {
     const res = await fetch('/api/timeline', { cache:'no-store', headers:{'Authorization':AUTH} });
@@ -949,9 +951,13 @@ async function refreshTimeline() {
     renderTimeline(await res.json());
   } catch(e) {}
 }
+    
 function renderTimeline(events) {
   const list = $('timeline-inline'); if (!list) return;
   if (!events || !events.length) { list.innerHTML = '<div class="tl-empty">Aucun événement récent</div>'; return; }
+  const key = JSON.stringify(events?.map(e => e.title + e.time));
+  if (key === _tlKey) return;
+  _tlKey = key;
   const cm = { teal:'teal', rose:'rose', gold:'gold', purple:'purple', red:'red' };
   const drawItem = e => `
     <div class="tl-item">

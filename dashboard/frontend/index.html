@@ -910,7 +910,8 @@ function updatePorts(op) {
 
 async function refreshNetworkIO() {
   try {
-    const d = await apiFetch('/api/network');
+    const res = await fetch('/api/network', { cache:'no-store', headers:{'Authorization':AUTH} });
+    const d = await res.json();
     if (!d) return;
     const rx = document.getElementById('net-rx');
     const tx = document.getElementById('net-tx');
@@ -921,13 +922,11 @@ async function refreshNetworkIO() {
     const ctx = cv.getContext('2d');
     const W = cv.width, H = cv.height;
     ctx.clearRect(0, 0, W, H);
-    const combined = [...(d.hist_rx || []), ...(d.hist_tx || [])];
+    const combined = [...(d.hist_rx||[]), ...(d.hist_tx||[])];
     const maxV = Math.max(...combined, 1);
     const draw = (hist, color) => {
-     if (!hist?.length) return;
-      ctx.beginPath();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
+      if (!hist?.length) return;
+      ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 1.5;
       hist.forEach((v, i) => {
         const x = i * (W / (hist.length - 1 || 1));
         const y = H - (v / maxV) * (H - 3) - 1;
@@ -935,10 +934,11 @@ async function refreshNetworkIO() {
       });
       ctx.stroke();
     };
-    draw(d.hist_rx, 'rgba(0,255,136,0.85)');   // RX vert
-    draw(d.hist_tx, 'rgba(255,200,60,0.75)');  // TX jaune
+    draw(d.hist_rx, 'rgba(0,255,136,0.85)');
+    draw(d.hist_tx, 'rgba(255,200,60,0.75)');
   } catch(e) {}
 }
+    
 /* ── Timeline ─────────────────────────────────────────────────────────── */
 async function refreshTimeline() {
   try {

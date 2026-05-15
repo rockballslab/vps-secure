@@ -93,14 +93,14 @@ Fix: permanent module blacklist via `modprobe.d` — integrated in `install.sh` 
 
 Before running the script, you need:
 
-- :white_check_mark: A fresh **Ubuntu 24.04 LTS** VPS (Hostinger, Hetzner, OVH...)
-- :white_check_mark: The **IP** and **root password** provided by your hosting provider
-- :white_check_mark: An **SSH key** generated on your local machine
+- :white_check_mark: A fresh **Ubuntu 24.04 LTS** VPS — Hostinger, Hetzner, OVH, or any provider
+- :white_check_mark: The **IP address** and **root credentials** from your hosting provider
+- :white_check_mark: An **SSH key generated** on your local machine
 
 > [!NOTE]
-> :key: This script requires a license — [available here](https://vps-secure.aiforceone.fr/offre-en.html) — **LAUNCH OFFER 47EUR** instead of 97EUR with code **REDUC50**
+> :key: This script requires a license — [Get it here](https://vps-secure.aiforceone.fr/offre-en.html) — **LAUNCH OFFER 47EUR** instead of 97EUR with code **REDUC50**
 >
-> :technologist: Want to contribute and audit the code? [Contact me for a free license](https://tally.so/r/lblb0k) — your unique activation key will be sent within minutes.
+> :technologist: Want to audit or contribute to the code? [Request a free license](https://tally.so/r/lblb0k) — activation key sent within minutes.
 
 ---
 

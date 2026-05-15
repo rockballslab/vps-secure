@@ -120,7 +120,7 @@ Before anything else, open the [Interactive Installation Guide](https://vps-secu
 It walks you through every input you'll need — no copy-paste errors, no back-and-forth.
 
 > [!TIP]
-> **No VPS yet?** [Hostinger — 20% off **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · or · [ Hetzner — 20€ free credit](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
+> **No VPS yet?** [Hostinger — 20% off code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · or · [ Hetzner — 20€ free credit](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
 
 ---
 

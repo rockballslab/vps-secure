@@ -9,8 +9,6 @@
 ![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
 
-**:closed_lock_with_key: VPS-SECURE turns a bare VPS into a hardened fortress — honeypot, collaborative IPS, real-time dashboard, Telegram alerts — with a single command. No Linux expertise required.**
-
 <p align="center">
   <img src="./screenshots/header.png" alt="My Fortress with VPS-SECURE" width="100%">
 </p>

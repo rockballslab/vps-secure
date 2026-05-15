@@ -66,6 +66,18 @@
     .halo-tl { top:-200px;left:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(0,255,136,.055) 0%,transparent 65%);animation:haloBreath 7s ease infinite; }
     .halo-br { bottom:-180px;right:-180px;width:550px;height:550px;background:radial-gradient(circle,rgba(0,255,136,.04) 0%,transparent 65%);animation:haloBreath 9s ease infinite 2s; }
 
+    /* ── LANG TOGGLE (fixed top-right) ───────────────────────────────── */
+    .btn-lang-login {
+      position:fixed;top:16px;right:16px;z-index:20;
+      padding:5px 11px;
+      border:1px solid rgba(0,255,136,0.18);border-radius:6px;
+      background:rgba(0,255,136,0.05);color:var(--teal);
+      cursor:pointer;font-size:11px;font-weight:700;
+      font-family:'JetBrains Mono',monospace;letter-spacing:.5px;
+      transition:background .15s,box-shadow .15s,transform .15s;
+    }
+    .btn-lang-login:hover { background:rgba(0,255,136,0.1);box-shadow:0 0 10px var(--glow);transform:scale(1.06); }
+
     /* ── WRAP ────────────────────────────────────────────────────────── */
     .login-wrap { width:100%;max-width:420px;padding:20px;position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;gap:28px; }
 
@@ -80,14 +92,12 @@
     .brand-tag { font-family:'DM Mono',monospace;font-size:9px;font-weight:500;color:var(--teal);letter-spacing:2px;text-transform:uppercase;opacity:.65; }
     .brand-name-wrap { position:relative;display:inline-block; }
 
-    /* Brand name + glitch layers */
     .brand-name {
       font-family:'Orbitron',sans-serif;font-size:22px;font-weight:800;
       letter-spacing:3px;color:var(--text);line-height:1;text-align:center;
       position:relative;display:inline-block;user-select:none;
     }
     .brand-name span { color:var(--teal);text-shadow:0 0 18px rgba(0,255,136,.6); }
-    /* Glitch pseudo-layers */
     .brand-name::before,
     .brand-name::after {
       content:attr(data-text);
@@ -124,7 +134,6 @@
     .card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 0%,var(--teal) 40%,var(--teal-l) 60%,transparent 100%);box-shadow:0 0 20px rgba(0,255,136,.5); }
     .card::after { content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(0,255,136,.028) 0%,transparent 100%);border-radius:var(--r); }
 
-    /* Card sheen — follows mouse via JS */
     .card-sheen {
       position:absolute;inset:0;border-radius:var(--r);pointer-events:none;z-index:0;
       background:radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0%, transparent 60%);
@@ -210,6 +219,11 @@
 <canvas id="bg-canvas"></canvas>
 <div class="success-flash" id="success-flash"></div>
 
+<!-- Lang toggle — fixed top-right -->
+<button id="btn-lang-login" class="btn-lang-login"
+        onclick="applyLang(currentLang === 'fr' ? 'en' : 'fr')"
+        title="Switch language">🇫🇷 FR</button>
+
 <div class="login-wrap">
 
   <div class="logo-area">
@@ -224,7 +238,7 @@
       <div class="brand-name-wrap">
         <div class="brand-name" id="brand-name" data-text="[ VPS-SECURE ]">[ <span>VPS-SECURE</span> ]</div>
       </div>
-      <div class="brand-sub">Cockpit de monitoring sécurisé</div>
+      <div class="brand-sub" data-i18n="brand_sub">Cockpit de monitoring sécurisé</div>
     </div>
   </div>
 
@@ -239,34 +253,34 @@
     <div class="card-inner">
       <div class="status-row">
         <div class="status-dot"></div>
-        <span class="status-text"><b>Système actif</b> · accès TLS chiffré</span>
+        <span class="status-text" data-i18n-html="status_active"><b>Système actif</b> · accès TLS chiffré</span>
         <span class="status-uptime" id="clock">——:——:——</span>
       </div>
-      <div class="card-title">Authentification</div>
-      <div class="card-sub">Accès restreint — identifie-toi</div>
+      <div class="card-title" data-i18n="card_title">Authentification</div>
+      <div class="card-sub" data-i18n="card_sub">Accès restreint — identifie-toi</div>
 
       <div class="field">
-        <label><i class="ph-fill ph-user"></i> Identifiant</label>
+        <label><i class="ph-fill ph-user"></i><span data-i18n="label_username"> Identifiant</span></label>
         <input type="text" id="username" value="admin" autocomplete="username" spellcheck="false">
         <div class="field-underline"></div>
       </div>
       <div class="field">
-        <label><i class="ph-fill ph-lock"></i> Mot de passe</label>
+        <label><i class="ph-fill ph-lock"></i><span data-i18n="label_password"> Mot de passe</span></label>
         <input type="password" id="password" autocomplete="current-password" placeholder="••••••••••••">
         <div class="field-underline"></div>
       </div>
 
       <button class="btn-login" id="btn-login" onclick="login()">
-        <span id="btn-text">Accéder au dashboard</span>
+        <span id="btn-text" data-i18n="btn_login">Accéder au dashboard</span>
       </button>
 
       <div class="error-box" id="error-box">
-        <i class="ph-fill ph-warning" style="margin-right:6px;"></i>Identifiants incorrects — réessaie.
+        <i class="ph-fill ph-warning" style="margin-right:6px;"></i><span data-i18n="error_creds">Identifiants incorrects — réessaie.</span>
       </div>
     </div>
   </div>
 
-  <div class="footer">vps-secure &nbsp;·&nbsp; v2.7.3 &nbsp;·&nbsp; connexion TLS</div>
+  <div class="footer">vps-secure &nbsp;·&nbsp; v2.7.3 &nbsp;·&nbsp; <span data-i18n="footer_tls">connexion TLS</span></div>
 </div>
 
 <script>
@@ -275,8 +289,82 @@
 if (sessionStorage.getItem('vps_auth')) { window.location.href = '/'; }
 const $id = id => document.getElementById(id);
 
+/* ══════════════════════════════════════════════════════════════════════
+   i18n
+   ══════════════════════════════════════════════════════════════════════ */
+const TRANSLATIONS = {
+  fr: {
+    page_title:    'VPS-SECURE — Accès Restreint',
+    brand_sub:     'Cockpit de monitoring sécurisé',
+    status_active: '<b>Système actif</b> · accès TLS chiffré',
+    card_title:    'Authentification',
+    card_sub:      'Accès restreint — identifie-toi',
+    label_username:' Identifiant',
+    label_password:' Mot de passe',
+    btn_login:     'Accéder au dashboard',
+    error_creds:   'Identifiants incorrects — réessaie.',
+    error_server:  'Serveur inaccessible — vérifie ta connexion.',
+    js_checking:   '↻ Vérification…',
+    js_granted:    '✅ Accès autorisé',
+    footer_tls:    'connexion TLS',
+  },
+  en: {
+    page_title:    'VPS-SECURE — Restricted Access',
+    brand_sub:     'Secure monitoring cockpit',
+    status_active: '<b>System active</b> · TLS encrypted access',
+    card_title:    'Authentication',
+    card_sub:      'Restricted access — identify yourself',
+    label_username:' Username',
+    label_password:' Password',
+    btn_login:     'Access dashboard',
+    error_creds:   'Wrong credentials — try again.',
+    error_server:  'Server unreachable — check your connection.',
+    js_checking:   '↻ Checking…',
+    js_granted:    '✅ Access granted',
+    footer_tls:    'TLS connection',
+  }
+};
+
+let currentLang = 'fr';
+const t = key => (TRANSLATIONS[currentLang] || TRANSLATIONS.fr)[key] ?? key;
+
+function applyLang(lang) {
+  if (!TRANSLATIONS[lang]) return;
+  currentLang = lang;
+  const dict = TRANSLATIONS[lang];
+
+  /* textContent */
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (dict[key] !== undefined) el.textContent = dict[key];
+  });
+
+  /* innerHTML */
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.dataset.i18nHtml;
+    if (dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+
+  /* <title> */
+  document.title = dict.page_title;
+  document.documentElement.lang = lang === 'fr' ? 'fr' : 'en';
+  localStorage.setItem('vpssecure_lang', lang);
+
+  /* Bouton toggle */
+  const btn = $id('btn-lang-login');
+  if (btn) btn.textContent = lang === 'fr' ? '🇫🇷 FR' : '🇺🇸 EN';
+}
+
+/* Init — lit le même localStorage que le dashboard */
+(function() {
+  const saved = localStorage.getItem('vpssecure_lang');
+  applyLang(saved === 'en' ? 'en' : 'fr');
+})();
+
 /* ── Clock ─────────────────────────────────────────────────────────── */
-function updateClock() { $id('clock').textContent = new Date().toLocaleTimeString('fr-FR'); }
+function updateClock() {
+  $id('clock').textContent = new Date().toLocaleTimeString(currentLang === 'fr' ? 'fr-FR' : 'en-US');
+}
 updateClock(); setInterval(updateClock, 1000);
 
 /* ── Constellation canvas ──────────────────────────────────────────── */
@@ -289,60 +377,47 @@ updateClock(); setInterval(updateClock, 1000);
   let particles = [];
   let mouse = { x: -9999, y: -9999 };
 
-  document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-
   function resize() {
     W = canvas.width  = window.innerWidth;
     H = canvas.height = window.innerHeight;
   }
   resize();
-  window.addEventListener('resize', () => { resize(); initParticles(); });
+  window.addEventListener('resize', resize);
 
-  function mkParticle() {
-    return {
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: Math.random() * 1.4 + 0.3,
-      vx: (Math.random() - 0.5) * 0.22,
-      vy: (Math.random() - 0.5) * 0.22,
-      alpha: Math.random() * 0.5 + 0.15,
+  document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      r: Math.random() * 1.5 + 0.5,
+      alpha: Math.random() * 0.4 + 0.1,
       pulse: Math.random() * Math.PI * 2,
-      pulseSpeed: 0.012 + Math.random() * 0.015,
-    };
+      pulseSpeed: 0.012 + Math.random() * 0.018,
+    });
   }
-
-  function initParticles() {
-    particles = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(mkParticle());
-  }
-  initParticles();
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    /* Mouse attraction */
     particles.forEach(p => {
-      const dx = mouse.x - p.x, dy = mouse.y - p.y;
+      /* Mouse repulsion */
+      const dx = p.x - mouse.x, dy = p.y - mouse.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist < 160) {
-        p.vx += dx / dist * 0.012;
-        p.vy += dy / dist * 0.012;
+      if (dist < 100) {
+        p.vx += (dx / dist) * 0.08;
+        p.vy += (dy / dist) * 0.08;
       }
-      /* Speed damping */
-      p.vx *= 0.994; p.vy *= 0.994;
-      /* Clamp speed */
-      const spd = Math.sqrt(p.vx*p.vx + p.vy*p.vy);
-      if (spd > 0.9) { p.vx = p.vx/spd * 0.9; p.vy = p.vy/spd * 0.9; }
-
+      p.vx *= 0.995; p.vy *= 0.995;
       p.x += p.vx; p.y += p.vy;
       p.pulse += p.pulseSpeed;
 
-      /* Wrap edges */
       if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
       if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
     });
 
-    /* Connections */
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const a = particles[i], b = particles[j];
@@ -359,7 +434,6 @@ updateClock(); setInterval(updateClock, 1000);
       }
     }
 
-    /* Particles */
     particles.forEach(p => {
       const pulse = 0.7 + 0.3 * Math.sin(p.pulse);
       ctx.beginPath();
@@ -381,7 +455,7 @@ updateClock(); setInterval(updateClock, 1000);
 
   let targetRX = 0, targetRY = 0, currentRX = 0, currentRY = 0;
   let rafId = null;
-  const MAX_ROT = 8; // degrees
+  const MAX_ROT = 8;
 
   document.addEventListener('mousemove', e => {
     const rect = card.getBoundingClientRect();
@@ -391,7 +465,6 @@ updateClock(); setInterval(updateClock, 1000);
     const dy = (e.clientY - cy) / (window.innerHeight / 2);
     targetRX = -dy * MAX_ROT;
     targetRY =  dx * MAX_ROT;
-    /* Move sheen to follow cursor */
     const px = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1);
     const py = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
     sheen.style.background = `radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,0.055) 0%, transparent 55%)`;
@@ -452,7 +525,7 @@ async function login() {
   if (!user || !pass) { $id('password').focus(); return; }
 
   btn.disabled = true;
-  txt.innerHTML = '<span class="spin" style="display:inline-block;margin-right:6px;">↻</span> Vérification…';
+  txt.innerHTML = `<span class="spin" style="display:inline-block;margin-right:6px;">↻</span> ${t('js_checking')}`;
   err.classList.remove('visible', 'shake');
 
   const token = 'Basic ' + btoa(`${user}:${pass}`);
@@ -461,13 +534,13 @@ async function login() {
     const res = await fetch('/api/health', { cache:'no-store', headers:{'Authorization':token} });
     if (res.ok) {
       sessionStorage.setItem('vps_auth', token);
-      txt.innerHTML = '✅ Accès autorisé';
+      txt.textContent = t('js_granted');
       btn.style.background = '#22c55e';
       btn.style.animation = 'none';
       $id('success-flash').classList.add('go');
       setTimeout(() => { window.location.href = '/'; }, 480);
     } else {
-      err.textContent = '⚠ Identifiants incorrects — réessaie.';
+      err.querySelector('[data-i18n="error_creds"]').textContent = t('error_creds');
       err.classList.add('visible');
       void err.offsetWidth;
       err.classList.add('shake');
@@ -476,12 +549,12 @@ async function login() {
       setTimeout(() => err.classList.remove('shake'), 420);
     }
   } catch {
-    err.textContent = '⚠ Serveur inaccessible — vérifie ta connexion.';
+    err.querySelector('[data-i18n="error_creds"]').textContent = t('error_server');
     err.classList.add('visible');
   } finally {
     if (!sessionStorage.getItem('vps_auth')) {
       btn.disabled = false;
-      txt.textContent = 'Accéder au dashboard';
+      txt.textContent = t('btn_login');
     }
   }
 }

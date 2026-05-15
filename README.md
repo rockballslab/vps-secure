@@ -11,7 +11,9 @@
 
 **:closed_lock_with_key: VPS-SECURE turns a bare VPS into a hardened fortress — honeypot, collaborative IPS, real-time dashboard, Telegram alerts — with a single command. No Linux expertise required.**
 
-> "If you're running n8n, OpenClaw, Hermes, or any autonomous agent on a VPS — run this script **before deploying anything.**"
+<p align="center">
+  <img src="./screenshots/header.png" alt="My Fortress with VPS-SECURE" width="80%">
+</p>
 
 **15 minutes. One command. Done.**
 

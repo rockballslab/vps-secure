@@ -17,7 +17,7 @@
   <img src="./screenshots/header.png" alt="My Fortress with VPS-SECURE" width="100%">
 </p>
 
-***15 minutes. One command. Done.***
+**15 minutes. One command. Done.**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \

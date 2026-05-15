@@ -68,9 +68,6 @@ I built **VPS-SECURE** out of necessity: I wanted a tool capable of turning any 
 | 14 | **Endlessh** (honeypot port 22) | SSH is on port 2222 — port 22 is free. Endlessh captures it and keeps bots connected for hours by sending an infinite SSH banner. They can't attack elsewhere during that time |
 | 15 | **AIDE** (integrity monitoring) | SHA512 hash of all system binaries at install time. Daily scan at 03:00 — any modification (replaced binary, backdoor, rootkit) triggers an alert in the Telegram report. After an OS update, manually re-run the baseline (command provided) |
 
-<p align="center">
-  <img src="./screenshots/comparatif2026.png" alt="Comparison 2026" width="100%">
-</p>
 
 <p align="center">
   <img src="./screenshots/sticker2-en.png" alt="My Fortress with VPS-SECURE" width="100%">

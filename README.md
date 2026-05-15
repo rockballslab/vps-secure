@@ -44,7 +44,7 @@ I built **VPS-SECURE** out of necessity: I needed a tool that could harden any b
 
 > This is the exact setup I run in production: n8n stacks, microservices, and autonomous AI agents. I don't ship tools I don't trust with my own infrastructure.
 
-This project took serious effort to get right. The depth of what it covers — and the quality of the result — is something I'm genuinely proud of. Built with focus, obsession for detail, and a lot of help from Claude and my AI agents on Dust.
+This project took serious effort to get right. The depth of what it covers — and the quality of the result — is something I'm genuinely proud of. Built with focus, obsession for detail, and a lot of help from Claude and my team of AI agents on Dust.
 
 ---
 

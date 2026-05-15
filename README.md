@@ -8,9 +8,6 @@
 
 ![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
-<p align="left">
-  <img src="./screenshots/lynis_audit.png" alt="Score Lynis" width="40%">
-</p>
 
 **:closed_lock_with_key: VPS-SECURE turns a bare VPS into a hardened fortress — honeypot, collaborative IPS, real-time dashboard, Telegram alerts — with a single command. No Linux expertise required.**
 
@@ -392,6 +389,10 @@ Automatic detection of all Docker containers via socket. Cards per service with 
 
 
 ## :shield: Security level
+
+<p align="left">
+  <img src="./screenshots/lynis_audit.png" alt="Score Lynis" width="40%">
+</p>
 
 A bare VPS is a target. VPS-Secure turns it into a hardened, monitored, production-ready server — with a level of polish rarely found in a public script.
 

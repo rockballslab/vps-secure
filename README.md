@@ -21,6 +21,9 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
   && sudo ./install-secure.sh
 ```
 
+> [!NOTE]
+> :key: **This script requires a license** — [Get it here](https://vps-secure.aiforceone.fr/offre-en.html) — **LAUNCH OFFER 47€** instead of 97€ with code **REDUC50**
+
 ---
 
 ## :shield: What makes this script different?

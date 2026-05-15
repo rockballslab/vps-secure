@@ -75,7 +75,7 @@ This project took serious effort to get right. The depth of what it covers — a
 | 15 | **AIDE** (integrity monitoring) | SHA512 hash of all system binaries at install time. Daily scan at 03:00 — any modification (replaced binary, backdoor, rootkit) triggers an alert in the Telegram report. After an OS update, manually re-run the baseline (command provided) |
 
 <p align="center">
-  <img src="./screenshots/sticker3-en.png" alt="Before-After" width="100%">
+  <img src="./screenshots/sticker2-en.png" alt="Before-After" width="100%">
 </p>
 <p align="center">
   <img src="./screenshots/sticker1-en.png" alt="My Fortress with VPS-SECURE" width="100%">

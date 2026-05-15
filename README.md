@@ -191,7 +191,7 @@ And **1 optional question** at the end: configure Telegram alerts.
 > [Open the Installation Guide](https://vps-secure.aiforceone.fr/guide-en.html)
 
 <p align="left">
-  <img src="./screenshots/install_helper.png" alt="Installation Guide" width="100%">
+  <img src="./screenshots/install_helper-en.png" alt="Installation Guide" width="100%">
 </p>
 
 ---

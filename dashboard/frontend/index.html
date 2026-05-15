@@ -1360,7 +1360,19 @@ function renderContainerCard(c, idx) {
     if (ports.length) portsHtml = `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">${ports.map(p=>`<span style="font-size:10px;font-weight:700;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:20px;background:rgba(0,255,136,0.07);color:var(--teal);border:1px solid rgba(0,255,136,0.14);">:${p}</span>`).join('')}</div>`;
   }
   const animStyle = hc.anim ? 'animation:pulseGreen 2s infinite;' : '';
-  return `<div class="card ${isRunning?'a-green':'a-red'} visible" data-image-clean="${c.image_clean}" style="position:relative;animation-delay:${idx*60}ms;">
+  const isProtected = _RESTART_BLACKLIST.some(k => c.name.toLowerCase().includes(k));
+  const restartBtnHtml = isProtected
+    ? `<button class="btn-restart" disabled title="Container protégé — restart désactivé"
+        style="margin-left:3px;width:24px;height:24px;border-radius:var(--r-xs);border:1px solid var(--card-border);background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.35;cursor:not-allowed;">
+        <i class="ph-fill ph-lock" style="font-size:12px;pointer-events:none;"></i>
+      </button>`
+    : `<button class="btn-restart" onclick="restartContainer('${esc(c.name)}')" title="Redémarrer ${esc(c.name)}"
+        style="margin-left:3px;width:24px;height:24px;border-radius:var(--r-xs);border:1px solid var(--card-border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s,border-color .15s,background .15s;flex-shrink:0;"
+        onmouseover="this.style.color='var(--teal)';this.style.borderColor='rgba(0,255,136,0.35)';this.style.background='rgba(0,255,136,0.07)'"
+        onmouseout="if(!this.dataset.loading){this.style.color='var(--muted)';this.style.borderColor='var(--card-border)';this.style.background='transparent'}">
+        <i class="ph ph-arrow-clockwise" style="font-size:12px;pointer-events:none;"></i>
+      </button>`;
+  return `<div class="card ${isRunning?'a-green':'a-red'} visible" data-image-clean="${c.image_clean}" data-container-name="${esc(c.name)}" style="position:relative;animation-delay:${idx*60}ms;">
     <div class="card-header">
       <div style="display:flex;align-items:center;gap:10px;min-width:0;">
         <div style="width:36px;height:36px;border-radius:var(--r-xs);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${meta.bg};border:1px solid ${meta.border};">
@@ -1374,6 +1386,7 @@ function renderContainerCard(c, idx) {
       <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
         <div style="width:7px;height:7px;border-radius:50%;background:${hc.dot};${animStyle}box-shadow:0 0 6px ${hc.dot}88;"></div>
         <span class="pill ${hc.pillCls}" style="font-size:9px;padding:2px 8px;">${hc.pillTxt}</span>
+        ${restartBtnHtml}
       </div>
     </div>
     ${cpuHtml}${memHtml}${portsHtml}
@@ -1418,6 +1431,84 @@ async function fetchContainerUpdates() {
 }
     
 
+
+/* ── Container Restart ────────────────────────────────────────────────── */
+const _restartCooldown = {};
+const _RESTART_BLACKLIST = ['crowdsec'];
+
+window.restartContainer = async function(name) {
+  // Cooldown 30s par container
+  const now = Date.now();
+  if (_restartCooldown[name] && now - _restartCooldown[name] < 30000) return;
+
+  const card = document.querySelector('[data-container-name="' + CSS.escape(name) + '"]');
+  const btn  = card ? card.querySelector('.btn-restart') : null;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.dataset.loading = '1';
+    btn.style.color = 'var(--gold)';
+    btn.style.borderColor = 'rgba(240,180,41,0.35)';
+    btn.style.background  = 'rgba(240,180,41,0.07)';
+    btn.innerHTML = '<i class="ph ph-arrows-clockwise spinning" style="font-size:12px;pointer-events:none;"></i>';
+  }
+
+  _restartCooldown[name] = now;
+
+  try {
+    const res = await fetch('/api/containers/restart', {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Authorization': AUTH, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const d = await res.json();
+
+    if (res.ok && d.status === 'ok') {
+      if (btn) {
+        btn.style.color = '#22c55e';
+        btn.style.borderColor = 'rgba(34,197,94,0.35)';
+        btn.style.background  = 'rgba(34,197,94,0.07)';
+        btn.innerHTML = '<i class="ph-fill ph-check-circle" style="font-size:12px;pointer-events:none;"></i>';
+      }
+      setTimeout(() => fetchContainers(), 2500);
+    } else if (res.status === 403) {
+      // Container protégé — verrouiller définitivement le bouton
+      if (btn) {
+        btn.disabled = true;
+        btn.title = 'Container protégé — restart désactivé';
+        btn.style.color = 'var(--muted)';
+        btn.style.borderColor = 'var(--card-border)';
+        btn.style.background  = 'transparent';
+        btn.style.opacity = '0.35';
+        btn.style.cursor = 'not-allowed';
+        btn.innerHTML = '<i class="ph-fill ph-lock" style="font-size:12px;pointer-events:none;"></i>';
+      }
+      delete _restartCooldown[name];
+    } else {
+      _restartBtnError(btn);
+      delete _restartCooldown[name];
+    }
+  } catch(e) {
+    _restartBtnError(btn);
+    delete _restartCooldown[name];
+  }
+};
+function _restartBtnError(btn) {
+  if (!btn) return;
+  btn.disabled = false;
+  delete btn.dataset.loading;
+  btn.style.color = 'var(--rose)';
+  btn.style.borderColor = 'rgba(255,77,109,0.35)';
+  btn.style.background  = 'rgba(255,77,109,0.07)';
+  btn.innerHTML = '<i class="ph-fill ph-warning" style="font-size:12px;pointer-events:none;"></i>';
+  setTimeout(() => {
+    btn.style.color = 'var(--muted)';
+    btn.style.borderColor = 'var(--card-border)';
+    btn.style.background  = 'transparent';
+    btn.innerHTML = '<i class="ph ph-arrow-clockwise" style="font-size:12px;pointer-events:none;"></i>';
+  }, 3000);
+}
 
 /* ── Journal ──────────────────────────────────────────────────────────── */
 (function() {

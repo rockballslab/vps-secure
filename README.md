@@ -25,6 +25,7 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
   && sudo ./install-secure.sh
 ```
 
+
 ---
 
 ## :shield: What makes this script different?

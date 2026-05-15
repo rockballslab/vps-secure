@@ -129,6 +129,20 @@
     .btn-theme{width:33px;height:33px;border:1px solid var(--card-border);border-radius:var(--r-xs);background:transparent;color:var(--teal);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s,background .15s}
     .btn-theme:hover{transform:scale(1.12);background:rgba(0,255,136,0.07);box-shadow:0 0 12px var(--glow)}
 
+    /* ── Lang toggle ────────────────────────────────────────────────────── */
+    .btn-lang{
+      height:33px;padding:0 10px;
+      border:1px solid var(--card-border);border-radius:var(--r-xs);
+      background:transparent;color:var(--teal);
+      cursor:pointer;font-size:11px;font-weight:700;
+      font-family:'JetBrains Mono',monospace;
+      display:flex;align-items:center;gap:4px;
+      letter-spacing:.5px;flex-shrink:0;
+      transition:transform .15s,box-shadow .15s,background .15s;
+    }
+    .btn-lang:hover{transform:scale(1.08);background:rgba(0,255,136,0.07);box-shadow:0 0 10px var(--glow)}
+    .btn-lang:active{transform:scale(.92)}
+
     /* nav */
     .header-nav{display:flex;align-items:center;justify-content:center;gap:30px;width:100%;padding:8px 2px 14px}
     .header-nav-link{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--muted);cursor:pointer;border:none;background:none;padding:2px 0 6px;position:relative;letter-spacing:.8px;text-transform:uppercase;transition:color .2s}
@@ -425,14 +439,14 @@
   <div class="header">
     <div class="header-left">
       <div style="display:flex;flex-direction:column;gap:3px;">
-        <div class="brand-tag">▲ Security Center</div>
+        <div class="brand-tag" data-i18n="brand_tag">▲ Security Center</div>
         <div class="brand-name">[ <span>VPS-SECURE</span> ]</div>
       </div>
     </div>
     <div class="header-center">
       <div class="badge" id="badge-ip">
         <i class="ph-fill ph-shield" style="font-size:13px;color:var(--teal);"></i>
-        <span style="font-size:9px;font-weight:600;color:var(--muted);font-family:'Orbitron',sans-serif;letter-spacing:.6px;">IP SERVEUR</span>
+        <span data-i18n="ip_label" style="font-size:9px;font-weight:600;color:var(--muted);font-family:'Orbitron',sans-serif;letter-spacing:.6px;">IP SERVEUR</span>
         <span id="val-ip">—</span>
         <span style="width:1px;background:var(--card-border);align-self:stretch;margin:0 4px;"></span>
         <div class="dot" id="status-dot"></div>
@@ -440,32 +454,40 @@
         <span class="countdown" id="countdown">30s</span>
       </div>
       <nav class="header-nav">
-        <button class="header-nav-link active-tab" data-tab="cockpit" onclick="setTab('cockpit')"><i class="ph-fill ph-gauge"></i> Cockpit</button>
-        <button class="header-nav-link" data-tab="journal" onclick="setTab('journal')"><i class="ph-fill ph-book-open-text"></i> Journal</button>
-        <button class="header-nav-link" data-tab="containers" onclick="setTab('containers')"><i class="ph-fill ph-package"></i> Containers</button>
-        <button class="header-nav-link header-nav-link-soon" data-tab="maj" onclick="setTab('maj')"><i class="ph-fill ph-arrow-circle-up"></i> Mise à jour</button>
+        <button class="header-nav-link active-tab" data-tab="cockpit" onclick="setTab('cockpit')"><i class="ph-fill ph-gauge"></i><span data-i18n="nav_cockpit"> Cockpit</span></button>
+        <button class="header-nav-link" data-tab="journal" onclick="setTab('journal')"><i class="ph-fill ph-book-open-text"></i><span data-i18n="nav_journal"> Journal</span></button>
+        <button class="header-nav-link" data-tab="containers" onclick="setTab('containers')"><i class="ph-fill ph-package"></i><span data-i18n="nav_containers"> Containers</span></button>
+        <button class="header-nav-link header-nav-link-soon" data-tab="maj" onclick="setTab('maj')"><i class="ph-fill ph-arrow-circle-up"></i><span data-i18n="nav_updates"> Mise à jour</span></button>
         <span class="header-nav-sep"></span>
         <span class="header-nav-version">v2.7.3</span>
       </nav>
     </div>
     <div class="header-right">
-      <button class="btn-icon btn-icon-muted" id="btn-refresh" onclick="refresh()" title="Actualiser"><i id="refresh-icon" class="ph ph-arrows-clockwise"></i></button>
-      <button class="btn-theme" onclick="openHelper()" title="Commandes utiles"><i class="ph ph-terminal"></i></button>
-      <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion"><i class="ph ph-power"></i></button>
-      <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Thème"><i id="theme-icon" class="ph ph-sun"></i></button>
+      <button class="btn-icon btn-icon-muted" id="btn-refresh" onclick="refresh()" title="Actualiser" data-i18n-attr="title:btn_refresh_title"><i id="refresh-icon" class="ph ph-arrows-clockwise"></i></button>
+      <button class="btn-theme" onclick="openHelper()" title="Commandes utiles" data-i18n-attr="title:btn_commands_title"><i class="ph ph-terminal"></i></button>
+      <button class="btn-icon btn-icon-muted" onclick="logout()" title="Déconnexion" data-i18n-attr="title:btn_logout_title"><i class="ph ph-power"></i></button>
+      <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Thème" data-i18n-attr="title:btn_theme_title"><i id="theme-icon" class="ph ph-sun"></i></button>
+
+      <!-- Séparateur -->
+      <div style="width:1px;height:20px;background:var(--card-border);margin:0 4px;"></div>
+
+      <!-- Lang toggle -->
+      <button id="btn-lang-toggle" class="btn-lang"
+              onclick="applyLang(currentLang === 'fr' ? 'en' : 'fr')"
+              title="Switch language">🇫🇷 FR</button>
 
       <!-- Séparateur -->
       <div style="width:1px;height:20px;background:var(--card-border);margin:0 4px;"></div>
 
       <!-- Toggles Telegram -->
-      <div id="tg-not-configured" style="display:none;"><span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">Telegram non configuré</span></div>
+      <div id="tg-not-configured" style="display:none;"><span data-i18n="tg_not_configured" style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">Telegram non configuré</span></div>
       <div id="tg-toggles" style="display:flex;align-items:center;gap:12px;">
         <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--muted);">Rapport</span>
+          <span data-i18n="tg_report" style="font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--muted);">Rapport</span>
           <label class="tg-toggle"><input type="checkbox" id="tg-report" onchange="toggleTelegram('report',this.checked)"><span class="tg-slider"></span></label>
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--muted);">SSH</span>
+          <span data-i18n="tg_ssh" style="font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--muted);">SSH</span>
           <label class="tg-toggle"><input type="checkbox" id="tg-ssh" onchange="toggleTelegram('ssh',this.checked)"><span class="tg-slider"></span></label>
         </div>
       </div>
@@ -493,7 +515,7 @@
       </div>
       <div class="sdiv"></div>
       <div style="flex:0 0 380px;margin-left:auto;">
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;"><i class="ph ph-list-bullets" style="font-size:12px;margin-right:5px;"></i>Événements récents</div>
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;"><i class="ph ph-list-bullets" style="font-size:12px;margin-right:5px;"></i><span data-i18n="score_recent_events">Événements récents</span></div>
         <div id="timeline-inline"></div>
       </div>
       <div class="sdiv"></div>
@@ -501,23 +523,23 @@
       <div class="threat-pulse-wrap">
         <div>
           <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-family:'Orbitron',sans-serif;">
-            <i class="ph-fill ph-waveform" style="font-size:11px;margin-right:4px;"></i>Activité hostile
+            <i class="ph-fill ph-waveform" style="font-size:11px;margin-right:4px;"></i><span data-i18n="threat_title">Activité hostile</span>
           </div>
-          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;opacity:.6;">Δ SSH traps + UFW · /30s</div>
+          <div data-i18n="threat_subtitle" style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;opacity:.6;">Δ SSH traps + UFW · /30s</div>
         </div>
         <div class="threat-canvas-box">
           <canvas id="threat-scope" width="155" height="46"></canvas>
           <div class="threat-scanline"></div>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;position:relative;">
-          <span id="threat-label" style="font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--muted);">En attente…</span>
+          <span id="threat-label" data-i18n="threat_waiting" style="font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--muted);">En attente…</span>
           <span id="threat-delta" style="font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:var(--muted);cursor:default;"
                 onmouseenter="ThreatScope.showTip()" onmouseleave="ThreatScope.hideTip()"></span>
           <div id="threat-tooltip">
-            <div class="tp-row"><span class="tp-key">🪲 SSH traps</span><span class="tp-val" id="tp-ssh">—</span></div>
-            <div class="tp-row"><span class="tp-key">🔥 UFW blocks</span><span class="tp-val" id="tp-ufw">—</span></div>
+            <div class="tp-row"><span class="tp-key" data-i18n="tp_ssh_traps">🪲 SSH traps</span><span class="tp-val" id="tp-ssh">—</span></div>
+            <div class="tp-row"><span class="tp-key" data-i18n="tp_ufw_blocks">🔥 UFW blocks</span><span class="tp-val" id="tp-ufw">—</span></div>
             <div class="tp-sep"></div>
-            <div class="tp-row"><span class="tp-key">⚡ Total</span><span class="tp-val" id="tp-total">—</span></div>
+            <div class="tp-row"><span class="tp-key" data-i18n="tp_total">⚡ Total</span><span class="tp-val" id="tp-total">—</span></div>
           </div>
         </div>
       </div>
@@ -526,7 +548,7 @@
       <div class="threat-pulse-wrap">
         <div>
           <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-family:'Orbitron',sans-serif;">
-            <i class="ph-fill ph-arrows-down-up" style="font-size:11px;margin-right:4px;"></i>Réseau I/O
+            <i class="ph-fill ph-arrows-down-up" style="font-size:11px;margin-right:4px;"></i><span data-i18n="net_io_title">Réseau I/O</span>
           </div>
           <div style="display:flex;gap:16px;margin-top:5px;">
             <div>
@@ -552,33 +574,32 @@
       <div class="card" id="card-globe">
         <div class="globe-scanlines"></div>
         <div class="globe-vignette"></div>
-        <div id="globe-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:.5px;z-index:5;">Chargement de la carte…</div>
+        <div id="globe-loading" data-i18n="globe_loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:.5px;z-index:5;">Chargement de la carte…</div>
         <div id="globe-mount" style="width:100%;height:100%;border-radius:var(--r);overflow:hidden;"></div>
         <div style="position:absolute;bottom:10px;left:12px;font-size:9px;font-family:'DM Mono',monospace;color:rgba(0,255,136,0.6);font-weight:700;letter-spacing:.5px;z-index:12;" id="globe-counter"></div>
         <!-- Top 3 pays attaquants — overlay geomap -->
         <div id="top-countries-overlay" style="position:absolute;top:10px;left:12px;z-index:13;background:rgba(0,12,8,0.80);border:1px solid rgba(0,255,136,0.18);border-radius:6px;padding:7px 10px;display:flex;flex-direction:column;gap:5px;backdrop-filter:blur(4px);">
-          <div style="font-size:8px;font-weight:700;letter-spacing:1px;color:rgba(0,255,136,0.5);font-family:'Orbitron',sans-serif;margin-bottom:2px;">TOP ATTAQUANTS</div>
+          <div data-i18n="top_attackers" style="font-size:8px;font-weight:700;letter-spacing:1px;color:rgba(0,255,136,0.5);font-family:'Orbitron',sans-serif;margin-bottom:2px;">TOP ATTAQUANTS</div>
           <div id="top-countries-rows"></div>
         </div>
       </div>
 
       <div class="card" id="card-endlessh">
         <div class="card-header">
-          <div><div class="card-label">Endlessh</div><div class="card-desc">Piège les bots SSH port 22</div></div>
+          <div><div class="card-label">Endlessh</div><div class="card-desc" data-i18n="endlessh_desc">Piège les bots SSH port 22</div></div>
           <div class="icon-chip" id="icon-endlessh"><i class="ph-fill ph-bug-beetle"></i></div>
         </div>
-        <!-- Avant card-value, remplace tout par ça : -->
         <div style="height:30px;"></div>
         <div class="card-value" id="val-endlessh-total"><span class="skel"></span></div>
         <div class="card-sub" style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;">
-          <span>bots piégés <b>total</b></span>
-          <span id="sub-endlessh" style="font-size:10px;color:var(--muted);">Durée moy. : —</span>
+          <span data-i18n-html="endlessh_sub">bots piégés <b>total</b></span>
+          <span id="sub-endlessh" data-i18n="endlessh_avg" style="font-size:10px;color:var(--muted);">Durée moy. : —</span>
         </div>
       </div>
 
       <div class="card" id="card-crowdsec-merged">
         <div class="card-header">
-          <div><div class="card-label">CrowdSec</div><div class="card-desc">IPs bloquées · bans en temps réel</div></div>
+          <div><div class="card-label">CrowdSec</div><div class="card-desc" data-i18n="crowdsec_desc">IPs bloquées · bans en temps réel</div></div>
           <div class="icon-chip"><i class="ph-fill ph-shield-check"></i></div>
         </div>
         <div class="bouncer-status" style="margin-bottom:10px;">
@@ -588,14 +609,14 @@
         <div id="sub-bouncer" style="display:none;font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace;"></div>
         <div class="card-value" id="val-crowdsec"><span class="skel"></span></div>
         <div class="card-sub" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-          <span>IP bannies <b>actives</b></span>
-          <span id="sub-crowdsec" style="font-size:10px;color:var(--muted);">Alertes 24h : —</span>
+          <span data-i18n-html="crowdsec_sub">IP bannies <b>actives</b></span>
+          <span id="sub-crowdsec" data-i18n="crowdsec_alerts" style="font-size:10px;color:var(--muted);">Alertes 24h : —</span>
         </div>
       </div>
 
       <div class="card a-green" id="card-system">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-          <span class="card-label">Système</span>
+          <span class="card-label" data-i18n="sys_label">Système</span>
           <span style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;" id="sys-uptime-inline"></span>
         </div>
         <div style="display:flex;justify-content:space-around;align-items:center;gap:4px;margin-top:18px;">
@@ -634,23 +655,23 @@
     <div class="grid4">
       <div class="card" id="card-ufw">
         <div class="card-header">
-          <div><div class="card-label">UFW Firewall</div><div class="card-desc">Pare-feu · ports autorisés</div></div>
+          <div><div class="card-label">UFW Firewall</div><div class="card-desc" data-i18n="ufw_desc">Pare-feu · ports autorisés</div></div>
           <div class="icon-chip"><i class="ph-fill ph-fire"></i></div>
         </div>
         <div class="card-value" id="val-ufw"><span class="skel"></span></div>
-        <div class="card-sub">blocages <b>totaux depuis install</b></div>
+        <div class="card-sub" data-i18n-html="ufw_sub">blocages <b>totaux depuis install</b></div>
       </div>
       <div class="card" id="card-audit">
         <div class="card-header">
-          <div><div class="card-label">Auditd</div><div class="card-desc">Accès root aujourd'hui</div></div>
+          <div><div class="card-label">Auditd</div><div class="card-desc" data-i18n="auditd_desc">Accès root aujourd'hui</div></div>
           <div class="icon-chip"><i class="ph-fill ph-clipboard-text"></i></div>
         </div>
         <div class="card-value" id="val-audit"><span class="skel"></span></div>
-        <div class="card-sub" id="sub-audit-label">commandes sudo aujourd'hui</div>
+        <div class="card-sub" id="sub-audit-label" data-i18n="auditd_sub">commandes sudo aujourd'hui</div>
       </div>
       <div class="card" id="card-rkhunter">
         <div class="card-header">
-          <div><div class="card-label">rkhunter</div><div class="card-desc">Intrus &amp; logiciels malveillants</div></div>
+          <div><div class="card-label">rkhunter</div><div class="card-desc" data-i18n="rkhunter_desc">Intrus &amp; logiciels malveillants</div></div>
           <div class="icon-chip"><i class="ph-fill ph-magnifying-glass"></i></div>
         </div>
         <div class="status-row">
@@ -661,7 +682,7 @@
       </div>
       <div class="card" id="card-aide">
         <div class="card-header">
-          <div><div class="card-label">AIDE File Integrity</div><div class="card-desc">Fichiers système · SHA512</div></div>
+          <div><div class="card-label">AIDE File Integrity</div><div class="card-desc" data-i18n="aide_desc">Fichiers système · SHA512</div></div>
           <div class="icon-chip" id="icon-aide"><i class="ph-fill ph-lock-key"></i></div>
         </div>
         <div class="status-row">
@@ -670,7 +691,7 @@
         </div>
         <div class="card-sub" style="margin-top:12px;" id="sub-aide">Dernier scan : —</div>
         <div id="aide-rebase-wrap" style="display:none;margin-top:14px;">
-          <button id="btn-aide-rebase" onclick="requestAideRebase()">⚠ Mettre à jour la baseline</button>
+          <button id="btn-aide-rebase" data-i18n="aide_rebase_btn" onclick="requestAideRebase()">⚠ Mettre à jour la baseline</button>
           <div id="aide-diff-box" style="background:rgba(0,0,0,0.4);color:#e2e8f0;font-size:10px;font-family:'DM Mono',monospace;padding:10px;border-radius:6px;max-height:180px;overflow-y:auto;margin-top:8px;border:1px solid rgba(0,255,136,0.1);display:none;"><span id="aide-diff-content">Chargement…</span></div>
           <div id="aide-rebase-feedback" style="display:none;font-size:11px;color:var(--muted);margin-top:8px;text-align:center;font-family:'JetBrains Mono',monospace;"></div>
         </div>
@@ -681,26 +702,26 @@
     <div class="grid-last">
       <div class="card" id="card-updates">
         <div class="card-header" style="margin-bottom:6px;">
-          <div><div class="card-label">Mises à jour</div><div class="card-desc">Correctifs disponibles · sécurité</div></div>
+          <div><div class="card-label" data-i18n="updates_label">Mises à jour</div><div class="card-desc" data-i18n="updates_desc">Correctifs disponibles · sécurité</div></div>
           <div class="icon-chip"><i class="ph-fill ph-package"></i></div>
         </div>
         <div class="card-value" id="val-updates"><span class="skel"></span></div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-          <div class="card-sub" id="sub-updates">paquets <b>disponibles</b></div>
+          <div class="card-sub" id="sub-updates" data-i18n-html="updates_sub">paquets <b>disponibles</b></div>
           <div class="card-sub" id="sub-updates-date" style="font-size:10px;opacity:.6;"></div>
         </div>
       </div>
       <div class="card" id="card-connections">
         <div class="card-header" style="margin-bottom:6px;">
-          <div><div class="card-label">Connexions TCP</div><div class="card-desc">Flux actifs · sockets TCP</div></div>
+          <div><div class="card-label" data-i18n="connections_label">Connexions TCP</div><div class="card-desc" data-i18n="connections_desc">Flux actifs · sockets TCP</div></div>
           <div class="icon-chip"><i class="ph-fill ph-arrows-left-right"></i></div>
         </div>
         <div class="card-value" id="val-connections"><span class="skel"></span></div>
-        <div class="card-sub">connexions <b>établies</b></div>
+        <div class="card-sub" data-i18n-html="connections_sub">connexions <b>établies</b></div>
       </div>
       <div class="card" id="card-ports">
         <div class="card-header">
-          <div><div class="card-label">Ports ouverts</div><div class="card-desc">Ports TCP en écoute</div></div>
+          <div><div class="card-label" data-i18n="ports_label">Ports ouverts</div><div class="card-desc" data-i18n="ports_desc">Ports TCP en écoute</div></div>
           <div class="icon-chip"><i class="ph-fill ph-plugs-connected"></i></div>
         </div>
         <div class="ports-list" id="ports-list"><div class="tl-empty">Chargement…</div></div>
@@ -715,21 +736,21 @@
       <div class="journal-header-row">
         <div style="display:flex;align-items:center;gap:10px;">
           <div class="icon-chip"><i class="ph-fill ph-book-open-text"></i></div>
-          <div><div class="card-label">Journal de Sécurité</div><div class="card-desc" id="journal-subtitle">24 dernières heures</div></div>
+          <div><div class="card-label" data-i18n="journal_label">Journal de Sécurité</div><div class="card-desc" id="journal-subtitle">24 dernières heures</div></div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <div style="display:flex;gap:4px;">
-            <button class="journal-btn-ghost journal-period-btn active-period" data-period="1d" onclick="journalSetPeriod('1d')">1j</button>
-            <button class="journal-btn-ghost journal-period-btn" data-period="7d" onclick="journalSetPeriod('7d')">7j</button>
-            <button class="journal-btn-ghost journal-period-btn" data-period="30d" onclick="journalSetPeriod('30d')">30j</button>
+            <button class="journal-btn-ghost journal-period-btn active-period" data-period="1d" data-i18n="period_1d" onclick="journalSetPeriod('1d')">1j</button>
+            <button class="journal-btn-ghost journal-period-btn" data-period="7d" data-i18n="period_7d" onclick="journalSetPeriod('7d')">7j</button>
+            <button class="journal-btn-ghost journal-period-btn" data-period="30d" data-i18n="period_30d" onclick="journalSetPeriod('30d')">30j</button>
           </div>
-          <button class="journal-btn-ghost" id="btn-journal-victories" onclick="journalToggleVictories()">✅ Afficher les victoires</button>
+          <button class="journal-btn-ghost" id="btn-journal-victories" data-i18n="journal_show_victories" onclick="journalToggleVictories()">✅ Afficher les victoires</button>
         </div>
       </div>
-      <div id="journal-empty-state" class="journal-empty-state" style="display:none;">✅ Aucune anomalie détectée — tout est nominal</div>
+      <div id="journal-empty-state" class="journal-empty-state" data-i18n="journal_empty" style="display:none;">✅ Aucune anomalie détectée — tout est nominal</div>
       <div class="journal-table-scroll" id="journal-table-wrap">
         <table class="journal-tbl">
-          <thead><tr><th>Service</th><th>Détail</th><th style="min-width:130px;">IP Source</th><th>Date / Heure</th><th>Statut</th></tr></thead>
+          <thead><tr><th data-i18n="th_service">Service</th><th data-i18n="th_detail">Détail</th><th data-i18n="th_ip" style="min-width:130px;">IP Source</th><th data-i18n="th_datetime">Date / Heure</th><th data-i18n="th_status">Statut</th></tr></thead>
           <tbody id="journal-tbody"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted);">Chargement…</td></tr></tbody>
         </table>
       </div>
@@ -742,9 +763,9 @@
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div class="icon-chip"><i class="ph-fill ph-package"></i></div>
-          <div><div class="card-label">Containers Docker</div><div class="card-desc" id="containers-subtitle">Chargement…</div></div>
+          <div><div class="card-label" data-i18n="containers_label">Containers Docker</div><div class="card-desc" id="containers-subtitle">Chargement…</div></div>
         </div>
-        <button class="journal-btn-ghost" onclick="fetchContainers()"><i class="ph ph-arrows-clockwise"></i> Actualiser</button>
+        <button class="journal-btn-ghost" onclick="fetchContainers()"><i class="ph ph-arrows-clockwise"></i><span data-i18n="btn_actualiser"> Actualiser</span></button>
       </div>
     </div>
     <div id="containers-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;">
@@ -756,9 +777,9 @@
   <div id="tab-maj" class="tab-section" style="display:none;">
     <div class="card visible tab-placeholder" style="opacity:1;">
       <div class="tab-placeholder-icon">⬆️</div>
-      <div class="tab-placeholder-title">Mise à jour Dashboard</div>
-      <div class="tab-placeholder-sub">Vérification de la dernière version GitHub<br>+ déploiement en 1 clic avec backup automatique</div>
-      <div class="tab-placeholder-badge">Sprint 3 — en développement</div>
+      <div class="tab-placeholder-title" data-i18n="maj_title">Mise à jour Dashboard</div>
+      <div class="tab-placeholder-sub" data-i18n-html="maj_sub">Vérification de la dernière version GitHub<br>+ déploiement en 1 clic avec backup automatique</div>
+      <div class="tab-placeholder-badge" data-i18n="maj_badge">Sprint 3 — en développement</div>
     </div>
   </div>
 
@@ -766,8 +787,8 @@
   <div class="footer-bar">
     <div class="footer-badge">
       <i class="ph ph-clock" style="font-size:12px;"></i>
-      Dernière màj : <b id="last-update">—</b>
-      &nbsp;·&nbsp; Auto-refresh 30s &nbsp;·&nbsp; VPS-SECURE 2026 &nbsp;·&nbsp; v2.7.3
+      <span data-i18n="footer_last_update">Dernière màj :</span> <b id="last-update">—</b>
+      &nbsp;·&nbsp; <span data-i18n-html="footer_meta">Auto-refresh 30s &nbsp;·&nbsp; VPS-SECURE 2026 &nbsp;·&nbsp; v2.7.3</span>
     </div>
   </div>
 
@@ -780,6 +801,369 @@ const $ = id => document.getElementById(id);
 const fmt = n => (n == null ? '—' : Number(n).toLocaleString('fr-FR'));
 const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const isDark = () => document.body.classList.contains('dark');
+
+/* ════════════════════════════════════════════════════════════════════════
+   i18n — doit être en tête de script (utilisé par les IIFEs)
+   ════════════════════════════════════════════════════════════════════════ */
+const TRANSLATIONS = {
+  fr: {
+    /* ── Header ── */
+    brand_tag:            '▲ Security Center',
+    ip_label:             'IP SERVEUR',
+    nav_cockpit:          ' Cockpit',
+    nav_journal:          ' Journal',
+    nav_containers:       ' Containers',
+    nav_updates:          ' Mise à jour',
+    btn_refresh_title:    'Actualiser',
+    btn_commands_title:   'Commandes utiles',
+    btn_logout_title:     'Déconnexion',
+    btn_theme_title:      'Thème',
+    tg_not_configured:    'Telegram non configuré',
+    tg_report:            'Rapport',
+    tg_ssh:               'SSH',
+    /* ── Score bar ── */
+    score_recent_events:  'Événements récents',
+    threat_title:         'Activité hostile',
+    threat_subtitle:      'Δ SSH traps + UFW · /30s',
+    threat_waiting:       'En attente…',
+    net_io_title:         'Réseau I/O',
+    globe_loading:        'Chargement de la carte…',
+    top_attackers:        'TOP ATTAQUANTS',
+    tp_ssh_traps:         '🪲 SSH traps',
+    tp_ufw_blocks:        '🔥 UFW blocks',
+    tp_total:             '⚡ Total',
+    /* ── Score levels ── */
+    score_level_excellent: 'Forteresse',
+    score_level_good:      'Bon état',
+    score_level_warning:   'À surveiller',
+    score_level_critical:  'Action requise',
+    /* ── Cards Row 1 ── */
+    endlessh_desc:        'Piège les bots SSH port 22',
+    endlessh_sub:         'bots piégés <b>total</b>',
+    endlessh_avg:         'Durée moy. : —',
+    crowdsec_desc:        'IPs bloquées · bans en temps réel',
+    crowdsec_sub:         'IP bannies <b>actives</b>',
+    crowdsec_alerts:      'Alertes 24h : —',
+    sys_label:            'Système',
+    /* ── Cards Row 2 ── */
+    ufw_desc:             'Pare-feu · ports autorisés',
+    ufw_sub:              'blocages <b>totaux depuis install</b>',
+    auditd_desc:          "Accès root aujourd'hui",
+    auditd_sub:           "commandes sudo aujourd'hui",
+    rkhunter_desc:        'Intrus &amp; logiciels malveillants',
+    aide_desc:            'Fichiers système · SHA512',
+    aide_rebase_btn:      '⚠ Mettre à jour la baseline',
+    /* ── Cards Row 3 ── */
+    updates_label:        'Mises à jour',
+    updates_desc:         'Correctifs disponibles · sécurité',
+    updates_sub:          'paquets <b>disponibles</b>',
+    connections_label:    'Connexions TCP',
+    connections_desc:     'Flux actifs · sockets TCP',
+    connections_sub:      'connexions <b>établies</b>',
+    ports_label:          'Ports ouverts',
+    ports_desc:           'Ports TCP en écoute',
+    /* ── Journal ── */
+    journal_label:        'Journal de Sécurité',
+    journal_show_victories: '✅ Afficher les victoires',
+    journal_empty:        '✅ Aucune anomalie détectée — tout est nominal',
+    period_1d:            '1j',
+    period_7d:            '7j',
+    period_30d:           '30j',
+    th_service:           'Service',
+    th_detail:            'Détail',
+    th_ip:                'IP Source',
+    th_datetime:          'Date / Heure',
+    th_status:            'Statut',
+    /* ── Containers ── */
+    containers_label:     'Containers Docker',
+    btn_actualiser:       ' Actualiser',
+    /* ── MAJ ── */
+    maj_title:            'Mise à jour Dashboard',
+    maj_sub:              'Vérification de la dernière version GitHub<br>+ déploiement en 1 clic avec backup automatique',
+    maj_badge:            'Sprint 3 — en développement',
+    /* ── Footer ── */
+    footer_last_update:   'Dernière màj :',
+    footer_meta:          'Auto-refresh 30s &nbsp;·&nbsp; VPS-SECURE 2026 &nbsp;·&nbsp; v2.7.3',
+    /* ── Helper ── */
+    helper_title:         'COMMANDES',
+    hint_connect:         'Connexion',
+    hint_add_key:         'Ajouter clé',
+    hint_banned_ips:      'IP bannies',
+    hint_recent_alerts:   'Alertes récentes',
+    hint_update:          'Mise à jour',
+    hint_metrics:         'Métriques',
+    hint_baseline_update: 'Màj baseline',
+    hint_scan:            'Scanner',
+    hint_check_config:    'Vérifier config',
+    hint_scan_rk:         'Scan',
+    hint_update_sigs:     'Màj signatures',
+    hint_update_props:    'Màj propriétés',
+    hint_status:          'État',
+    hint_open_port:       'Ouvrir port',
+    hint_block_port:      'Bloquer port',
+    hint_reload:          'Recharger',
+    hint_containers_active: 'Containers actifs',
+    hint_logs_endlessh:   'Logs Endlessh',
+    hint_logs_crowdsec:   'Logs CrowdSec',
+    hint_resources:       'Ressources',
+    hint_live_logs:       'Logs temps réel',
+    hint_auths_today:     "Auths aujourd'hui",
+    hint_escalations:     'Escalades',
+    hint_logs_aide:       'Logs AIDE',
+    hint_ssh_dashboard:   'Dashboard SSH',
+    hint_verify_install:  'Vérifier install',
+    hint_cpu_ram:         'CPU / RAM',
+    hint_disk:            'Disque',
+    hint_memory:          'Mémoire',
+    /* ── Modal AIDE ── */
+    modal_aide_title:     'Mettre à jour la baseline AIDE',
+    modal_aide_irreversible: 'Action irréversible',
+    modal_cancel:         'Annuler',
+    modal_confirm_rebase: '✅ Confirmer le rebase',
+    /* ── JS dynamique ── */
+    js_connected:         'Connecté',
+    js_api_error:         'Erreur API',
+    js_no_issues:         '✅ Aucun problème détecté',
+    js_bouncer_active:    '✅ <b>Bouncer actif</b>',
+    js_bouncer_inactive:  '❌ Inactif',
+    js_crowdsec_not_banning: '⚠️ CrowdSec ne bannit PAS',
+    js_unknown:           '❓ Inconnu',
+    js_clean:             '✅ <b>Propre</b>',
+    js_alert_warn:        '⚠️ Alerte',
+    js_rebase_required:   '🔄 Rebase requis',
+    js_mods_detected:     '🚨 Modifications !',
+    js_pill_alert:        'ALERTE',
+    js_pill_rebase:       'Rebase requis',
+    js_up_to_date:        '✅ Serveur à jour',
+    js_last_scan:         'Dernier scan :',
+    js_last_check:        'Dernier check :',
+    js_no_ports:          'Aucun port détecté',
+    js_port_internal:     'interne localhost',
+    js_no_events:         'Aucun événement récent',
+    js_threat_calm:       'Calme',
+    js_threat_activity:   'Activité',
+    js_globe_unavailable: 'Globe indisponible',
+    js_globe_ips_trapped: 'IPs piégées',
+    js_globe_your_server: 'Ton serveur',
+    js_no_containers:     'Aucun container détecté',
+    js_no_containers_short: 'Aucun container',
+    js_containers_error:  'Erreur chargement containers',
+    js_error:             'Erreur',
+    js_running:           'Actif',
+    js_starting:          'Démarrage',
+    js_stopped:           'Arrêté',
+    js_paused:            'Pausé',
+    js_container_active:  'actif',
+    js_container_stopped: 'arrêté',
+    js_period_1d_label:   '24 dernières heures',
+    js_period_7d_label:   '7 derniers jours',
+    js_period_30d_label:  '30 derniers jours',
+    js_journal_all_good:  'tout se passe bien',
+    js_journal_action:    'à traiter',
+    js_hide_victories:    '🙈 Masquer les victoires',
+    js_rebase_running_long:    '⏳ Rebase en cours… (5-10 min)',
+    js_rebase_already_running: '⏳ Rebase déjà en cours…',
+    js_server_error:           '❌ Erreur serveur',
+    js_network_error:          '❌ Erreur réseau',
+    js_rebase_running:         '⏳ Rebase en cours…',
+    js_baseline_updated:       '✅ Baseline mise à jour',
+    js_unknown_status:         '⚠️ Statut inconnu',
+    js_copied:                 '✅ Copié',
+    js_analyzing:              'Analyse en cours…',
+    js_launching:              '⏳ Lancement…',
+    js_rebase_launched:        '✅ Rebase lancé — ~2 min',
+    js_error_prefix:           '❌ Erreur :',
+    js_update_in_progress:     '⏳ Mise à jour en cours…',
+    js_confirm:                '✅ Confirmer',
+    js_aide_usual_changes: '✅ Modifications habituelles',
+    js_aide_no_critical:   'Aucun fichier système critique touché.',
+    js_aide_prob_updates:  'Probablement des mises à jour logicielles.',
+    js_aide_sensitive:     '⚠️ Fichiers sensibles modifiés',
+    js_aide_check:         'À vérifier :',
+    js_aide_known_targets: "Cibles d'attaque connues.",
+    js_aide_read_error:    'Erreur de lecture du log AIDE',
+  },
+  en: {
+    /* ── Header ── */
+    brand_tag:            '▲ Security Center',
+    ip_label:             'SERVER IP',
+    nav_cockpit:          ' Cockpit',
+    nav_journal:          ' Journal',
+    nav_containers:       ' Containers',
+    nav_updates:          ' Updates',
+    btn_refresh_title:    'Refresh',
+    btn_commands_title:   'Useful commands',
+    btn_logout_title:     'Logout',
+    btn_theme_title:      'Theme',
+    tg_not_configured:    'Telegram not configured',
+    tg_report:            'Report',
+    tg_ssh:               'SSH',
+    /* ── Score bar ── */
+    score_recent_events:  'Recent events',
+    threat_title:         'Hostile activity',
+    threat_subtitle:      'Δ SSH traps + UFW · /30s',
+    threat_waiting:       'Waiting…',
+    net_io_title:         'Network I/O',
+    globe_loading:        'Loading map…',
+    top_attackers:        'TOP ATTACKERS',
+    tp_ssh_traps:         '🪲 SSH traps',
+    tp_ufw_blocks:        '🔥 UFW blocks',
+    tp_total:             '⚡ Total',
+    /* ── Score levels ── */
+    score_level_excellent: 'Fortress',
+    score_level_good:      'Good shape',
+    score_level_warning:   'Monitor',
+    score_level_critical:  'Action required',
+    /* ── Cards Row 1 ── */
+    endlessh_desc:        'Traps SSH bots on port 22',
+    endlessh_sub:         'bots trapped <b>total</b>',
+    endlessh_avg:         'Avg duration: —',
+    crowdsec_desc:        'Blocked IPs · real-time bans',
+    crowdsec_sub:         'banned IPs <b>active</b>',
+    crowdsec_alerts:      '24h alerts: —',
+    sys_label:            'System',
+    /* ── Cards Row 2 ── */
+    ufw_desc:             'Firewall · allowed ports',
+    ufw_sub:              'blocks <b>total since install</b>',
+    auditd_desc:          'Root access today',
+    auditd_sub:           'sudo commands today',
+    rkhunter_desc:        'Intruders &amp; malware',
+    aide_desc:            'System files · SHA512',
+    aide_rebase_btn:      '⚠ Update baseline',
+    /* ── Cards Row 3 ── */
+    updates_label:        'Updates',
+    updates_desc:         'Available patches · security',
+    updates_sub:          'packages <b>available</b>',
+    connections_label:    'TCP Connections',
+    connections_desc:     'Active flows · TCP sockets',
+    connections_sub:      'connections <b>established</b>',
+    ports_label:          'Open ports',
+    ports_desc:           'Listening TCP ports',
+    /* ── Journal ── */
+    journal_label:        'Security Journal',
+    journal_show_victories: '✅ Show victories',
+    journal_empty:        '✅ No anomaly detected — all nominal',
+    period_1d:            '1d',
+    period_7d:            '7d',
+    period_30d:           '30d',
+    th_service:           'Service',
+    th_detail:            'Detail',
+    th_ip:                'Source IP',
+    th_datetime:          'Date / Time',
+    th_status:            'Status',
+    /* ── Containers ── */
+    containers_label:     'Docker Containers',
+    btn_actualiser:       ' Refresh',
+    /* ── MAJ ── */
+    maj_title:            'Dashboard Update',
+    maj_sub:              'Check latest GitHub version<br>+ one-click deploy with auto backup',
+    maj_badge:            'Sprint 3 — in development',
+    /* ── Footer ── */
+    footer_last_update:   'Last update:',
+    footer_meta:          'Auto-refresh 30s &nbsp;·&nbsp; VPS-SECURE 2026 &nbsp;·&nbsp; v2.7.3',
+    /* ── Helper ── */
+    helper_title:         'COMMANDS',
+    hint_connect:         'Connect',
+    hint_add_key:         'Add key',
+    hint_banned_ips:      'Banned IPs',
+    hint_recent_alerts:   'Recent alerts',
+    hint_update:          'Update',
+    hint_metrics:         'Metrics',
+    hint_baseline_update: 'Update baseline',
+    hint_scan:            'Scan',
+    hint_check_config:    'Check config',
+    hint_scan_rk:         'Scan',
+    hint_update_sigs:     'Update signatures',
+    hint_update_props:    'Update properties',
+    hint_status:          'Status',
+    hint_open_port:       'Open port',
+    hint_block_port:      'Block port',
+    hint_reload:          'Reload',
+    hint_containers_active: 'Active containers',
+    hint_logs_endlessh:   'Endlessh logs',
+    hint_logs_crowdsec:   'CrowdSec logs',
+    hint_resources:       'Resources',
+    hint_live_logs:       'Live logs',
+    hint_auths_today:     'Auth today',
+    hint_escalations:     'Escalations',
+    hint_logs_aide:       'AIDE logs',
+    hint_ssh_dashboard:   'SSH dashboard',
+    hint_verify_install:  'Verify install',
+    hint_cpu_ram:         'CPU / RAM',
+    hint_disk:            'Disk',
+    hint_memory:          'Memory',
+    /* ── Modal AIDE ── */
+    modal_aide_title:     'Update AIDE baseline',
+    modal_aide_irreversible: 'Irreversible action',
+    modal_cancel:         'Cancel',
+    modal_confirm_rebase: '✅ Confirm rebase',
+    /* ── JS dynamique ── */
+    js_connected:         'Connected',
+    js_api_error:         'API Error',
+    js_no_issues:         '✅ No issue detected',
+    js_bouncer_active:    '✅ <b>Bouncer active</b>',
+    js_bouncer_inactive:  '❌ Inactive',
+    js_crowdsec_not_banning: '⚠️ CrowdSec NOT banning',
+    js_unknown:           '❓ Unknown',
+    js_clean:             '✅ <b>Clean</b>',
+    js_alert_warn:        '⚠️ Alert',
+    js_rebase_required:   '🔄 Rebase required',
+    js_mods_detected:     '🚨 Modifications!',
+    js_pill_alert:        'ALERT',
+    js_pill_rebase:       'Rebase required',
+    js_up_to_date:        '✅ Server up to date',
+    js_last_scan:         'Last scan:',
+    js_last_check:        'Last check:',
+    js_no_ports:          'No port detected',
+    js_port_internal:     'internal localhost',
+    js_no_events:         'No recent events',
+    js_threat_calm:       'Calm',
+    js_threat_activity:   'Activity',
+    js_globe_unavailable: 'Globe unavailable',
+    js_globe_ips_trapped: 'IPs trapped',
+    js_globe_your_server: 'Your server',
+    js_no_containers:     'No container detected',
+    js_no_containers_short: 'No container',
+    js_containers_error:  'Error loading containers',
+    js_error:             'Error',
+    js_running:           'Running',
+    js_starting:          'Starting',
+    js_stopped:           'Stopped',
+    js_paused:            'Paused',
+    js_container_active:  'active',
+    js_container_stopped: 'stopped',
+    js_period_1d_label:   'Last 24 hours',
+    js_period_7d_label:   'Last 7 days',
+    js_period_30d_label:  'Last 30 days',
+    js_journal_all_good:  'everything is fine',
+    js_journal_action:    'to handle',
+    js_hide_victories:    '🙈 Hide victories',
+    js_rebase_running_long:    '⏳ Rebase in progress… (5-10 min)',
+    js_rebase_already_running: '⏳ Rebase already in progress…',
+    js_server_error:           '❌ Server error',
+    js_network_error:          '❌ Network error',
+    js_rebase_running:         '⏳ Rebase in progress…',
+    js_baseline_updated:       '✅ Baseline updated',
+    js_unknown_status:         '⚠️ Unknown status',
+    js_copied:                 '✅ Copied',
+    js_analyzing:              'Analyzing…',
+    js_launching:              '⏳ Launching…',
+    js_rebase_launched:        '✅ Rebase launched — ~2 min',
+    js_error_prefix:           '❌ Error:',
+    js_update_in_progress:     '⏳ Update in progress…',
+    js_confirm:                '✅ Confirm',
+    js_aide_usual_changes: '✅ Usual modifications',
+    js_aide_no_critical:   'No critical system file touched.',
+    js_aide_prob_updates:  'Probably software updates.',
+    js_aide_sensitive:     '⚠️ Sensitive files modified',
+    js_aide_check:         'To check:',
+    js_aide_known_targets: 'Known attack targets.',
+    js_aide_read_error:    'Error reading AIDE log',
+  }
+};
+
+let currentLang = 'fr';
+const t = key => (TRANSLATIONS[currentLang] || TRANSLATIONS.fr)[key] ?? key;
 
 /* ── Staggered card entrance (JS-driven, precise) ─────────────────────── */
 function staggerCards() {
@@ -825,14 +1209,14 @@ function setTab(tab) {
 /* ── Status ───────────────────────────────────────────────────────────── */
 function setStatus(ok) {
   $('status-dot').className = ok ? 'dot' : 'dot error';
-  $('status-txt').textContent = ok ? 'Connecté' : 'Erreur API';
+  $('status-txt').textContent = ok ? t('js_connected') : t('js_api_error');
 }
 function setCard(id, cls) { const el = $(id); if (el) el.className = `card visible ${cls}`; }
 function setPill(id, st) {
   const el = $(id); if (!el) return;
   if (st === 'clean')                            { el.className = 'pill pill-ok';   el.textContent = 'OK'; }
-  else if (st === 'warning' || st === 'changes') { el.className = 'pill pill-warn'; el.textContent = 'ALERTE'; }
-  else if (st === 'rebase')                      { el.className = 'pill pill-warn'; el.textContent = 'Rebase requis'; }
+  else if (st === 'warning' || st === 'changes') { el.className = 'pill pill-warn'; el.textContent = t('js_pill_alert'); }
+  else if (st === 'rebase')                      { el.className = 'pill pill-warn'; el.textContent = t('js_pill_rebase'); }
   else                                           { el.className = 'pill pill-unk';  el.textContent = '—'; }
 }
 function startCountdown() {
@@ -872,7 +1256,7 @@ function updateScore(sc) {
     donutScore.update();
   }
   $('score-num').style.color = col;
-  $('score-label').textContent = sc.label || '—';
+  $('score-label').textContent = t('score_level_' + sc.level) || sc.label || '—';
   // Halo
   const ring = $('score-ring-el');
   if (ring) {
@@ -884,7 +1268,7 @@ function updateScore(sc) {
   const mascot = $('mascot');
   if (mascot) { mascot.style.display = num === 100 ? 'block' : 'none'; if (num === 100) mascot.src = isDark() ? '/mascot-dark.png' : '/mascot-light.png'; }
   const el = $('score-issues'); el.innerHTML = '';
-  if (!sc.issues || sc.issues.length === 0) { el.innerHTML = '<span class="score-ok">✅ Aucun problème détecté</span>'; }
+  if (!sc.issues || sc.issues.length === 0) { el.innerHTML = `<span class="score-ok">${t('js_no_issues')}</span>`; }
   else { sc.issues.forEach(i => { const p = document.createElement('span'); p.className = `issue-pill issue-${i.sev}`; p.textContent = i.msg; el.appendChild(p); }); }
 }
 
@@ -893,19 +1277,19 @@ function updateBouncer(b) {
   const st = b.status || 'unknown';
   const dot = $('bouncer-dot'), val = $('val-bouncer'), sub = $('sub-bouncer');
   dot.className = 'bouncer-dot';
-  if (st === 'active') { dot.classList.add('bouncer-active'); val.innerHTML = '✅ <b>Bouncer actif</b>'; sub.style.display='none'; setCard('card-crowdsec-merged','a-green'); }
-  else if (st === 'inactive' || st === 'failed') { dot.classList.add('bouncer-inactive'); val.textContent = '❌ Inactif'; sub.style.display=''; sub.textContent='⚠️ CrowdSec ne bannit PAS'; setCard('card-crowdsec-merged','a-red'); }
-  else { dot.classList.add('bouncer-unknown'); val.textContent = '❓ Inconnu'; }
+  if (st === 'active') { dot.classList.add('bouncer-active'); val.innerHTML = t('js_bouncer_active'); sub.style.display='none'; setCard('card-crowdsec-merged','a-green'); }
+  else if (st === 'inactive' || st === 'failed') { dot.classList.add('bouncer-inactive'); val.textContent = t('js_bouncer_inactive'); sub.style.display=''; sub.textContent=t('js_crowdsec_not_banning'); setCard('card-crowdsec-merged','a-red'); }
+  else { dot.classList.add('bouncer-unknown'); val.textContent = t('js_unknown'); }
 }
 
 function updatePorts(op) {
   if (!op) return;
   const list = $('ports-list'), ports = op.ports || [];
-  if (!ports.length) { list.innerHTML = '<div class="tl-empty">Aucun port détecté</div>'; return; }
+  if (!ports.length) { list.innerHTML = `<div class="tl-empty">${t('js_no_ports')}</div>`; return; }
   list.innerHTML = ports.map(p => {
     const cls  = !p.expected ? 'port-alert' : p.local_only ? 'port-local' : 'port-ok';
     const icon = !p.expected ? '⚠' : p.local_only ? '⚙' : '●';
-    return `<span class="port-chip ${cls}" title="${p.local_only ? p.port+' — interne localhost' : p.port}">${icon} ${p.port}</span>`;
+    return `<span class="port-chip ${cls}" title="${p.local_only ? p.port+' — '+t('js_port_internal') : p.port}">${icon} ${p.port}</span>`;
   }).join('');
   setCard('card-ports', op.alert ? 'a-red' : 'a-green');
 }
@@ -954,7 +1338,7 @@ async function refreshTimeline() {
     
 function renderTimeline(events) {
   const list = $('timeline-inline'); if (!list) return;
-  if (!events || !events.length) { list.innerHTML = '<div class="tl-empty">Aucun événement récent</div>'; return; }
+  if (!events || !events.length) { list.innerHTML = `<div class="tl-empty">${t('js_no_events')}</div>`; return; }
   const key = JSON.stringify(events?.map(e => e.title + e.time));
   if (key === _tlKey) return;
   _tlKey = key;
@@ -1009,14 +1393,14 @@ function updateCards(d) {
   setVal('val-ufw', fmt(u.total), true);
   setVal('val-audit', fmt(a.sudo_today), true);
   const rkSt = rk.status || 'unknown';
-  $('val-rkhunter').innerHTML = rkSt==='clean' ? '✅ <b>Propre</b>' : rkSt==='warning' ? '⚠️ Alerte' : '❓ Inconnu';
+  $('val-rkhunter').innerHTML = rkSt==='clean' ? t('js_clean') : rkSt==='warning' ? t('js_alert_warn') : t('js_unknown');
   setPill('pill-rkhunter', rkSt);
-  $('sub-rkhunter').textContent = `Dernier scan : ${rk.last_scan||'—'}`;
+  $('sub-rkhunter').textContent = `${t('js_last_scan')} ${rk.last_scan||'—'}`;
   setCard('card-rkhunter', rkSt==='warning' ? 'a-red' : 'a-green');
   const aiSt = ai.status || 'unknown';
-  $('val-aide').innerHTML = aiSt==='clean' ? '✅ <b>Propre</b>' : aiSt==='rebase' ? '🔄 Rebase requis' : aiSt==='changes' ? '🚨 Modifications !' : '❓ Inconnu';
+  $('val-aide').innerHTML = aiSt==='clean' ? t('js_clean') : aiSt==='rebase' ? t('js_rebase_required') : aiSt==='changes' ? t('js_mods_detected') : t('js_unknown');
   setPill('pill-aide', aiSt==='clean' ? 'clean' : (aiSt==='rebase'||aiSt==='changes') ? 'warning' : 'unk');
-  $('sub-aide').textContent = `Dernier scan : ${ai.last_scan||'—'}`;
+  $('sub-aide').textContent = `${t('js_last_scan')} ${ai.last_scan||'—'}`;
   setCard('card-aide', aiSt==='changes' ? 'a-red' : aiSt==='clean' ? 'a-green' : aiSt==='rebase' ? 'a-gold' : '');
   // Icône AIDE : violet si rebase requis, rouge si modifications détectées, neutre si propre
   const iconA = $('icon-aide');
@@ -1034,9 +1418,9 @@ function updateCards(d) {
   updateDonuts(mem, dsk, s.load);
   const updCount = upd.count ?? null;
   setVal('val-updates', fmt(updCount), true);
-  $('sub-updates-date').innerHTML = `Dernier check :<br>${upd.last_check || '—'}`;
-  if (updCount===0) { $('sub-updates').innerHTML='✅ Serveur à jour'; setCard('card-updates','a-green'); }
-  else { $('sub-updates').innerHTML=`paquets <b>disponibles</b>`; setCard('card-updates', updCount>0 ? 'a-gold' : ''); }
+  $('sub-updates-date').innerHTML = `${t('js_last_check')}<br>${upd.last_check || '—'}`;
+  if (updCount===0) { $('sub-updates').innerHTML=t('js_up_to_date'); setCard('card-updates','a-green'); }
+  else { $('sub-updates').innerHTML=TRANSLATIONS[currentLang].updates_sub||TRANSLATIONS.fr.updates_sub; setCard('card-updates', updCount>0 ? 'a-gold' : ''); }
   setVal('val-connections', fmt(d.connections?.established ?? '—'), true);
   setCard('card-connections', (d.connections?.established||0) > 500 ? 'a-red' : 'a-green');
   updatePorts(d.open_ports);
@@ -1139,15 +1523,15 @@ const ThreatScope = {
     if (!lEl || !dEl) return;
     const dark = document.body.classList.contains('dark');
     if (delta === 0) {
-      lEl.textContent = 'Calme';
+      lEl.textContent = t('js_threat_calm');
       lEl.style.color = dark ? '#00ff88' : '#1a6b5a';
       dEl.textContent = 'Δ 0'; dEl.style.color = 'var(--muted)';
     } else if (delta <= 5) {
-      lEl.textContent = 'Activité';
+      lEl.textContent = t('js_threat_activity');
       lEl.style.color = dark ? '#f0b429' : '#a8893a';
       dEl.textContent = 'Δ +' + delta; dEl.style.color = dark ? '#f0b429' : '#a8893a';
     } else {
-      lEl.textContent = '⚡ Alerte';
+      lEl.textContent = '⚡ ' + t('js_threat_activity');
       lEl.style.color = dark ? '#ff4d6d' : '#c94a6a';
       dEl.textContent = 'Δ +' + delta; dEl.style.color = dark ? '#ff4d6d' : '#c94a6a';
     }
@@ -1292,8 +1676,8 @@ function initGlobe() {
       const refH = ($('card-system')||{}).offsetHeight || 220;
       card.style.height = refH+'px'; el.style.height = refH+'px';
       const points = [
-        ...(data.attackers||[]).map(a=>({ lat:a.lat, lng:a.lng, size:Math.min(0.8,0.2+(a.count||1)/6000), color:(a.count||1)>5?(dark?'#ff4d6d':'#e05a7a'):(dark?'#f0b429':'#c9a84c'), label:`<div style="font-family:'DM Mono',monospace;font-size:12px;padding:4px 8px;"><b>${a.country||'?'}</b> · ${a.count||1} IPs piégées</div>` })),
-        { lat:data.server.lat, lng:data.server.lng, size:0.9, color:dark?'#00ff87':'#22c55e', label:'Ton serveur' }
+        ...(data.attackers||[]).map(a=>({ lat:a.lat, lng:a.lng, size:Math.min(0.8,0.2+(a.count||1)/6000), color:(a.count||1)>5?(dark?'#ff4d6d':'#e05a7a'):(dark?'#f0b429':'#c9a84c'), label:`<div style="font-family:'DM Mono',monospace;font-size:12px;padding:4px 8px;"><b>${a.country||'?'}</b> · ${a.count||1} ${t('js_globe_ips_trapped')}</div>` })),
+        { lat:data.server.lat, lng:data.server.lng, size:0.9, color:dark?'#00ff87':'#22c55e', label:t('js_globe_your_server') }
       ];
       const arcs = (data.attackers||[]).map(a=>({ startLat:a.lat, startLng:a.lng, endLat:data.server.lat, endLng:data.server.lng, color:(a.count||1)>5?(dark?'#ff4d6d':'#e05a7a'):(dark?'#f0b429':'#c9a84c') }));
       _globeInstance = Globe()(el)
@@ -1310,7 +1694,7 @@ function initGlobe() {
       _globeInstance.pointOfView({ lat:data.server.lat, lng:data.server.lng, altitude:0.6 }, 0);
     } catch(e) {
       console.warn('[Globe] init error:', e);
-      $('globe-loading').textContent = 'Globe indisponible';
+      $('globe-loading').textContent = t('js_globe_unavailable');
     } finally {
       $('globe-loading').style.display = 'none';
     }
@@ -1344,13 +1728,13 @@ function renderContainerCard(c, idx) {
   const meta = getSvcMeta(c.name, c.image_clean||'');
   const hcMap = {
     healthy:  {dot:'#22c55e',pillCls:'pill-ok',  pillTxt:'Healthy',  anim:true},
-    running:  {dot:'#22c55e',pillCls:'pill-ok',  pillTxt:'Actif',    anim:true},
-    starting: {dot:'#c9a84c',pillCls:'pill-unk', pillTxt:'Démarrage',anim:false},
+    running:  {dot:'#22c55e',pillCls:'pill-ok',  pillTxt:t('js_running'),    anim:true},
+    starting: {dot:'#c9a84c',pillCls:'pill-unk', pillTxt:t('js_starting'),anim:false},
     unhealthy:{dot:'#ef4444',pillCls:'pill-warn', pillTxt:'Unhealthy',anim:false},
-    stopped:  {dot:'#ef4444',pillCls:'pill-warn', pillTxt:'Arrêté',   anim:false},
-    paused:   {dot:'#c9a84c',pillCls:'pill-unk', pillTxt:'Pausé',    anim:false},
+    stopped:  {dot:'#ef4444',pillCls:'pill-warn', pillTxt:t('js_stopped'),   anim:false},
+    paused:   {dot:'#c9a84c',pillCls:'pill-unk', pillTxt:t('js_paused'),    anim:false},
   };
-  const hc = hcMap[c.health] || {dot:'#9a9085',pillCls:'pill-unk',pillTxt:'Inconnu',anim:false};
+  const hc = hcMap[c.health] || {dot:'#9a9085',pillCls:'pill-unk',pillTxt:t('js_unknown'),anim:false};
   const isRunning = c.state === 'running';
   const cpuHtml = isRunning && c.cpu && c.cpu!=='—' ? `<div class="card-sub" style="margin-top:4px;">CPU : <b>${c.cpu}</b></div>` : '';
   const memHtml = isRunning && c.mem && c.mem!=='—' ? `<div class="card-sub" style="margin-top:2px;">RAM : <b>${c.mem.split('/')[0].trim()}</b></div>` : '';
@@ -1401,17 +1785,17 @@ window.fetchContainers = async function() {
     if (!res.ok) throw new Error('API error');
     const data = await res.json();
     if (!Array.isArray(data)||!data.length) {
-      grid.innerHTML=`<div class="card visible" style="grid-column:1/-1;text-align:center;padding:48px;color:var(--muted);opacity:1;"><div style="font-size:40px;margin-bottom:12px;">🐳</div><div style="font-weight:700;font-family:'JetBrains Mono',monospace;">Aucun container détecté</div></div>`;
-      if(subtitle)subtitle.textContent='Aucun container'; return;
+      grid.innerHTML=`<div class="card visible" style="grid-column:1/-1;text-align:center;padding:48px;color:var(--muted);opacity:1;"><div style="font-size:40px;margin-bottom:12px;">🐳</div><div style="font-weight:700;font-family:'JetBrains Mono',monospace;">${t('js_no_containers')}</div></div>`;
+      if(subtitle)subtitle.textContent=t('js_no_containers_short'); return;
     }
     const running=data.filter(c=>c.state==='running').length, stopped=data.filter(c=>c.state!=='running').length;
-    if(subtitle) subtitle.textContent=`${data.length} container${data.length>1?'s':''} — ${running} actif${running>1?'s':''}${stopped?' · '+stopped+' arrêté'+(stopped>1?'s':''):''}`;
+    if(subtitle) subtitle.textContent=`${data.length} container${data.length>1?'s':''} — ${running} ${t('js_container_active')}${running>1?'s':''}${stopped?' · '+stopped+' '+t('js_container_stopped')+(stopped>1?'s':''):''}`;
     grid.style.gridTemplateColumns=data.length<=2?'repeat(2,1fr)':data.length<=3?'repeat(3,1fr)':'repeat(4,1fr)';
     grid.innerHTML=data.map((c,i)=>renderContainerCard(c,i)).join('');
     fetchContainerUpdates();
   } catch(e) {
-    grid.innerHTML=`<div class="card visible" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);opacity:1;font-family:'JetBrains Mono',monospace;">Erreur chargement containers</div>`;
-    if(subtitle)subtitle.textContent='Erreur';
+    grid.innerHTML=`<div class="card visible" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);opacity:1;font-family:'JetBrains Mono',monospace;">${t('js_containers_error')}</div>`;
+    if(subtitle)subtitle.textContent=t('js_error');
   }
 };
 
@@ -1513,7 +1897,7 @@ function _restartBtnError(btn) {
 /* ── Journal ──────────────────────────────────────────────────────────── */
 (function() {
   var _showVictories=false, _journalData=[], _period='1d';
-  var PERIOD_LABELS={'1d':'24 dernières heures','7d':'7 derniers jours','30d':'30 derniers jours'};
+  var PERIOD_LABELS={'1d':t('js_period_1d_label'),'7d':t('js_period_7d_label'),'30d':t('js_period_30d_label')};
   function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
   function badge(status,icon,label){
     var cls={action:'jsb jsb-action',detected:'jsb jsb-detected',reported:'jsb jsb-reported',neutralized:'jsb jsb-neutralized'}[status]||'jsb';
@@ -1526,15 +1910,15 @@ function _restartBtnError(btn) {
     if(!rows.length){if(empty)empty.style.display='';if(wrap)wrap.style.display='none';return;}
     if(empty)empty.style.display='none';if(wrap)wrap.style.display='';
     var ac=rows.filter(r=>r.status==='action').length;
-    if(subtitle)subtitle.textContent=ac>0?`⚠️ ${ac} point${ac>1?'s':''} à traiter`:`${PERIOD_LABELS[_period]||''} — tout se passe bien`;
+    if(subtitle)subtitle.textContent=ac>0?`⚠️ ${ac} point${ac>1?'s':''} ${t('js_journal_action')}`:`${PERIOD_LABELS[_period]||''} — ${t('js_journal_all_good')}`;
     var rc={action:'jr-action',detected:'jr-detected',reported:'jr-reported',neutralized:'jr-neutralized'};
     tbody.innerHTML=rows.map(a=>{
       var ip=(a.ip&&a.ip!=='---')?a.ip:'—';
       return `<tr class="${rc[a.status]||''}"><td><span class="journal-svc-pill">${esc(a.service)}</span></td><td class="journal-detail-cell">${esc(a.detail)}</td><td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${esc(ip)}</span></td><td class="journal-time-cell">${esc(a.datetime)}</td><td>${badge(a.status,a.icon,a.label)}</td></tr>`;
     }).join('');
   }
-  window.journalSetPeriod=p=>{_period=p;document.querySelectorAll('.journal-period-btn').forEach(b=>b.classList.toggle('active-period',b.dataset.period===p));fetchJournal();};
-  window.journalToggleVictories=()=>{_showVictories=!_showVictories;var btn=$('btn-journal-victories');if(btn)btn.textContent=_showVictories?'🙈 Masquer les victoires':'✅ Afficher les victoires';render(_journalData);};
+  window.journalSetPeriod=p=>{_period=p;PERIOD_LABELS={'1d':t('js_period_1d_label'),'7d':t('js_period_7d_label'),'30d':t('js_period_30d_label')};document.querySelectorAll('.journal-period-btn').forEach(b=>b.classList.toggle('active-period',b.dataset.period===p));fetchJournal();};
+  window.journalToggleVictories=()=>{_showVictories=!_showVictories;var btn=$('btn-journal-victories');if(btn)btn.textContent=_showVictories?t('js_hide_victories'):t('journal_show_victories');render(_journalData);};
   window.fetchJournal=async()=>{
     try{
       var res=await fetch('/api/alerts?period='+_period,{cache:'no-store',headers:{'Authorization':AUTH}});
@@ -1551,14 +1935,14 @@ function closeAideModal(){document.getElementById('aide-modal-overlay').style.di
 async function confirmAideRebase(){
   closeAideModal();
   const btn=$('btn-aide-rebase'),fb=$('aide-rebase-feedback');
-  btn.disabled=true;fb.textContent='⏳ Rebase en cours… (5-10 min)';fb.style.display='block';
+  btn.disabled=true;fb.textContent=t('js_rebase_running_long');fb.style.display='block';
   try{
     const res=await fetch('/api/aide/rebase',{method:'POST',headers:{'Authorization':AUTH,'Content-Length':'0'}});
-    if(res.status===409){fb.textContent='⏳ Rebase déjà en cours…';_rebPollTimer=setTimeout(pollRebaseStatus,5000);return;}
-    if(!res.ok){fb.textContent='❌ Erreur serveur';btn.disabled=false;return;}
+    if(res.status===409){fb.textContent=t('js_rebase_already_running');_rebPollTimer=setTimeout(pollRebaseStatus,5000);return;}
+    if(!res.ok){fb.textContent=t('js_server_error');btn.disabled=false;return;}
     if(_rebPollTimer)clearTimeout(_rebPollTimer);
     _rebPollTimer=setTimeout(pollRebaseStatus,10000);
-  }catch(e){fb.textContent='❌ Erreur réseau';btn.disabled=false;}
+  }catch(e){fb.textContent=t('js_network_error');btn.disabled=false;}
 }
 let _rebPollTimer=null;
 async function pollRebaseStatus(){
@@ -1566,11 +1950,11 @@ async function pollRebaseStatus(){
   try{
     const res=await fetch('/api/aide/rebase/status',{cache:'no-store',headers:{'Authorization':AUTH}});
     const d=await res.json(),fb=$('aide-rebase-feedback'),btn=$('btn-aide-rebase');
-    if(d.status==='running'){fb.textContent='⏳ Rebase en cours…';_rebPollTimer=setTimeout(pollRebaseStatus,10000);}
-    else if(d.status==='ok'){fb.textContent='✅ Baseline mise à jour';setTimeout(()=>{fb.style.display='none';if(btn)btn.disabled=false;refresh();},3000);}
-    else if(d.status==='idle'){fb.textContent='⚠️ Statut inconnu';if(btn)btn.disabled=false;}
+    if(d.status==='running'){fb.textContent=t('js_rebase_running');_rebPollTimer=setTimeout(pollRebaseStatus,10000);}
+    else if(d.status==='ok'){fb.textContent=t('js_baseline_updated');setTimeout(()=>{fb.style.display='none';if(btn)btn.disabled=false;refresh();},3000);}
+    else if(d.status==='idle'){fb.textContent=t('js_unknown_status');if(btn)btn.disabled=false;}
     else{fb.textContent=`❌ ${d.status}`;if(btn)btn.disabled=false;}
-  }catch(e){const fb=$('aide-rebase-feedback');if(fb)fb.textContent='❌ Erreur réseau';const btn=$('btn-aide-rebase');if(btn)btn.disabled=false;}
+  }catch(e){const fb=$('aide-rebase-feedback');if(fb)fb.textContent=t('js_network_error');const btn=$('btn-aide-rebase');if(btn)btn.disabled=false;}
 }
 
 /* ── Helper ───────────────────────────────────────────────────────────── */
@@ -1579,7 +1963,7 @@ function closeHelper(){const p=document.getElementById('helper-panel');p.style.t
 function copyCmd(el,cmd){
   navigator.clipboard.writeText(cmd).then(()=>{
     const hint=el.querySelector('.cmd-chip-hint'),orig=hint.textContent;
-    hint.textContent='✅ Copié';hint.style.color='#00ff88';
+    hint.textContent=t('js_copied');hint.style.color='#00ff88';
     setTimeout(()=>{hint.textContent=orig;hint.style.color='';},1500);
   }).catch(()=>{});
 }
@@ -1594,7 +1978,7 @@ async function requestAideRebase(){
   const modal=$('modal-aide-rebase'),content=$('modal-aide-content');
   if(!modal||!content)return;
   if(modal.parentElement!==document.body)document.body.appendChild(modal);
-  content.innerHTML='<span style="opacity:.6">Analyse en cours…</span>';
+  content.innerHTML='<span style="opacity:.6">'+t('js_analyzing')+'</span>';
   modal.style.display='flex';
   try{
     const r=await fetch('/api/aide/diff',{cache:'no-store',headers:{'Authorization':AUTH}});
@@ -1606,20 +1990,20 @@ async function requestAideRebase(){
     const fichiers=[...(d.log||'').matchAll(/^[fdl][+\-0]+:\s+(.+)$/gm)].map(x=>x[1]);
     const suspects=fichiers.filter(p=>CRITIQUES.some(c=>p.startsWith(c)));
     content.innerHTML=suspects.length===0
-      ?`<span style="color:#4ade80;font-weight:700;">✅ Modifications habituelles</span><br><br>➕ <b>${added}</b> ajouté(s) &nbsp;·&nbsp; ➖ <b>${removed}</b> supprimé(s) &nbsp;·&nbsp; ✏️ <b>${changed}</b> modifié(s)<br><br>Aucun fichier système critique touché.<br><span style="opacity:.6;font-size:11px;">Probablement des mises à jour logicielles.</span>`
-      :`<span style="color:#f59e0b;font-weight:700;">⚠️ Fichiers sensibles modifiés</span><br><br>➕ <b>${added}</b> ajouté(s) &nbsp;·&nbsp; ➖ <b>${removed}</b> supprimé(s) &nbsp;·&nbsp; ✏️ <b>${changed}</b> modifié(s)<br><br><b>À vérifier :</b><br>${suspects.slice(0,5).map(f=>`• <code style="font-size:10px;">${f}</code>`).join('<br>')}<br><span style="opacity:.6;font-size:11px;">Cibles d'attaque connues.</span>`;
-  }catch(e){content.innerHTML='<span style="color:#f87171;">Erreur de lecture du log AIDE</span>';}
+      ?`<span style="color:#4ade80;font-weight:700;">${t('js_aide_usual_changes')}</span><br><br>➕ <b>${added}</b> ajouté(s) &nbsp;·&nbsp; ➖ <b>${removed}</b> supprimé(s) &nbsp;·&nbsp; ✏️ <b>${changed}</b> modifié(s)<br><br>${t('js_aide_no_critical')}<br><span style="opacity:.6;font-size:11px;">${t('js_aide_prob_updates')}</span>`
+      :`<span style="color:#f59e0b;font-weight:700;">${t('js_aide_sensitive')}</span><br><br>➕ <b>${added}</b> ajouté(s) &nbsp;·&nbsp; ➖ <b>${removed}</b> supprimé(s) &nbsp;·&nbsp; ✏️ <b>${changed}</b> modifié(s)<br><br><b>${t('js_aide_check')}</b><br>${suspects.slice(0,5).map(f=>`• <code style="font-size:10px;">${f}</code>`).join('<br>')}<br><span style="opacity:.6;font-size:11px;">${t('js_aide_known_targets')}</span>`;
+  }catch(e){content.innerHTML=`<span style="color:#f87171;">${t('js_aide_read_error')}</span>`;}
 }
 async function _executeAideRebase(){
   const btn=$('btn-modal-confirm'),feedback=$('aide-modal-feedback');
-  if(btn){btn.disabled=true;btn.textContent='⏳ Lancement…';}
+  if(btn){btn.disabled=true;btn.textContent=t('js_launching');}
   try{
     const r=await fetch('/api/aide/rebase',{method:'POST',cache:'no-store',headers:{'Authorization':AUTH}});
     const d=await r.json();
-    if(feedback){feedback.style.display='block';feedback.textContent=r.ok?'✅ Rebase lancé — ~2 min':'❌ Erreur : '+(d.status||d.error||'inconnue');}
-    if(r.ok){const cb=$('btn-aide-rebase');if(cb){cb.disabled=true;cb.textContent='⏳ Mise à jour en cours…';}setTimeout(()=>cancelAideRebase(),3000);}
-  }catch(e){if(feedback){feedback.style.display='block';feedback.textContent='❌ Erreur réseau';}}
-  if(btn){btn.disabled=false;btn.textContent='✅ Confirmer';}
+    if(feedback){feedback.style.display='block';feedback.textContent=r.ok?t('js_rebase_launched'):t('js_error_prefix')+' '+(d.status||d.error||'inconnue');}
+    if(r.ok){const cb=$('btn-aide-rebase');if(cb){cb.disabled=true;cb.textContent=t('js_update_in_progress');}setTimeout(()=>cancelAideRebase(),3000);}
+  }catch(e){if(feedback){feedback.style.display='block';feedback.textContent=t('js_network_error');}}
+  if(btn){btn.disabled=false;btn.textContent=t('js_confirm');}
 }
 function cancelAideRebase(){
   const modal=$('modal-aide-rebase'),fb=$('aide-modal-feedback'),content=$('modal-aide-content');
@@ -1627,6 +2011,56 @@ function cancelAideRebase(){
   if(fb){fb.style.display='none';fb.textContent='';}
   if(content)content.innerHTML='';
 }
+
+/* ── i18n engine ──────────────────────────────────────────────────────── */
+function applyLang(lang) {
+  if (!TRANSLATIONS[lang]) return;
+  currentLang = lang;
+  const dict = TRANSLATIONS[lang];
+
+  /* textContent — [data-i18n] */
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (dict[key] !== undefined) el.textContent = dict[key];
+  });
+
+  /* innerHTML — [data-i18n-html] (éléments avec <b>, <br>, &amp;) */
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.dataset.i18nHtml;
+    if (dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+
+  /* Attributs — [data-i18n-attr="attr:key"] */
+  document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+    const parts = el.dataset.i18nAttr.split(':');
+    if (parts.length === 2) {
+      const [attr, key] = parts;
+      if (dict[key] !== undefined) el.setAttribute(attr, dict[key]);
+    }
+  });
+
+  /* Mise à jour locale HTML + localStorage */
+  document.documentElement.lang = lang === 'fr' ? 'fr' : 'en';
+  localStorage.setItem('vpssecure_lang', lang);
+
+  /* Sync bouton toggle */
+  const btn = document.getElementById('btn-lang-toggle');
+  if (btn) btn.textContent = lang === 'fr' ? '🇫🇷 FR' : '🇺🇸 EN';
+
+  /* Sync bouton victories */
+  const bv = document.getElementById('btn-journal-victories');
+  if (bv) {
+    const isHiding = bv.textContent.includes('Masquer') || bv.textContent.includes('Hide');
+    bv.textContent = isHiding ? t('js_hide_victories') : t('journal_show_victories');
+  }
+}
+
+/* Initialisation au chargement */
+(function initLang() {
+  const saved = localStorage.getItem('vpssecure_lang');
+  applyLang(saved === 'en' ? 'en' : 'fr');
+})();
+
 </script>
 
 <!-- Helper panel -->
@@ -1635,63 +2069,63 @@ function cancelAideRebase(){
   <div style="position:sticky;top:0;background:var(--card);z-index:1;padding:16px 20px 12px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;backdrop-filter:var(--blur);">
     <div style="display:flex;align-items:center;gap:10px;">
       <i class="ph ph-terminal" style="font-size:15px;color:var(--teal);"></i>
-      <span style="font-size:12px;font-weight:700;color:var(--text);font-family:'Orbitron',sans-serif;letter-spacing:.5px;">COMMANDES</span>
+      <span data-i18n="helper_title" style="font-size:12px;font-weight:700;color:var(--text);font-family:'Orbitron',sans-serif;letter-spacing:.5px;">COMMANDES</span>
     </div>
     <button onclick="closeHelper()" style="padding:4px 10px;border-radius:var(--r-xs);border:1px solid var(--card-border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;font-family:'JetBrains Mono',monospace;">✕</button>
   </div>
   <div style="padding:14px 18px;display:flex;flex-direction:column;gap:16px;">
     <div>
       <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;">🔐 SSH</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'ssh vpsadmin@[IP] -p 2222')">ssh vpsadmin@[IP] -p 2222<span class="cmd-chip-hint">Connexion</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'ssh-copy-id -p 2222 vpsadmin@[IP]')">ssh-copy-id -p 2222 vpsadmin@[IP]<span class="cmd-chip-hint">Ajouter clé</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'ssh vpsadmin@[IP] -p 2222')">ssh vpsadmin@[IP] -p 2222<span class="cmd-chip-hint" data-i18n="hint_connect">Connexion</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'ssh-copy-id -p 2222 vpsadmin@[IP]')">ssh-copy-id -p 2222 vpsadmin@[IP]<span class="cmd-chip-hint" data-i18n="hint_add_key">Ajouter clé</span></div>
     </div>
     <div>
       <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;">🛡️ CrowdSec</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli decisions list')">sudo cscli decisions list<span class="cmd-chip-hint">IP bannies</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli alerts list')">sudo cscli alerts list<span class="cmd-chip-hint">Alertes récentes</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli hub update && sudo cscli hub upgrade')">cscli hub update && upgrade<span class="cmd-chip-hint">Mise à jour</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli metrics')">sudo cscli metrics<span class="cmd-chip-hint">Métriques</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli decisions list')">sudo cscli decisions list<span class="cmd-chip-hint" data-i18n="hint_banned_ips">IP bannies</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli alerts list')">sudo cscli alerts list<span class="cmd-chip-hint" data-i18n="hint_recent_alerts">Alertes récentes</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli hub update && sudo cscli hub upgrade')">cscli hub update && upgrade<span class="cmd-chip-hint" data-i18n="hint_update">Mise à jour</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo cscli metrics')">sudo cscli metrics<span class="cmd-chip-hint" data-i18n="hint_metrics">Métriques</span></div>
     </div>
     <div>
       <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;">🔐 AIDE</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-aide-rebase')">sudo vps-secure-aide-rebase<span class="cmd-chip-hint">Màj baseline</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo aide --check')">sudo aide --check<span class="cmd-chip-hint">Scanner</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo aide --config-check')">sudo aide --config-check<span class="cmd-chip-hint">Vérifier config</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-aide-rebase')">sudo vps-secure-aide-rebase<span class="cmd-chip-hint" data-i18n="hint_baseline_update">Màj baseline</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo aide --check')">sudo aide --check<span class="cmd-chip-hint" data-i18n="hint_scan">Scanner</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo aide --config-check')">sudo aide --config-check<span class="cmd-chip-hint" data-i18n="hint_check_config">Vérifier config</span></div>
     </div>
     <div>
       <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;">🔍 rkhunter</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --check --skip-keypress')">rkhunter --check --skip-keypress<span class="cmd-chip-hint">Scan</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --update')">sudo rkhunter --update<span class="cmd-chip-hint">Màj signatures</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --propupd')">sudo rkhunter --propupd<span class="cmd-chip-hint">Màj propriétés</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --check --skip-keypress')">rkhunter --check --skip-keypress<span class="cmd-chip-hint" data-i18n="hint_scan_rk">Scan</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --update')">sudo rkhunter --update<span class="cmd-chip-hint" data-i18n="hint_update_sigs">Màj signatures</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo rkhunter --propupd')">sudo rkhunter --propupd<span class="cmd-chip-hint" data-i18n="hint_update_props">Màj propriétés</span></div>
     </div>
     <div>
       <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;">🔥 UFW</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw status verbose')">sudo ufw status verbose<span class="cmd-chip-hint">État</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw allow 8080/tcp')">sudo ufw allow 8080/tcp<span class="cmd-chip-hint">Ouvrir port</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw deny 8080')">sudo ufw deny 8080<span class="cmd-chip-hint">Bloquer port</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw reload')">sudo ufw reload<span class="cmd-chip-hint">Recharger</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw status verbose')">sudo ufw status verbose<span class="cmd-chip-hint" data-i18n="hint_status">État</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw allow 8080/tcp')">sudo ufw allow 8080/tcp<span class="cmd-chip-hint" data-i18n="hint_open_port">Ouvrir port</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw deny 8080')">sudo ufw deny 8080<span class="cmd-chip-hint" data-i18n="hint_block_port">Bloquer port</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo ufw reload')">sudo ufw reload<span class="cmd-chip-hint" data-i18n="hint_reload">Recharger</span></div>
     </div>
     <div>
       <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;">🐳 Docker</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'docker ps')">docker ps<span class="cmd-chip-hint">Containers actifs</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'docker logs endlessh --tail 50')">docker logs endlessh --tail 50<span class="cmd-chip-hint">Logs Endlessh</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'docker logs crowdsec --tail 50')">docker logs crowdsec --tail 50<span class="cmd-chip-hint">Logs CrowdSec</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'docker stats --no-stream')">docker stats --no-stream<span class="cmd-chip-hint">Ressources</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'docker ps')">docker ps<span class="cmd-chip-hint" data-i18n="hint_containers_active">Containers actifs</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'docker logs endlessh --tail 50')">docker logs endlessh --tail 50<span class="cmd-chip-hint" data-i18n="hint_logs_endlessh">Logs Endlessh</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'docker logs crowdsec --tail 50')">docker logs crowdsec --tail 50<span class="cmd-chip-hint" data-i18n="hint_logs_crowdsec">Logs CrowdSec</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'docker stats --no-stream')">docker stats --no-stream<span class="cmd-chip-hint" data-i18n="hint_resources">Ressources</span></div>
     </div>
     <div>
-      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;">📋 Logs & Audit</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo journalctl -f')">sudo journalctl -f<span class="cmd-chip-hint">Logs temps réel</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ausearch -i -m USER_AUTH -ts today')">ausearch -i -m USER_AUTH -ts today<span class="cmd-chip-hint">Auths aujourd'hui</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo ausearch -i -m PRIV_AUTH -ts today')">ausearch -i -m PRIV_AUTH -ts today<span class="cmd-chip-hint">Escalades</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo tail -f /var/log/vps-secure/aide-daily.log')">tail -f …/aide-daily.log<span class="cmd-chip-hint">Logs AIDE</span></div>
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;">📋 Logs &amp; Audit</div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo journalctl -f')">sudo journalctl -f<span class="cmd-chip-hint" data-i18n="hint_live_logs">Logs temps réel</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo ausearch -i -m USER_AUTH -ts today')">ausearch -i -m USER_AUTH -ts today<span class="cmd-chip-hint" data-i18n="hint_auths_today">Auths aujourd'hui</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo ausearch -i -m PRIV_AUTH -ts today')">ausearch -i -m PRIV_AUTH -ts today<span class="cmd-chip-hint" data-i18n="hint_escalations">Escalades</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo tail -f /var/log/vps-secure/aide-daily.log')">tail -f …/aide-daily.log<span class="cmd-chip-hint" data-i18n="hint_logs_aide">Logs AIDE</span></div>
     </div>
     <div>
       <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:8px;font-family:'Orbitron',sans-serif;">⚙️ Système</div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-stats')">sudo vps-secure-stats<span class="cmd-chip-hint">Dashboard SSH</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-verify')">sudo vps-secure-verify<span class="cmd-chip-hint">Vérifier install</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'htop')">htop<span class="cmd-chip-hint">CPU / RAM</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'df -h')">df -h<span class="cmd-chip-hint">Disque</span></div>
-      <div class="cmd-chip" onclick="copyCmd(this,'free -h')">free -h<span class="cmd-chip-hint">Mémoire</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-stats')">sudo vps-secure-stats<span class="cmd-chip-hint" data-i18n="hint_ssh_dashboard">Dashboard SSH</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'sudo vps-secure-verify')">sudo vps-secure-verify<span class="cmd-chip-hint" data-i18n="hint_verify_install">Vérifier install</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'htop')">htop<span class="cmd-chip-hint" data-i18n="hint_cpu_ram">CPU / RAM</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'df -h')">df -h<span class="cmd-chip-hint" data-i18n="hint_disk">Disque</span></div>
+      <div class="cmd-chip" onclick="copyCmd(this,'free -h')">free -h<span class="cmd-chip-hint" data-i18n="hint_memory">Mémoire</span></div>
     </div>
   </div>
 
@@ -1701,15 +2135,15 @@ function cancelAideRebase(){
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
         <div style="width:40px;height:40px;border-radius:var(--r-xs);background:rgba(124,58,237,.14);display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid rgba(124,58,237,.28);">🔄</div>
         <div>
-          <div style="font-size:13px;font-weight:800;color:var(--text);font-family:'Orbitron',sans-serif;letter-spacing:.3px;">Mettre à jour la baseline AIDE</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;font-family:'JetBrains Mono',monospace;">Action irréversible</div>
+          <div data-i18n="modal_aide_title" style="font-size:13px;font-weight:800;color:var(--text);font-family:'Orbitron',sans-serif;letter-spacing:.3px;">Mettre à jour la baseline AIDE</div>
+          <div data-i18n="modal_aide_irreversible" style="font-size:10px;color:var(--muted);margin-top:2px;font-family:'JetBrains Mono',monospace;">Action irréversible</div>
         </div>
       </div>
       <div id="modal-aide-content" style="background:rgba(0,0,0,0.38);border-radius:var(--r-xs);padding:14px;font-size:11px;color:#e2e8f0;margin-bottom:18px;line-height:1.7;min-height:56px;border:1px solid rgba(0,255,136,0.09);font-family:'JetBrains Mono',monospace;"></div>
       <div id="aide-modal-feedback" style="display:none;font-size:11px;margin-bottom:14px;padding:8px 12px;border-radius:var(--r-xs);text-align:center;font-family:'JetBrains Mono',monospace;"></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button onclick="cancelAideRebase()" style="padding:8px 16px;border-radius:var(--r-xs);border:1px solid var(--card-border);background:transparent;color:var(--muted);cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace;">Annuler</button>
-        <button id="btn-modal-confirm" onclick="_executeAideRebase()" style="padding:8px 16px;border-radius:var(--r-xs);border:none;background:#7c3aed;color:#fff;cursor:pointer;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;">✅ Confirmer le rebase</button>
+        <button onclick="cancelAideRebase()" data-i18n="modal_cancel" style="padding:8px 16px;border-radius:var(--r-xs);border:1px solid var(--card-border);background:transparent;color:var(--muted);cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace;">Annuler</button>
+        <button id="btn-modal-confirm" data-i18n="modal_confirm_rebase" onclick="_executeAideRebase()" style="padding:8px 16px;border-radius:var(--r-xs);border:none;background:#7c3aed;color:#fff;cursor:pointer;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;">✅ Confirmer le rebase</button>
       </div>
     </div>
   </div>

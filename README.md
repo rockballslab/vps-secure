@@ -106,9 +106,9 @@ Before running the script, you need:
 
 ---
 
-# Automatic installation in 15 minutes flat
+## Automatic installation in 15 minutes flat
 
-### Step 0 — Use the interactive guide (recommended)
+### Step 0 — Start with the interactive guide *(recommended)*
 
 Before anything else, open the [Interactive Installation Guide](https://vps-secure.aiforceone.fr/guide-en.html) and follow the steps.
 
@@ -204,7 +204,7 @@ And **1 optional question** at the end: configure Telegram alerts.
 ssh vpsadmin@YOUR_VPS_IP -p 2222 -i ~/.ssh/id_ed25519_vps
 ```
 
-Your VPS is already READY. Time to verify!
+Your VPS is secured. Time to verify everything is running.
 
 ---
 
@@ -321,7 +321,7 @@ sudo ufw allow 8080/tcp comment 'My application'
 
 ## Monitoring  (optional but highly recommended)
 
-A web  to visualize your server's status in real time.
+A web **dashboard** to visualize your server's status in real time.
 
 ```
 bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)
@@ -433,7 +433,7 @@ The script creates a dedicated user, vpsadmin, for day-to-day server administrat
 ## What this script does NOT do
 
 - **No application deployment** (n8n, WordPress, etc).
-The script prepares an ultra-secure infrastructure. Once the script runs, your server is a fortress ready to host your services. You install your apps — they'll automatically benefit from the system's protection (Firewall, CrowdSec, etc.).
+The script sets up a hardened infrastructure. Once the script runs, your server is a fortress ready to host your services. You install your apps — they'll automatically benefit from the system's protection (Firewall, CrowdSec, etc.).
 
 - **No HTTPS management** for your future sites.
 The script doesn't guess your domain names. To put your own sites on HTTPS, you'll need to install a Reverse Proxy (such as Caddy, Nginx Proxy Manager, or Traefik).

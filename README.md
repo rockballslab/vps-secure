@@ -98,9 +98,9 @@ Before running the script, you need:
 - :white_check_mark: An **SSH key generated** on your local machine
 
 > [!NOTE]
-> :key: This script requires a license — [Get it here](https://vps-secure.aiforceone.fr/offre-en.html) — **LAUNCH OFFER 47EUR** instead of 97EUR with code **REDUC50**
+> :key: **This script requires a license** — [Get it here](https://vps-secure.aiforceone.fr/offre-en.html) — **LAUNCH OFFER 47EUR** instead of 97EUR with code **REDUC50**
 >
-> :technologist: Want to audit or contribute to the code? [Request a free license](https://tally.so/r/lblb0k) — activation key sent within minutes.
+> :technologist: **Developer?** Want to audit or contribute to the code? [Request a free license](https://tally.so/r/lblb0k) — activation key sent within minutes.
 
 ---
 

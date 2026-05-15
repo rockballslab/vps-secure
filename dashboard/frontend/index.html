@@ -1395,7 +1395,7 @@ function updateCards(d) {
   const iconE = $('icon-endlessh');
   if (iconE) iconE.className = 'icon-chip'; // teal par défaut, jamais rose
   setVal('val-crowdsec', fmt(c.active_bans), true);
-  $('sub-crowdsec').innerHTML = `Alertes 24h : <b style="font-size:22px;color:var(--text);">${fmt(c.alerts_24h)}</b>`;
+  $('sub-crowdsec').innerHTML = t('crowdsec_alerts').replace('—', `<b style="font-size:22px;color:var(--text);">${fmt(c.alerts_24h)}</b>`);
   updateBouncer(d.bouncer);
   setVal('val-ufw', fmt(u.total), true);
   setVal('val-audit', fmt(a.sudo_today), true);

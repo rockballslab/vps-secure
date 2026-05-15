@@ -798,7 +798,7 @@
 <script>
 'use strict';
 const $ = id => document.getElementById(id);
-const fmt = n => (n == null ? '—' : Number(n).toLocaleString('fr-FR'));
+const fmt = n => (n == null ? '—' : Number(n).toLocaleString(currentLang === 'fr' ? 'fr-FR' : 'en-US'));
 const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const isDark = () => document.body.classList.contains('dark');
 
@@ -1190,7 +1190,7 @@ function animateNumber(el, target, duration = 800) {
     const p = Math.min((now - start) / duration, 1);
     const ease = 1 - Math.pow(1 - p, 3); // cubic ease-out
     const val = Math.round(from + (num - from) * ease);
-    el.textContent = val.toLocaleString('fr-FR');
+    el.textContent = val.toLocaleString(currentLang === 'fr' ? 'fr-FR' : 'en-US');
     if (p < 1) requestAnimationFrame(tick);
     else el.textContent = target;
   }
@@ -1570,7 +1570,7 @@ async function refresh() {
     const res = await fetch('/api/metrics', { cache:'no-store', headers:{'Authorization':AUTH} });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const _data = await res.json(); _lastMetrics = _data; updateCards(_data); setStatus(true);
-    $('last-update').textContent = new Date().toLocaleTimeString('fr-FR');
+    $('last-update').textContent = new Date().toLocaleTimeString(currentLang === 'fr' ? 'fr-FR' : 'en-US');
     refreshTimeline();
     refreshNetworkIO();
     if (sessionStorage.getItem('active_tab') === 'journal') fetchJournal();

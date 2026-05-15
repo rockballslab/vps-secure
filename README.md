@@ -105,7 +105,7 @@ Before running the script, you need:
 - :white_check_mark: An **SSH key** generated on your local machine
 
 > [!NOTE]
-> :key: This script requires a license — [available here](https://vps-secure.aiforceone.fr/offre.html) — **LAUNCH OFFER 47EUR** instead of 97EUR with code **REDUC50**
+> :key: This script requires a license — [available here](https://vps-secure.aiforceone.fr/offre-en.html) — **LAUNCH OFFER 47EUR** instead of 97EUR with code **REDUC50**
 >
 > :technologist: Want to contribute and audit the code? [Contact me for a free license](https://tally.so/r/lblb0k) — your unique activation key will be sent within minutes.
 
@@ -115,7 +115,7 @@ Before running the script, you need:
 
 ### Step 0 — Use the interactive guide (recommended)
 
-Before you start, open the [Interactive Installation Guide](https://vps-secure.aiforceone.fr/guide.html) and follow the steps.
+Before you start, open the [Interactive Installation Guide](https://vps-secure.aiforceone.fr/guide-en.html) and follow the steps.
 
 It lets you centralize all the information needed during installation — zero copy-paste errors.
 
@@ -147,7 +147,7 @@ Retrieve your public key — you'll need it during the script:
 cat ~/.ssh/id_ed25519_vps.pub
 ```
 
-Copy the output (it starts with `ssh-ed25519`) and paste it into the [Installation Guide](https://vps-secure.aiforceone.fr/guide.html).
+Copy the output (it starts with `ssh-ed25519`) and paste it into the [Installation Guide](https://vps-secure.aiforceone.fr/guide-en.html).
 
 ---
 
@@ -195,7 +195,7 @@ And **1 optional question** at the end: configure Telegram alerts.
 > [!TIP]
 > The interactive guide walks you through every step. Use it to copy-paste each value without errors.
 >
-> [Open the Installation Guide](https://vps-secure.aiforceone.fr/guide.html)
+> [Open the Installation Guide](https://vps-secure.aiforceone.fr/guide-en.html)
 
 <p align="left">
   <img src="./screenshots/install_helper.png" alt="Installation Guide" width="100%">
@@ -552,7 +552,7 @@ Full installation 100% functional in **13 min** (dashboard included)
 
 VPS-SECURE COMMERCIAL LICENSE
 Copyright (c) 2026 AIFORCEONE
-https://vps-secure.aiforceone.fr/offre.html
+https://vps-secure.aiforceone.fr/offre-en.html
 
 ---
 

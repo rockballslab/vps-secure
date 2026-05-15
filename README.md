@@ -108,12 +108,12 @@ Before running the script, you need:
 
 ### Step 0 — Use the interactive guide (recommended)
 
-Before you start, open the [Interactive Installation Guide](https://vps-secure.aiforceone.fr/guide-en.html) and follow the steps.
+Before anything else, open the [Interactive Installation Guide](https://vps-secure.aiforceone.fr/guide-en.html) and follow the steps.
 
-It lets you centralize all the information needed during installation — zero copy-paste errors.
+It walks you through every input you'll need — no copy-paste errors, no back-and-forth.
 
 > [!TIP]
-> No VPS yet? [-20% on Hostinger with code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · or · [20EUR free credit on Hetzner](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
+> **No VPS yet?** [Hostinger — 20% off **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · or · [ Hetzner — 20€ free credit](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
 
 ---
 

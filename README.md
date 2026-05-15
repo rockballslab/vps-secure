@@ -336,7 +336,7 @@ The script asks for a domain name and a password. Your password will be saved in
 </p>
 
 <p align="center">
-  <img src="./dashboard/dashboard-preview2.jpg" alt="VPS Secure Dashboard" width="100%">
+  <img src="./dashboard/dashboard-preview2-en.jpg" alt="VPS Secure Dashboard" width="100%">
 </p>
 
 ### Cockpit tab EN/FR

@@ -30,7 +30,7 @@ A bare or default-configured server is an easy target — visible and attackable
 **VPS-Secure** is not just an install script: it's an ultra-robust security foundation, designed to turn a bare VPS into a production-ready server with significantly stronger protection against attackers.
 
 <p align="center">
-  <img src="./screenshots/VPS-SECURE.png" alt="My Fortress with VPS-SECURE" width="100%">
+  <img src="./screenshots/VPS-SECURE-en.png" alt="My Fortress with VPS-SECURE" width="100%">
 </p>
 
 ---

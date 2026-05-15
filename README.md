@@ -8,7 +8,6 @@
 
 ![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
-![License](https://img.shields.io/badge/License-Commercial-blue)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04%20LTS-E95420?logo=ubuntu&logoColor=white)
 ![Lynis Score](https://img.shields.io/badge/Lynis%20Score-86%2F100-success)
 ![Last Commit](https://img.shields.io/github/last-commit/rockballslab/vps-secure)

@@ -328,8 +328,8 @@ sudo ufw allow 8080/tcp comment 'My application'
 
 A web  to visualize your server's status in real time.
 
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main//install--secure.sh)
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/dashboard/install-dashboard-secure.sh)
 ```
 
 The script asks for a domain name and a password. Your password will be saved in `~/vps-monitor/.env`.

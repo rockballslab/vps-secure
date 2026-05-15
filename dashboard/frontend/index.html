@@ -1214,6 +1214,7 @@ function setTab(tab) {
 
 /* ── Status ───────────────────────────────────────────────────────────── */
 function setStatus(ok) {
+  _lastStatus = ok;
   $('status-dot').className = ok ? 'dot' : 'dot error';
   $('status-txt').textContent = ok ? t('js_connected') : t('js_api_error');
 }
@@ -1568,7 +1569,7 @@ async function refresh() {
   try {
     const res = await fetch('/api/metrics', { cache:'no-store', headers:{'Authorization':AUTH} });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    updateCards(await res.json()); setStatus(true);
+    const _data = await res.json(); _lastMetrics = _data; updateCards(_data); setStatus(true);
     $('last-update').textContent = new Date().toLocaleTimeString('fr-FR');
     refreshTimeline();
     refreshNetworkIO();
@@ -1630,6 +1631,8 @@ function logout() { sessionStorage.removeItem('vps_auth'); window.location.href 
 
 /* ── Init ─────────────────────────────────────────────────────────────── */
 let refreshTimer=null, countdown=30, cdTimer=null;
+let _lastMetrics = null;
+let _lastStatus  = null;
 initDonuts();
 applyTheme(sessionStorage.getItem('vps_theme_dark') !== '0');
 
@@ -2059,6 +2062,10 @@ function applyLang(lang) {
     const isHiding = bv.textContent.includes('Masquer') || bv.textContent.includes('Hide');
     bv.textContent = isHiding ? t('js_hide_victories') : t('journal_show_victories');
   }
+
+  /* Re-render depuis le cache — traduit les valeurs dynamiques sans appel réseau */
+  if (typeof _lastMetrics !== 'undefined' && _lastMetrics) updateCards(_lastMetrics);
+  if (typeof _lastStatus  !== 'undefined' && _lastStatus  !== null) setStatus(_lastStatus);
 }
 
 /* Initialisation au chargement */

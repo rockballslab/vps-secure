@@ -4,7 +4,7 @@
 
 ---
 
-# VPS-SECURE // The One-Command Fortress for Linux.
+# VPS-SECURE | Production-Ready Security. One Command. 15 Minutes.
 
 ![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)

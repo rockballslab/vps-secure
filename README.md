@@ -23,7 +23,7 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 ---
 
-## :shield: Why choose this script?
+## :shield: What makes this script different?
 
 A bare or default-configured server is an easy target — visible and attackable within minutes.
 

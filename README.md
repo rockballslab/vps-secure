@@ -52,9 +52,6 @@ This project took serious effort to get right. The depth of what it covers — a
 
 1 command — 15 automatic steps — zero technical expertise required.
 
-<p align="center">
-  <img src="./screenshots/compatibility.png" alt="Compatible with" width="100%">
-</p>
 
 | # | What | Why |
 |---|---|---|
@@ -74,6 +71,9 @@ This project took serious effort to get right. The depth of what it covers — a
 | 14 | **Endlessh** (honeypot port 22) | SSH is on port 2222 — port 22 is free. Endlessh captures it and keeps bots connected for hours by sending an infinite SSH banner. They can't attack elsewhere during that time |
 | 15 | **AIDE** (integrity monitoring) | SHA512 hash of all system binaries at install time. Daily scan at 03:00 — any modification (replaced binary, backdoor, rootkit) triggers an alert in the Telegram report. After an OS update, manually re-run the baseline (command provided) |
 
+<p align="center">
+  <img src="./screenshots/compatibility.png" alt="Compatible with" width="100%">
+</p>
 <p align="center">
   <img src="./screenshots/sticker4-en.png" alt="Before-After" width="100%">
 </p>

@@ -41,6 +41,15 @@ services:
       DASHBOARD_USER:     "admin"
       DASHBOARD_PASS:     "${DASHBOARD_PASS:-}"
     restart: unless-stopped
+    # ── Health check : détecte le socket Docker périmé (live-restore + daemon restart) ──
+    # Si /var/run/docker.sock est un inode mort après redémarrage daemon → unhealthy visible
+    # Fix préventif : voir drop-in systemd dans install.sh (auto-recreate metrics-api)
+    healthcheck:
+      test: ["CMD-SHELL", "docker info >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   caddy:
     image: caddy:2-alpine

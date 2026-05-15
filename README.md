@@ -87,8 +87,11 @@ This project took serious effort to get right. The depth of what it covers — a
 
 > [!IMPORTANT]
 > *"VPS-SECURE v2.7.2 — CVE-2026-31431 patch integrated in under 24h — an actively exploited kernel vulnerability added to the CISA KEV list the day before. The fix was integrated less than 24h after publication. That's exactly why this product exists."*
+> 
 > **CVE-2026-31431 "Copy Fail"** — CVSS 7.8 · CISA KEV · Exploited in-the-wild
+> 
 > Vector: local privilege escalation via `algif_aead` (Linux kernel 6.8.0, Ubuntu 24.04)
+> 
 > Fix: permanent module blacklist via `modprobe.d` — integrated in `install.sh` step 8.
 
 ---

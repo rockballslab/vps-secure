@@ -34,6 +34,14 @@ ENDLESSH_CONTAINER  = os.environ.get("ENDLESSH_CONTAINER", "endlessh")
 CROWDSEC_CONTAINER  = os.environ.get("CROWDSEC_CONTAINER", "crowdsec")
 HOSTFS              = os.environ.get("HOSTFS", "/")
 
+# Containers protégés contre le restart depuis le dashboard
+# (sécurité réseau critique — downtime = exposition directe)
+RESTART_BLACKLIST = {
+    name.strip().lower()
+    for name in os.environ.get("RESTART_BLACKLIST", "crowdsec").split(",")
+    if name.strip()
+}
+
 # ── AIDE trigger file (issue #109) ───────────────────────────────────────────
 AIDE_TRIGGER = Path("/var/lib/vps-monitor/aide_rebase_trigger")
 AIDE_RESULT  = Path("/var/lib/vps-monitor/aide_rebase_result")
@@ -2216,6 +2224,96 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(resp)))
             self.end_headers()
             self.wfile.write(resp)
+
+        elif path == "/api/containers/restart":
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length)) if length else {}
+                container_name = body.get("name", "").strip()
+
+                # Validation stricte du nom (alphanum + - _ . uniquement)
+                if not container_name or not re.match(r'^[a-zA-Z0-9_\-\.]+$', container_name):
+                    resp = json.dumps({"error": "invalid_name"}).encode()
+                    self.send_response(400)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.send_header("Content-Length", str(len(resp)))
+                    self.send_header("Cache-Control", "no-store")
+                    self.end_headers()
+                    self.wfile.write(resp)
+                    return
+
+                # Containers critiques — restart interdit depuis le dashboard
+                if container_name.lower() in RESTART_BLACKLIST:
+                    resp = json.dumps({"error": "protected", "name": container_name}).encode()
+                    self.send_response(403)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.send_header("Content-Length", str(len(resp)))
+                    self.send_header("Cache-Control", "no-store")
+                    self.end_headers()
+                    self.wfile.write(resp)
+                    return
+
+                # Vérification que le container existe bien (anti-injection supplémentaire)
+                check = subprocess.run(
+                    ["docker", "inspect", "--format", "{{.Name}}", container_name],
+                    capture_output=True, text=True, timeout=5
+                )
+                if check.returncode != 0:
+                    resp = json.dumps({"error": "not_found"}).encode()
+                    self.send_response(404)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.send_header("Content-Length", str(len(resp)))
+                    self.send_header("Cache-Control", "no-store")
+                    self.end_headers()
+                    self.wfile.write(resp)
+                    return
+
+                # Notif Telegram avant le restart
+                _send_telegram_api(
+                    f"🔄 Container redémarré depuis le dashboard\n"
+                    f"📦 Container : {container_name}\n"
+                    f"🌐 IP source : {ip}\n"
+                    f"📅 {time.strftime('%d/%m/%Y %H:%M:%S')}"
+                )
+
+                # Docker restart (timeout 30s)
+                result = subprocess.run(
+                    ["docker", "restart", container_name],
+                    capture_output=True, text=True, timeout=30
+                )
+
+                # Invalider le cache containers ET le cache updates
+                global _containers_cache, _containers_cache_time
+                global _updates_cache, _updates_cache_time
+                _containers_cache = None
+                _containers_cache_time = 0.0
+                _updates_cache = None
+                _updates_cache_time = 0.0
+
+                if result.returncode == 0:
+                    resp = json.dumps({"status": "ok", "name": container_name}).encode()
+                    self.send_response(200)
+                else:
+                    stderr_safe = result.stderr.strip()[:200]
+                    resp = json.dumps({"status": "error", "detail": stderr_safe}).encode()
+                    self.send_response(500)
+
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(resp)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(resp)
+
+            except subprocess.TimeoutExpired:
+                resp = json.dumps({"status": "error", "detail": "timeout"}).encode()
+                self.send_response(504)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(resp)))
+                self.end_headers()
+                self.wfile.write(resp)
+            except Exception as exc:
+                self.send_error(500, str(exc))
+            return
 
         else:
             self.send_error(404)

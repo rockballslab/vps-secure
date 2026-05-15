@@ -535,7 +535,7 @@ sudo cat /var/log/rkhunter-propupd.log
 
 Tested and verified on May 11, 2026 on **Ubuntu 24.04 LTS** — **v2.7.3** — Hostinger KVM4 and Hetzner CPX42
 
-Full installation 100% functional in **13 min** (dashboard included)
+Full installation 100% functional in **13 min** (dashboard installation included)
 
 ---
 

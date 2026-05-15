@@ -346,7 +346,7 @@ The script asks for a domain name and a password. Your password will be saved in
   <img src="./dashboard/dashboard-preview2.jpg" alt="VPS Secure Dashboard" width="100%">
 </p>
 
-### Cockpit tab
+### Cockpit tab EN/FR
 
 Health score 0-100 with a secret mascot at perfect score.
 

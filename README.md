@@ -81,7 +81,7 @@ I built **VPS-SECURE** out of necessity: I wanted a tool capable of turning any 
 </p>
 
 <p align="center">
-  <img src="./screenshots/sticker1.png" alt="My Fortress with VPS-SECURE" width="100%">
+  <img src="./screenshots/sticker1-en.png" alt="My Fortress with VPS-SECURE" width="100%">
 </p>
 
 ---

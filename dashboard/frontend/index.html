@@ -955,6 +955,9 @@ const TRANSLATIONS = {
     js_paused:            'Pausé',
     js_container_active:  'actif',
     js_container_stopped: 'arrêté',
+    js_avg_duration:      'Durée moy. :',
+    js_up_to_date_badge:  'À jour',
+    js_container_protected: 'Container protégé — restart désactivé',
     js_period_1d_label:   '24 dernières heures',
     js_period_7d_label:   '7 derniers jours',
     js_period_30d_label:  '30 derniers jours',
@@ -1132,6 +1135,9 @@ const TRANSLATIONS = {
     js_paused:            'Paused',
     js_container_active:  'active',
     js_container_stopped: 'stopped',
+    js_avg_duration:      'Avg duration:',
+    js_up_to_date_badge:  'Up to date',
+    js_container_protected: 'Protected container — restart disabled',
     js_period_1d_label:   'Last 24 hours',
     js_period_7d_label:   'Last 7 days',
     js_period_30d_label:  'Last 30 days',
@@ -1382,7 +1388,7 @@ function updateCards(d) {
   const mem = s.memory||{}, dsk = s.disk||{}, upd = d.updates||{};
   updateScore(d.score);
   setVal('val-endlessh-total', fmt(e.total), true);
-  $('sub-endlessh').innerHTML = `Durée moy. : <b>${e.avg_duration_fmt||'—'}</b>`;
+  $('sub-endlessh').innerHTML = `${t('js_avg_duration')} <b>${e.avg_duration_fmt||'—'}</b>`;
   setCard('card-endlessh', e.last24h > 0 ? 'a-green' : '');
   // Endlessh : toujours vert — les bots piégés = succès, pas une menace
   const iconE = $('icon-endlessh');
@@ -1746,7 +1752,7 @@ function renderContainerCard(c, idx) {
   const animStyle = hc.anim ? 'animation:pulseGreen 2s infinite;' : '';
   const isProtected = _RESTART_BLACKLIST.some(k => c.name.toLowerCase().includes(k));
   const restartBtnHtml = isProtected
-    ? `<button class="btn-restart" disabled title="Container protégé — restart désactivé"
+    ? `<button class="btn-restart" disabled title="${t('js_container_protected')}"
         style="margin-left:3px;width:24px;height:24px;border-radius:var(--r-xs);border:1px solid var(--card-border);background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.35;cursor:not-allowed;">
         <i class="ph-fill ph-lock" style="font-size:12px;pointer-events:none;"></i>
       </button>`
@@ -1808,7 +1814,7 @@ async function fetchContainerUpdates() {
       const imgClean=card.getAttribute('data-image-clean'), st=updates[imgClean];
       card.querySelectorAll('.upd-badge').forEach(b=>b.remove());
       const base='position:absolute;bottom:11px;right:14px;display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 9px 3px 7px;border-radius:20px;backdrop-filter:blur(6px);font-family:JetBrains Mono,monospace;';
-      if(st==='up_to_date') card.insertAdjacentHTML('beforeend',`<div class="upd-badge" style="${base}background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:#4ade80;"><i class="ph-fill ph-check-circle" style="font-size:11px;"></i>À jour</div>`);
+      if(st==='up_to_date') card.insertAdjacentHTML('beforeend',`<div class="upd-badge" style="${base}background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:#4ade80;"><i class="ph-fill ph-check-circle" style="font-size:11px;"></i>${t('js_up_to_date_badge')}</div>`);
       else if(st==='update_available') card.insertAdjacentHTML('beforeend',`<div class="upd-badge" style="${base}background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.25);color:#fb923c;"><i class="ph-fill ph-arrow-circle-up" style="font-size:11px;"></i>Update</div>`);
     });
   } catch(e) {}
@@ -1860,7 +1866,7 @@ window.restartContainer = async function(name) {
       // Container protégé — verrouiller définitivement le bouton
       if (btn) {
         btn.disabled = true;
-        btn.title = 'Container protégé — restart désactivé';
+        btn.title = t('js_container_protected');
         btn.style.color = 'var(--muted)';
         btn.style.borderColor = 'var(--card-border)';
         btn.style.background  = 'transparent';

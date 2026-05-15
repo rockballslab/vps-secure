@@ -38,11 +38,11 @@ A bare or default-configured server is an easy target — visible and attackable
 ## Who built this?
 
 :wave: Hey, I'm Fabrice.
-Entrepreneur, founder of multiple SaaS products, and Zero Trust advocate.
+Entrepreneur, SaaS founder, and Zero Trust advocate based in France.
 
-I built **VPS-SECURE** out of necessity: I wanted a tool capable of turning any bare server into an impenetrable fortress in minutes — without sacrificing service stability.
+I built **VPS-SECURE** out of necessity: I needed a tool that could harden any bare server in minutes, without breaking the services running on it.
 
-> *"Eat your own dog food"*: This is exactly the configuration I use to harden my production servers and confidently run n8n stacks, microservices, and AI agents in production.
+> This is the exact setup I run in production: n8n stacks, microservices, and autonomous AI agents. I don't ship tools I don't trust with my own infrastructure.
 
 ---
 

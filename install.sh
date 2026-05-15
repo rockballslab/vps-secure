@@ -851,6 +851,40 @@ else
     exit 1
 fi
 
+# ── Drop-in systemd Docker : refresh socket vps-monitor après redémarrage daemon ──
+# Contexte : live-restore=true (étape 6) + auto-upgrade Docker CE (étape 7)
+# → Docker daemon redémarre → recrée /var/run/docker.sock (nouvel inode)
+# → vps-monitor-api survit (live-restore) mais son bind mount pointe sur l'inode mort
+# → Toutes les commandes docker dans l'API échouent silencieusement
+# Ce drop-in recrée metrics-api automatiquement 3s après chaque restart Docker.
+cat > /usr/local/bin/vps-monitor-socket-refresh.sh << 'REFRESHEOF'
+#!/usr/bin/env bash
+# vps-secure — Refresh socket vps-monitor après redémarrage Docker daemon
+# Déclenché par ExecStartPost dans docker.service.d/99-vps-monitor-socket-refresh.conf
+sleep 3
+for search_dir in /home/*/vps-monitor /opt/vps-monitor /root/vps-monitor; do
+    [[ -f "${search_dir}/docker-compose.yml" ]] || continue
+    /usr/bin/docker compose -f "${search_dir}/docker-compose.yml" \
+        up -d --force-recreate metrics-api 2>/dev/null || true
+    break
+done
+REFRESHEOF
+chmod 750 /usr/local/bin/vps-monitor-socket-refresh.sh
+
+mkdir -p /etc/systemd/system/docker.service.d/
+cat > /etc/systemd/system/docker.service.d/99-vps-monitor-socket-refresh.conf << 'DROPINEOF'
+[Unit]
+Description=Refresh vps-monitor socket after Docker daemon restart
+
+[Service]
+ExecStartPost=/usr/local/bin/vps-monitor-socket-refresh.sh
+DROPINEOF
+chmod 644 /etc/systemd/system/docker.service.d/99-vps-monitor-socket-refresh.conf
+systemctl daemon-reload
+log_success "Drop-in systemd Docker → socket refresh vps-monitor configuré (live-restore + auto-upgrade safe)."
+log_info "  Script : /usr/local/bin/vps-monitor-socket-refresh.sh"
+log_info "  Drop-in : /etc/systemd/system/docker.service.d/99-vps-monitor-socket-refresh.conf"
+
 # ── Vérification version minimum Docker (issue #49) ──────────────────────
 DOCKER_MIN_VERSION="29.3.1"
 version_lt() { printf '%s\n%s\n' "$1" "$2" | sort -V -C; }

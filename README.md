@@ -9,11 +9,11 @@
 ![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
 
-**:closed_lock_with_key: VPS-SECURE is the only script that turns a bare VPS into an operational fortress — honeypot, collaborative IPS, real-time dashboard, Telegram alerts — in 15 minutes and 1 command, with zero Linux expertise required.**
+**:closed_lock_with_key: VPS-SECURE turns a bare VPS into a hardened fortress — honeypot, collaborative IPS, real-time dashboard, Telegram alerts — with a single command. No Linux expertise required.**
 
-> "If you're running n8n, openclaw, or your own SaaS on a VPS and you care about your data, run this script **BEFORE INSTALLING ANYTHING ELSE.**"
+> "If you're running n8n, OpenClaw, Hermes, or any autonomous agent on a VPS — run this script **before deploying anything.**"
 
-**15 minutes**, one single command to turn your server into a **Fortress** — ready to host your services with complete peace of mind.
+**15 minutes. One command. Done.**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \

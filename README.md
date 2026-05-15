@@ -4,7 +4,7 @@
 
 ---
 
-# VPS-SECURE
+# VPS-SECURE // The One-Command Fortress for Linux.
 
 ![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)

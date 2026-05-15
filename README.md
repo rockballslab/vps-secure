@@ -332,11 +332,11 @@ The script asks for a domain name and a password. Your password will be saved in
 > To generate a secure password: `openssl rand -base64 32`
 
 <p align="center">
-  <img src="./dashboard/dashboard-login.png" alt="VPS Secure Dashboard" width="100%">
+  <img src="./dashboard/dashboard-login-en.png" alt="VPS Secure Dashboard" width="100%">
 </p>
 
 <p align="center">
-  <img src="./dashboard/dashboard-preview2-en.jpg" alt="VPS Secure Dashboard" width="100%">
+  <img src="./dashboard/dashboard-preview2-en.png" alt="VPS Secure Dashboard" width="100%">
 </p>
 
 ### Cockpit tab EN/FR

@@ -215,7 +215,7 @@ StrictModes yes
 PrintLastLog yes
 
 # Limiter les connexions à vpsadmin uniquement
-AllowUsers ${USERNAME}
+AllowUsers vpsadmin
 
 # Logging renforcé (fingerprint des clés utilisées — utile en forensique)
 LogLevel VERBOSE
@@ -1504,6 +1504,7 @@ USE_SYSLOG=authpriv.warning
 # Ce test est redondant avec AIDE — désactivé pour éliminer l'alert fatigue quotidienne
 DISABLE_TESTS=deleted_files
 WEB_CMD=""
+HASH_CMD=sha256sum
 RKHEOF
 mkdir -p /var/lib/rkhunter/tmp
 chmod 700 /var/lib/rkhunter/tmp

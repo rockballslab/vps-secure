@@ -1743,7 +1743,7 @@ DOCK_COUNT=$(ausearch -k docker_socket --start today -i 2>/dev/null | grep -c "^
 SSH_COUNT=$(ausearch -k sshd_config --start today -i 2>/dev/null | grep -c "^----" || true); SSH_COUNT="${SSH_COUNT:-0}"
 AUDIT_TOTAL=$((PRIV_COUNT + DOCK_COUNT + SSH_COUNT))
 
-# Seuil adaptatif : alerte si > 10 événements/jour (admin normal = 3-5 sudo max)
+# Seuil adaptatif : alerte si > 100 événements/jour (admin normal = 3-5 sudo max)
 AUDIT_THRESHOLD=100
 
 if [[ "$AUDIT_TOTAL" -gt "$AUDIT_THRESHOLD" ]]; then
@@ -1787,7 +1787,7 @@ else
         DETAILS+="⚠️ AIDE — erreur système (signal $(( AIDE_EXIT - 128 )))
 "
         ISSUES=$(( ISSUES + 1 ))
-    elif [[ $(( AIDE_EXIT & 56 )) -ne 0 ]]; then
+    elif [[ $(( AIDE_EXIT & 120 )) -ne 0 ]]; then
         DETAILS+="⚠️ AIDE — erreur technique (code $AIDE_EXIT)
 "
         ISSUES=$(( ISSUES + 1 ))

@@ -886,7 +886,7 @@ log_info "  Script : /usr/local/bin/vps-monitor-socket-refresh.sh"
 log_info "  Drop-in : /etc/systemd/system/docker.service.d/99-vps-monitor-socket-refresh.conf"
 
 # ── Vérification version minimum Docker (issue #49) ──────────────────────
-DOCKER_MIN_VERSION="29.3.1"
+DOCKER_MIN_VERSION="29.4.1"
 version_lt() { printf '%s\n%s\n' "$1" "$2" | sort -V -C; }
 DOCKER_INSTALLED_VERSION=$(docker --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+' | head -1)
 if [ -n "$DOCKER_INSTALLED_VERSION" ] && version_lt "$DOCKER_INSTALLED_VERSION" "$DOCKER_MIN_VERSION"; then

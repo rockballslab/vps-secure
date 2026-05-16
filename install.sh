@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ============================================================
+# ===========================================================
 # VPS-secure — Ton VPS devient une forteresse
 # À lancer en ROOT sur un Ubuntu 24.04 LTS vierge
 #

@@ -44,20 +44,20 @@ A bare or default-configured server is an easy target — visible and attackable
 ## Bare VPS vs. VPS-SECURE — The real difference
 
 | | Bare VPS | VPS-SECURE |
-|---|---|---|
-| Default exposed ports | All | 3 only (2222 / 80 / 443) |
-| Brute force protection | No | Yes — CrowdSec collaborative IPS |
-| Port 22 bots | Active attack vector | Trapped for hours by Endlessh |
-| SSH root login | Allowed | Permanently disabled |
-| SSH authentication | Password (bruteforceable) | Key-only (ed25519) |
-| Kernel hardening | 0 parameters | 35 sysctl parameters |
-| Rootkit scanning | None | rkhunter — daily at 00:00 UTC |
-| File integrity monitoring | None | AIDE — SHA512 baseline daily 03:00 |
-| Docker firewall bypass | Exposed by default | Fixed — UFW has full control |
-| Security alerts | None | Telegram — instant SSH + daily report |
-| Automatic security patches | No | Yes — unattended-upgrades incl. Docker CE |
-| Lynis hardening score | ~50 / 100 | **86 / 100** |
-| Time to harden | Days of research | **15 minutes** |
+|---|:---:|:---:|
+| Default exposed ports | ❌ All | ✅ 3 only (2222 / 80 / 443) |
+| Brute force protection | ❌ None | ✅ CrowdSec collaborative IPS |
+| Port 22 bots | ❌ Active attack vector | ✅ Trapped for hours by Endlessh |
+| SSH root login | ❌ Allowed | ✅ Permanently disabled |
+| SSH authentication | ❌ Password (bruteforceable) | ✅ Key-only (ed25519) |
+| Kernel hardening | ❌ 0 parameters | ✅ 35 sysctl parameters |
+| Rootkit scanning | ❌ None | ✅ rkhunter — daily at 00:00 UTC |
+| File integrity monitoring | ❌ None | ✅ AIDE — SHA512 baseline daily 03:00 |
+| Docker firewall bypass | ❌ Exposed by default | ✅ Fixed — UFW has full control |
+| Security alerts | ❌ None | ✅ Telegram — instant SSH + daily report |
+| Automatic security patches | ❌ No | ✅ Yes — incl. Docker CE |
+| Lynis hardening score | ❌ ~30 / 100 | ✅ **86 / 100** |
+| Time to harden | ❌ Days of research | ✅ **15 minutes** |
 
 ---
 

@@ -1809,8 +1809,9 @@ else
                 DETAILS+="ℹ️ AIDE — ${APT_ACTIVITY} pkg(s) via apt après le scan. OK si attendu — rebase : sudo vps-secure-aide-rebase
 "
             else
-                DETAILS+="🚨 AIDE — MODIFICATIONS INATTENDUES (aucune activité apt)
-  → Vérifier : sudo aide --check --config /etc/aide/aide.conf
+                DETAILS+="ℹ️ AIDE — fichiers nouveaux ou modifiés détectés (hors apt)
+  → Normal si activité applicative récente. Vérifier : sudo cat /var/log/aide-daily.log
+  → Si tout est OK : sudo vps-secure-aide-rebase
 "
                 ISSUES=$(( ISSUES + 1 ))
             fi

@@ -88,6 +88,7 @@ A bare or default-configured server is an easy target — visible and attackable
 - [🖥️ Compatibility](#compatibility)
 - [⚠️ Known limitations](#known-limitations)
 - [📄 License](#license)
+- [⭐ Star History](#Star-History-Chart)
 
 ---
 

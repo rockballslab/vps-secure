@@ -45,7 +45,7 @@ A bare or default-configured server is an easy target — visible and attackable
 
 - [👋 Who built this?](#who-built-this)
 - [⚙️ What VPS-SECURE does — 15 automated steps](#what-vps-secure-does)
-- [🛡️ Security responsiveness — live CVE patches](#security-responsiveness)
+- [⚡ Security responsiveness — live CVE patches](#shield-security-responsiveness)
 - [✅ Requirements](#requirements)
 - [🚀 Installation — step by step (15 min)](#automatic-installation-in-15-minutes-flat)
   - [Step 0 — Interactive guide *(recommended)*](#step-0--start-with-the-interactive-guide-recommended)
@@ -61,7 +61,7 @@ A bare or default-configured server is an easy target — visible and attackable
   - [Security log tab](#security-log-tab)
   - [Containers tab](#containers-tab)
   - [Tech stack](#tech-stack)
-- [🔒 Security level — CIS · DISA STIG · Lynis 86/100](#security-level)
+- [🔒 Security level — CIS · DISA STIG · Lynis 86/100](#shield-security-level)
 - [👤 vpsadmin user security](#vpsadmin-user-security)
 - [🚫 What this script does NOT do](#what-this-script-does-not-do)
 - [🛠️ Useful commands after installation](#useful-commands-after-installation)

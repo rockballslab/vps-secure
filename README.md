@@ -29,9 +29,20 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 ---
 
+## :shield: What makes this script different?
+
+A bare or default-configured server is an easy target — visible and attackable within minutes.
+
+**VPS-Secure** is not just an install script: it's a complete security stack that turns a naked VPS into a hardened, production-ready server — with SSH lockdown, crowdsourced intrusion detection, a honeypot, and real-time alerts. All automated. All in one command.
+
+<p align="center">
+  <img src="./screenshots/VPS-SECURE-en.png" alt="My Fortress with VPS-SECURE" width="100%">
+</p>
+
+---
+
 ## 📋 Table of Contents
 
-- [🛡️ What makes this script different?](#what-makes-this-script-different)
 - [👋 Who built this?](#who-built-this)
 - [⚙️ What VPS-SECURE does — 15 automated steps](#what-vps-secure-does)
 - [⚡ Security responsiveness — live CVE patches](#security-responsiveness)
@@ -57,18 +68,6 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 - [🖥️ Compatibility](#compatibility)
 - [⚠️ Known limitations](#known-limitations)
 - [📄 License](#license)
-
----
-
-## :shield: What makes this script different?
-
-A bare or default-configured server is an easy target — visible and attackable within minutes.
-
-**VPS-Secure** is not just an install script: it's a complete security stack that turns a naked VPS into a hardened, production-ready server — with SSH lockdown, crowdsourced intrusion detection, a honeypot, and real-time alerts. All automated. All in one command.
-
-<p align="center">
-  <img src="./screenshots/VPS-SECURE-en.png" alt="My Fortress with VPS-SECURE" width="100%">
-</p>
 
 ---
 

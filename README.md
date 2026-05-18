@@ -56,7 +56,7 @@ A bare or default-configured server is an easy target — visible and attackable
 | Docker firewall bypass | ❌ Exposed by default | ✅ Fixed — UFW has full control |
 | Security alerts | ❌ None | ✅ Telegram — instant SSH + daily report |
 | Automatic security patches | ❌ No | ✅ Yes — incl. Docker CE |
-| Lynis hardening score | ❌ ~30 / 100 | ✅ **86 / 100** |
+| Lynis hardening score | ❌ ~50 / 100 | ✅ **86 / 100** |
 | Time to harden | ❌ Days of research | ✅ **15 minutes** |
 
 ---

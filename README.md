@@ -29,6 +29,18 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 ---
 
+## :shield: What makes this script different?
+
+A bare or default-configured server is an easy target — visible and attackable within minutes.
+
+**VPS-Secure** is not just an install script: it's a complete security stack that turns a naked VPS into a hardened, production-ready server — with SSH lockdown, crowdsourced intrusion detection, a honeypot, and real-time alerts. All automated. All in one command.
+
+<p align="center">
+  <img src="./screenshots/VPS-SECURE-en.png" alt="My Fortress with VPS-SECURE" width="100%">
+</p>
+
+---
+
 ## Bare VPS vs. VPS-SECURE — The real difference
 
 | | Bare VPS | VPS-SECURE |
@@ -49,49 +61,33 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 ---
 
-## :shield: What makes this script different?
+## 📋 Table of Contents
 
-A bare or default-configured server is an easy target — visible and attackable within minutes.
-
-**VPS-Secure** is not just an install script: it's a complete security stack that turns a naked VPS into a hardened, production-ready server — with SSH lockdown, crowdsourced intrusion detection, a honeypot, and real-time alerts. All automated. All in one command.
-
-<p align="center">
-  <img src="./screenshots/VPS-SECURE-en.png" alt="My Fortress with VPS-SECURE" width="100%">
-</p>
-
----
-
-## Table of Contents
-
-- [Who built this?](#who-built-this)
-- [What VPS-SECURE does — 15 automated steps](#what-vps-secure-does)
-- [Defense-in-depth architecture](#defense-in-depth-architecture)
-- [Security responsiveness — live CVE patches](#shield-security-responsiveness)
-- [Requirements](#requirements)
-- [Installation — step by step (15 min)](#automatic-installation-in-15-minutes-flat)
-  - [Step 0 — Interactive guide](#step-0--start-with-the-interactive-guide-recommended)
+- [👋 Who built this?](#who-built-this)
+- [⚙️ What VPS-SECURE does — 15 automated steps](#what-vps-secure-does)
+- [⚡ Security responsiveness — live CVE patches](#shield-security-responsiveness)
+- [✅ Requirements](#requirements)
+- [🚀 Installation — step by step (15 min)](#automatic-installation-in-15-minutes-flat)
+  - [Step 0 — Interactive guide *(recommended)*](#step-0--start-with-the-interactive-guide-recommended)
   - [Step 1 — Generate your SSH key](#step-1--generate-your-ssh-key-on-your-local-machine)
   - [Step 2 — Connect as root](#step-2--connect-as-root)
   - [Step 3 — Run the script](#step-3--run-the-script)
   - [Step 4 — Reconnect as vpsadmin](#step-4--reconnect-as-vpsadmin-after-reboot)
   - [Step 5 — Verify the installation](#step-5--verify-the-installation)
-- [Telegram alerts](#security-alerts-on-telegram-optional)
-- [Automated daily security schedule](#automated-daily-security-schedule)
-- [Optional but useful — Quick connect](#optional-but-useful)
-- [Monitoring dashboard](#monitoring--optional-but-highly-recommended)
+- [📲 Telegram alerts *(optional)*](#security-alerts-on-telegram-optional)
+- [💡 Optional but useful — Quick connect](#optional-but-useful)
+- [📊 Monitoring dashboard *(optional but recommended)*](#monitoring--optional-but-highly-recommended)
   - [Cockpit tab EN/FR](#cockpit-tab-enfr)
   - [Security log tab](#security-log-tab)
   - [Containers tab](#containers-tab)
   - [Tech stack](#tech-stack)
-- [Security level — CIS · DISA STIG · Lynis 86/100](#shield-security-level)
-- [vpsadmin user security](#vpsadmin-user-security)
-- [What this script does NOT do](#what-this-script-does-not-do)
-- [Useful commands after installation](#useful-commands-after-installation)
-- [Compatibility](#compatibility)
-- [Known limitations](#known-limitations)
-- [FAQ](#frequently-asked-questions)
-- [Star History](#star-history)
-- [License](#license)
+- [🔒 Security level — CIS · DISA STIG · Lynis 86/100](#shield-security-level)
+- [👤 vpsadmin user security](#vpsadmin-user-security)
+- [🚫 What this script does NOT do](#what-this-script-does-not-do)
+- [🛠️ Useful commands after installation](#useful-commands-after-installation)
+- [🖥️ Compatibility](#compatibility)
+- [⚠️ Known limitations](#known-limitations)
+- [📄 License](#license)
 
 ---
 

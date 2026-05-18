@@ -41,6 +41,36 @@ Un serveur nu ou configuré par défaut est une cible facile, visible et attaqua
 
 ---
 
+## 📋 Table des matières
+
+- [👋 Qui suis-je ?](#qui-suis-je-)
+- [⚙️ Ce que fait VPS-SECURE — 15 étapes automatiques](#ce-que-fait-vps-secure)
+- [⚡ Réactivité sécurité — patches CVE en temps réel](#️-réactivité-sécurité)
+- [✅ Prérequis](#prérequis)
+- [🚀 Installation automatique en 15mn chrono](#installation-automatique-en-15mn-chrono)
+  - [Étape 0 — Guide interactif *(recommandé)*](#étape-0---utilise-le-guide-interactif-recommandé)
+  - [Étape 1 — Génère ta clé SSH](#étape-1---génère-ta-clé-ssh-sur-ton-ordinateur)
+  - [Étape 2 — Connecte-toi en root](#étape-2---connecte-toi-en-root)
+  - [Étape 3 — Lance le script](#étape-3---lance-le-script)
+  - [Étape 4 — Reconnecte-toi en vpsadmin](#étape-4---reconnecte-toi-en-vpsadmin-après-le-redémarrage)
+  - [Étape 5 — Vérifie l'installation](#étape-5---vérifie-linstallation)
+- [📲 Alertes Telegram *(optionnel)*](#alertes-de-sécurité-sur-telegram-optionnel)
+- [💡 Optionnel mais pratique](#optionnel-mais-pratique)
+  - [Connexion rapide](#connexion-rapide)
+- [📊 Dashboard de monitoring *(optionnel mais recommandé)*](#dashboard-de-monitoring-optionnel-mais-fortement-recommandé)
+  - [Onglet Cockpit](#onglet-cockpit)
+  - [Onglet Journal de sécurité](#onglet-journal-de-sécurité)
+  - [Onglet Containers](#onglet-containers)
+  - [Stack technique](#stack-technique)
+- [🔒 Niveau de sécurité — CIS · DISA STIG · Lynis 86/100](#️-niveau-de-sécurité)
+- [👤 Sécurité de l'utilisateur vpsadmin](#sécurité-de-lutilisateur-vpsadmin)
+- [🚫 Ce que ce script ne fait PAS](#ce-que-ce-script-ne-fait-pas)
+- [🛠️ Commandes utiles après installation](#commandes-utiles-après-installation)
+- [🖥️ Compatibilité](#compatibilité)
+- [📄 Licence](#licence)
+
+---
+
 
 ## Qui suis-je ?
 

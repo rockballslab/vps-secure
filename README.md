@@ -27,6 +27,36 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
   && sudo ./install-secure.sh
 ```
 
+---
+
+## 📋 Table of Contents
+
+- [🛡️ What makes this script different?](#what-makes-this-script-different)
+- [👋 Who built this?](#who-built-this)
+- [⚙️ What VPS-SECURE does — 15 automated steps](#what-vps-secure-does)
+- [⚡ Security responsiveness — live CVE patches](#security-responsiveness)
+- [✅ Requirements](#requirements)
+- [🚀 Installation — step by step (15 min)](#automatic-installation-in-15-minutes-flat)
+  - [Step 0 — Interactive guide *(recommended)*](#step-0--start-with-the-interactive-guide-recommended)
+  - [Step 1 — Generate your SSH key](#step-1--generate-your-ssh-key-on-your-local-machine)
+  - [Step 2 — Connect as root](#step-2--connect-as-root)
+  - [Step 3 — Run the script](#step-3--run-the-script)
+  - [Step 4 — Reconnect as vpsadmin](#step-4--reconnect-as-vpsadmin-after-reboot)
+  - [Step 5 — Verify the installation](#step-5--verify-the-installation)
+- [📲 Telegram alerts *(optional)*](#security-alerts-on-telegram-optional)
+- [💡 Optional but useful — Quick connect](#optional-but-useful)
+- [📊 Monitoring dashboard *(optional but recommended)*](#monitoring--optional-but-highly-recommended)
+  - [Cockpit tab EN/FR](#cockpit-tab-enfr)
+  - [Security log tab](#security-log-tab)
+  - [Containers tab](#containers-tab)
+  - [Tech stack](#tech-stack)
+- [🔒 Security level — CIS · DISA STIG · Lynis 86/100](#security-level)
+- [👤 vpsadmin user security](#vpsadmin-user-security)
+- [🚫 What this script does NOT do](#what-this-script-does-not-do)
+- [🛠️ Useful commands after installation](#useful-commands-after-installation)
+- [🖥️ Compatibility](#compatibility)
+- [⚠️ Known limitations](#known-limitations)
+- [📄 License](#license)
 
 ---
 

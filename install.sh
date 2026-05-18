@@ -1062,8 +1062,9 @@ net.ipv6.conf.default.accept_ra = 0
 # ASLR — randomisation de l'espace mémoire (CIS 1.5.3, DISA V-238369)
 kernel.randomize_va_space = 2
 
-# Protection ptrace — empêche l'espionnage entre processus (DISA V-238370)
-kernel.yama.ptrace_scope = 1
+# Protection ptrace — scope 3 = seul root peut ptrace (CVE-2026-46333 + DISA V-238370)
+# scope 1 = traçabilité uniquement, scope 3 = blocage complet non-root
+kernel.yama.ptrace_scope = 3
 
 # Désactiver les core dumps setuid — évite la fuite de mémoire sensible (DISA V-238371)
 fs.suid_dumpable = 0

@@ -94,12 +94,26 @@ This project took serious effort to get right. The depth of what it covers — a
 ## :shield: Security responsiveness
 
 > [!IMPORTANT]
-> *"VPS-SECURE v2.7.2 — CVE-2026-31431 patch integrated in under 24h — an actively exploited kernel vulnerability added to the CISA KEV list the day before. The fix was integrated less than 24h after publication. That's exactly why this product exists."*
-> 
+> *"VPS-SECURE v2.7.5 — CVE-2026-46333 patched the same day it dropped.
+> The 4th Linux kernel vulnerability of May 2026 — discovered by AI, leaks SSH host keys
+> via a ptrace race. Fixed in one line. That's exactly why this product exists."*
+>
+> **CVE-2026-46333 "ssh-keysign-pwn"** — CVSS HIGH · Qualys TRU · Published 2026-05-15
+>
+> Vector: local information disclosure via ptrace dumpability race — leaks SSH host keys
+> and `/etc/shadow` (Linux kernel 6.8.0, Ubuntu 24.04)
+>
+> Fix: `kernel.yama.ptrace_scope` bumped from `1` → `3` — integrated in `install.sh` step 8.
+
+> [!IMPORTANT]
+> *"VPS-SECURE v2.7.2 — CVE-2026-31431 patch integrated in under 24h — an actively
+> exploited kernel vulnerability added to the CISA KEV list the day before.
+> The fix was integrated less than 24h after publication. That's exactly why this product exists."*
+>
 > **CVE-2026-31431 "Copy Fail"** — CVSS 7.8 · CISA KEV · Exploited in-the-wild
-> 
+>
 > Vector: local privilege escalation via `algif_aead` (Linux kernel 6.8.0, Ubuntu 24.04)
-> 
+>
 > Fix: permanent module blacklist via `modprobe.d` — integrated in `install.sh` step 8.
 
 ---
@@ -548,7 +562,7 @@ sudo cat /var/log/rkhunter-propupd.log
 
 ## Compatibility
 
-Tested and verified on May 11, 2026 on **Ubuntu 24.04 LTS** — **v2.7.3** — Hostinger KVM4 and Hetzner CPX42
+Tested and verified on May 18, 2026 on **Ubuntu 24.04 LTS** — **v2.7.5** — Hostinger KVM4 and Hetzner CPX42
 
 Full installation 100% functional in **13 min** (dashboard installation included)
 

@@ -1,6 +1,6 @@
-:fr: [Version franÃ§aise](README-FR.md)
+:fr: [Version française](README-FR.md)
 
-**:zap: +1597 bots blocked in 24h on a standard VPS â€” is yours really protected?**
+**:zap: +1597 bots blocked in 24h on a standard VPS — is yours really protected?**
 
 ---
 
@@ -13,7 +13,7 @@
 ![Last Commit](https://img.shields.io/github/last-commit/rockballslab/vps-secure)
 ![ShellCheck](https://img.shields.io/badge/ShellCheck-Passed-brightgreen?logo=shellcheck)
 
-**:closed_lock_with_key: VPS-SECURE turns a bare VPS into a hardened fortress â€” honeypot, collaborative IPS, real-time dashboard, Telegram alerts â€” with a single command. No Linux expertise required.**
+**:closed_lock_with_key: VPS-SECURE turns a bare VPS into a hardened fortress — honeypot, collaborative IPS, real-time dashboard, Telegram alerts — with a single command. No Linux expertise required.**
 
 <p align="center">
   <img src="./screenshots/header.png" alt="My Fortress with VPS-SECURE" width="100%">
@@ -29,31 +29,11 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 ---
 
-## âš”ï¸ Bare VPS vs. VPS-SECURE â€” The real difference
-
-| | Bare VPS | VPS-SECURE |
-|---|---|---|
-| Default exposed ports | All | 3 only (2222 / 80 / 443) |
-| Brute force protection | âŒ | âœ… CrowdSec collaborative IPS |
-| Port 22 bots | Active attack vector | ðŸª¤ Trapped for hours by Endlessh |
-| SSH root login | âœ… Allowed | âŒ Permanently disabled |
-| SSH authentication | Password (bruteforceable) | Key-only (ed25519) |
-| Kernel hardening | âŒ 0 parameters | âœ… 35 sysctl parameters |
-| Rootkit scanning | âŒ None | âœ… rkhunter â€” daily at 00:00 UTC |
-| File integrity monitoring | âŒ None | âœ… AIDE â€” SHA512 baseline daily 03:00 |
-| Docker firewall bypass | âœ… Exposed by default | âŒ Fixed â€” UFW has full control |
-| Security alerts | âŒ None | âœ… Telegram â€” instant SSH + daily report |
-| Automatic security patches | âŒ | âœ… unattended-upgrades incl. Docker CE |
-| Lynis hardening score | ~30 / 100 | **86 / 100** |
-| Time to harden | Days of research | **15 minutes** |
-
----
-
 ## :shield: What makes this script different?
 
-A bare or default-configured server is an easy target â€” visible and attackable within minutes.
+A bare or default-configured server is an easy target — visible and attackable within minutes.
 
-**VPS-Secure** is not just an install script: it's a complete security stack that turns a naked VPS into a hardened, production-ready server â€” with SSH lockdown, crowdsourced intrusion detection, a honeypot, and real-time alerts. All automated. All in one command.
+**VPS-Secure** is not just an install script: it's a complete security stack that turns a naked VPS into a hardened, production-ready server — with SSH lockdown, crowdsourced intrusion detection, a honeypot, and real-time alerts. All automated. All in one command.
 
 <p align="center">
   <img src="./screenshots/VPS-SECURE-en.png" alt="My Fortress with VPS-SECURE" width="100%">
@@ -61,37 +41,33 @@ A bare or default-configured server is an easy target â€” visible and attac
 
 ---
 
-## ðŸ“‹ Table of Contents
+## 📋 Table of Contents
 
-- [ðŸ‘‹ Who built this?](#who-built-this)
-- [âš™ï¸ What VPS-SECURE does â€” 15 automated steps](#what-vps-secure-does)
-- [ðŸ—ï¸ Defense-in-depth architecture](#ï¸-defense-in-depth-architecture)
-- [âš¡ Security responsiveness â€” live CVE patches](#shield-security-responsiveness)
-- [âœ… Requirements](#requirements)
-- [ðŸš€ Installation â€” step by step (15 min)](#automatic-installation-in-15-minutes-flat)
-  - [Step 0 â€” Interactive guide *(recommended)*](#step-0--start-with-the-interactive-guide-recommended)
-  - [Step 1 â€” Generate your SSH key](#step-1--generate-your-ssh-key-on-your-local-machine)
-  - [Step 2 â€” Connect as root](#step-2--connect-as-root)
-  - [Step 3 â€” Run the script](#step-3--run-the-script)
-  - [Step 4 â€” Reconnect as vpsadmin](#step-4--reconnect-as-vpsadmin-after-reboot)
-  - [Step 5 â€” Verify the installation](#step-5--verify-the-installation)
-- [ðŸ“² Telegram alerts *(optional)*](#security-alerts-on-telegram-optional)
-- [ðŸ• Automated daily security schedule](#ï¸-automated-daily-security-schedule)
-- [ðŸ’¡ Optional but useful â€” Quick connect](#optional-but-useful)
-- [ðŸ“Š Monitoring dashboard *(optional but recommended)*](#monitoring--optional-but-highly-recommended)
+- [👋 Who built this?](#who-built-this)
+- [⚙️ What VPS-SECURE does — 15 automated steps](#what-vps-secure-does)
+- [⚡ Security responsiveness — live CVE patches](#shield-security-responsiveness)
+- [✅ Requirements](#requirements)
+- [🚀 Installation — step by step (15 min)](#automatic-installation-in-15-minutes-flat)
+  - [Step 0 — Interactive guide *(recommended)*](#step-0--start-with-the-interactive-guide-recommended)
+  - [Step 1 — Generate your SSH key](#step-1--generate-your-ssh-key-on-your-local-machine)
+  - [Step 2 — Connect as root](#step-2--connect-as-root)
+  - [Step 3 — Run the script](#step-3--run-the-script)
+  - [Step 4 — Reconnect as vpsadmin](#step-4--reconnect-as-vpsadmin-after-reboot)
+  - [Step 5 — Verify the installation](#step-5--verify-the-installation)
+- [📲 Telegram alerts *(optional)*](#security-alerts-on-telegram-optional)
+- [💡 Optional but useful — Quick connect](#optional-but-useful)
+- [📊 Monitoring dashboard *(optional but recommended)*](#monitoring--optional-but-highly-recommended)
   - [Cockpit tab EN/FR](#cockpit-tab-enfr)
   - [Security log tab](#security-log-tab)
   - [Containers tab](#containers-tab)
   - [Tech stack](#tech-stack)
-- [ðŸ”’ Security level â€” CIS Â· DISA STIG Â· Lynis 86/100](#shield-security-level)
-- [ðŸ‘¤ vpsadmin user security](#vpsadmin-user-security)
-- [ðŸš« What this script does NOT do](#what-this-script-does-not-do)
-- [ðŸ› ï¸ Useful commands after installation](#useful-commands-after-installation)
-- [ðŸ–¥ï¸ Compatibility](#compatibility)
-- [âš ï¸ Known limitations](#known-limitations)
-- [â“ FAQ](#-frequently-asked-questions)
-- [â­ Star History](#-star-history)
-- [ðŸ“„ License](#license)
+- [🔒 Security level — CIS · DISA STIG · Lynis 86/100](#shield-security-level)
+- [👤 vpsadmin user security](#vpsadmin-user-security)
+- [🚫 What this script does NOT do](#what-this-script-does-not-do)
+- [🛠️ Useful commands after installation](#useful-commands-after-installation)
+- [🖥️ Compatibility](#compatibility)
+- [⚠️ Known limitations](#known-limitations)
+- [📄 License](#license)
 
 ---
 
@@ -104,32 +80,32 @@ I built **VPS-SECURE** out of necessity: I needed a tool that could harden any b
 
 > This is the exact setup I run in production: n8n stacks, microservices, and autonomous AI agents. I don't ship tools I don't trust with my own infrastructure.
 
-This project took serious effort to get right. The depth of what it covers â€” and the quality of the result â€” is something I'm genuinely proud of. Built with focus, obsession for detail, and a lot of help from Claude and my team of AI agents on Dust.
+This project took serious effort to get right. The depth of what it covers — and the quality of the result — is something I'm genuinely proud of. Built with focus, obsession for detail, and a lot of help from Claude and my team of AI agents on Dust.
 
 ---
 
 ## What VPS-SECURE does
 
-1 command â€” 15 automatic steps â€” zero technical expertise required.
+1 command — 15 automatic steps — zero technical expertise required.
 
 
 | # | What | Why |
 |---|---|---|
-| 1 | Creates `vpsadmin` user | No more root â€” impossible to make a fatal mistake |
+| 1 | Creates `vpsadmin` user | No more root — impossible to make a fatal mistake |
 | 2 | SSH on port 2222, key-only | Connection restricted to `vpsadmin` only. **GSSAPI disabled** (CVE-2026-3497) |
-| 3 | System update + encrypted DNS + `/tmp`, `/var/tmp` and `/dev/shm` secured | Closes known vulnerabilities. DNS over TLS activated **before** any download â€” eliminates the DNS poisoning window. `/tmp`, `/var/tmp` and `/dev/shm` mounted `noexec` â€” malicious scripts cannot execute there |
-| 4 | **CrowdSec** | Detects and bans malicious IPs. Installed via GPG-signed repository with hardcoded fingerprint verification â€” integrity guaranteed |
-| 5 | **UFW** (firewall) | Everything blocked except ports 2222, 80 and 443. Docker forwarding is targeted â€” not global |
-| 6 | **Docker** Engine + Compose v2 | Docker runs applications in isolated "boxes" (containers). Configured to **not** bypass UFW â€” exposed ports remain under firewall control. NAT rule added in UFW â€” containers have internet access |
+| 3 | System update + encrypted DNS + `/tmp`, `/var/tmp` and `/dev/shm` secured | Closes known vulnerabilities. DNS over TLS activated **before** any download — eliminates the DNS poisoning window. `/tmp`, `/var/tmp` and `/dev/shm` mounted `noexec` — malicious scripts cannot execute there |
+| 4 | **CrowdSec** | Detects and bans malicious IPs. Installed via GPG-signed repository with hardcoded fingerprint verification — integrity guaranteed |
+| 5 | **UFW** (firewall) | Everything blocked except ports 2222, 80 and 443. Docker forwarding is targeted — not global |
+| 6 | **Docker** Engine + Compose v2 | Docker runs applications in isolated "boxes" (containers). Configured to **not** bypass UFW — exposed ports remain under firewall control. NAT rule added in UFW — containers have internet access |
 | 7 | unattended-upgrades | Security patches installed automatically every night. **Docker CE** included in automatic updates. **snapd blacklisted** (CVE-2026-3888) |
 | 8 | Kernel hardening | **35 parameters**: network (spoofing, SYN flood, ICMP...) + ASLR + ptrace + core dumps + perf events + **AppArmor userns restriction (CIS compliance)** |
-| 9 | **auditd** | Logs everything: SSH, sudo, Docker, sensitive files, crontabs, `/etc/hosts`. **Anti-rootkit monitoring** â€” daily `voidlink-detect` scan at 02:30 |
-| 10 | 2 GB Swap | Emergency virtual memory â€” prevents crashes |
-| 11 | **rkhunter** | Scans for backdoors and rootkits. Daily automated scan at **00:00 UTC** â€” independent of Telegram |
-| 12 | Unnecessary services disabled | avahi, cups, bluetooth, ModemManager disabled â€” every active service = attack surface (CIS 2.x). Ctrl-Alt-Delete masked (DISA STIG) |
+| 9 | **auditd** | Logs everything: SSH, sudo, Docker, sensitive files, crontabs, `/etc/hosts`. **Anti-rootkit monitoring** — daily `voidlink-detect` scan at 02:30 |
+| 10 | 2 GB Swap | Emergency virtual memory — prevents crashes |
+| 11 | **rkhunter** | Scans for backdoors and rootkits. Daily automated scan at **00:00 UTC** — independent of Telegram |
+| 12 | Unnecessary services disabled | avahi, cups, bluetooth, ModemManager disabled — every active service = attack surface (CIS 2.x). Ctrl-Alt-Delete masked (DISA STIG) |
 | 13 | **Telegram** alerts | Daily security report + instant alert on every SSH login |
-| 14 | **Endlessh** (honeypot port 22) | SSH is on port 2222 â€” port 22 is free. Endlessh captures it and keeps bots connected for hours by sending an infinite SSH banner. They can't attack elsewhere during that time |
-| 15 | **AIDE** (integrity monitoring) | SHA512 hash of all system binaries at install time. Daily scan at 03:00 â€” any modification (replaced binary, backdoor, rootkit) triggers an alert in the Telegram report. After an OS update, manually re-run the baseline (command provided) |
+| 14 | **Endlessh** (honeypot port 22) | SSH is on port 2222 — port 22 is free. Endlessh captures it and keeps bots connected for hours by sending an infinite SSH banner. They can't attack elsewhere during that time |
+| 15 | **AIDE** (integrity monitoring) | SHA512 hash of all system binaries at install time. Daily scan at 03:00 — any modification (replaced binary, backdoor, rootkit) triggers an alert in the Telegram report. After an OS update, manually re-run the baseline (command provided) |
 
 
 <p align="center">
@@ -144,79 +120,30 @@ This project took serious effort to get right. The depth of what it covers â€
 
 ---
 
-## ðŸ—ï¸ Defense-in-Depth Architecture
-
-Every incoming connection passes through a layered stack. An attacker must defeat **all layers sequentially** â€” missing one means they never reach your system.
-
-```mermaid
-graph TD
-    INTERNET(["ðŸŒ Internet / Attacker"])
-
-    INTERNET --> UFW["ðŸ”¥ UFW Firewall<br/>Ports 2222 Â· 80 Â· 443 only<br/>Docker NAT controlled"]
-    UFW -->|"âŒ all other ports"| DROP1(["ðŸš« Silently Dropped"])
-    UFW -->|"âœ… allowed port"| CROWDSEC["ðŸ›¡ï¸ CrowdSec<br/>Collaborative IPS<br/>Community blacklist + local heuristics"]
-    CROWDSEC -->|"âŒ known malicious IP"| DROP2(["ðŸš« Banned + Reported<br/>to community"])
-    CROWDSEC -->|"âœ… unknown IP"| PORT22{"Port 22<br/>requested?"}
-    PORT22 -->|"yes"| ENDLESSH["ðŸª¤ Endlessh Honeypot<br/>Infinite SSH banner<br/>Bot trapped for hours"]
-    PORT22 -->|"no â€” port 2222"| SSH2222["ðŸ” SSH Port 2222<br/>ed25519 key-only<br/>vpsadmin only Â· GSSAPI disabled"]
-    SSH2222 -->|"âŒ no valid key"| DROP3(["ðŸš« Rejected"])
-    SSH2222 -->|"âœ… valid key"| AUDITD["ðŸ“‹ auditd<br/>All actions logged<br/>SSH Â· sudo Â· Docker Â· /etc/hosts"]
-    AUDITD --> KERNEL["âš™ï¸ Hardened Kernel<br/>35 sysctl parameters<br/>ASLR Â· ptrace_scope=3 Â· AppArmor Â· no core dumps"]
-    KERNEL --> AIDE["ðŸ”¬ AIDE<br/>SHA512 binary integrity baseline<br/>Daily scan â€” 03:00 UTC"]
-    AIDE --> RKHUNTER["ðŸ” rkhunter<br/>Rootkit + backdoor scanner<br/>Daily scan â€” 00:00 UTC"]
-    RKHUNTER --> TELEGRAM["ðŸ“² Telegram<br/>Daily report â€” 09:00<br/>Instant SSH login alert"]
-
-    style INTERNET fill:#1a0a0a,color:#ff6b6b,stroke:#ff4d6d
-    style DROP1 fill:#1a0808,color:#ff4d6d,stroke:#ff4d6d
-    style DROP2 fill:#1a0808,color:#ff4d6d,stroke:#ff4d6d
-    style DROP3 fill:#1a0808,color:#ff4d6d,stroke:#ff4d6d
-    style ENDLESSH fill:#1a1505,color:#f0b429,stroke:#f0b429
-    style TELEGRAM fill:#0a1a0f,color:#00ff88,stroke:#00ff88
-```
-
----
-
 ## :shield: Security responsiveness
 
 > [!IMPORTANT]
-> *"VPS-SECURE v2.7.5 â€” CVE-2026-46333 patched the same day it dropped.
-> The 4th Linux kernel vulnerability of May 2026 â€” discovered by AI, leaks SSH host keys
+> *"VPS-SECURE v2.7.5 — CVE-2026-46333 patched the same day it dropped.
+> The 4th Linux kernel vulnerability of May 2026 — discovered by AI, leaks SSH host keys
 > via a ptrace race. Fixed in one line. That's exactly why this product exists."*
 >
-> **CVE-2026-46333 "ssh-keysign-pwn"** â€” CVSS HIGH Â· Qualys TRU Â· Published 2026-05-15
+> **CVE-2026-46333 "ssh-keysign-pwn"** — CVSS HIGH · Qualys TRU · Published 2026-05-15
 >
-> Vector: local information disclosure via ptrace dumpability race â€” leaks SSH host keys
+> Vector: local information disclosure via ptrace dumpability race — leaks SSH host keys
 > and `/etc/shadow` (Linux kernel 6.8.0, Ubuntu 24.04)
 >
-> Fix: `kernel.yama.ptrace_scope` bumped from `1` â†’ `3` â€” integrated in `install.sh` step 8.
+> Fix: `kernel.yama.ptrace_scope` bumped from `1` → `3` — integrated in `install.sh` step 8.
 
 > [!IMPORTANT]
-> *"VPS-SECURE v2.7.2 â€” CVE-2026-31431 patch integrated in under 24h â€” an actively
+> *"VPS-SECURE v2.7.2 — CVE-2026-31431 patch integrated in under 24h — an actively
 > exploited kernel vulnerability added to the CISA KEV list the day before.
 > The fix was integrated less than 24h after publication. That's exactly why this product exists."*
 >
-> **CVE-2026-31431 "Copy Fail"** â€” CVSS 7.8 Â· CISA KEV Â· Exploited in-the-wild
+> **CVE-2026-31431 "Copy Fail"** — CVSS 7.8 · CISA KEV · Exploited in-the-wild
 >
 > Vector: local privilege escalation via `algif_aead` (Linux kernel 6.8.0, Ubuntu 24.04)
 >
-> Fix: permanent module blacklist via `modprobe.d` â€” integrated in `install.sh` step 8.
-
-### CVE Response Timeline
-
-```mermaid
-timeline
-    title VPS-SECURE â€” CVE Response Velocity
-    section April 2026
-        CVE-2026-31431 published : CVSS 7.8 Â· CISA KEV Â· Exploited in-the-wild
-                                 : algif_aead local privilege escalation
-                                 : v2.7.2 patch within 24h
-                                 : algif_aead blacklisted via modprobe.d
-    section May 2026
-        CVE-2026-46333 published : CVSS HIGH Â· Qualys TRU Â· 2026-05-15
-                                 : ptrace race leaks SSH host keys + /etc/shadow
-                                 : v2.7.5 patch same day
-                                 : ptrace_scope hardened 1 â†’ 3
-```
+> Fix: permanent module blacklist via `modprobe.d` — integrated in `install.sh` step 8.
 
 ---
 
@@ -224,49 +151,35 @@ timeline
 
 Before running the script, you need:
 
-- :white_check_mark: A fresh **Ubuntu 24.04 LTS** VPS â€” Hostinger, Hetzner, OVH, or any provider
+- :white_check_mark: A fresh **Ubuntu 24.04 LTS** VPS — Hostinger, Hetzner, OVH, or any provider
 - :white_check_mark: The **IP address** and **root credentials** from your hosting provider
 - :white_check_mark: An **SSH key generated** on your local machine
 
 > [!NOTE]
-> :key: **This script requires a license** â€” [Get it here](https://vps-secure.aiforceone.fr/offre-en.html) â€” **LAUNCH OFFER 47â‚¬** instead of 97â‚¬ with code **REDUC50**
+> :key: **This script requires a license** — [Get it here](https://vps-secure.aiforceone.fr/offre-en.html) — **LAUNCH OFFER 47€** instead of 97€ with code **REDUC50**
 >
-> :technologist: **Developer?** Want to audit or contribute to the code? [Request a free license](https://tally.so/r/Y5JGjJ) â€” activation key sent within minutes.
+> :technologist: **Developer?** Want to audit or contribute to the code? [Request a free license](https://tally.so/r/Y5JGjJ) — activation key sent within minutes.
 
 ---
 
 ## Automatic installation in 15 minutes flat
 
-```mermaid
-flowchart LR
-    A(["ðŸ–¥ï¸ Bare VPS\nUbuntu 24.04"]) --> B["Step 0\nInteractive Guide"]
-    B --> C["Step 1\nSSH Key Generation"]
-    C --> D["Step 2\nConnect as root"]
-    D --> E["Step 3\nRun install script"]
-    E --> F["Step 4\nReconnect as vpsadmin"]
-    F --> G["Step 5\nvps-secure-verify"]
-    G --> H(["ðŸ° FORTRESS\nReady"])
-
-    style A fill:#1a1a2e,color:#aaaacc,stroke:#555588
-    style H fill:#0a2a18,color:#00ff88,stroke:#00ff88
-```
-
-### Step 0 â€” Start with the interactive guide *(recommended)*
+### Step 0 — Start with the interactive guide *(recommended)*
 
 Before anything else, open the [Interactive Installation Guide](https://vps-secure.aiforceone.fr/guide-en.html) and follow the steps.
 
-It walks you through every input you'll need â€” no copy-paste errors, no back-and-forth.
+It walks you through every input you'll need — no copy-paste errors, no back-and-forth.
 
 > [!TIP]
-> **No VPS yet?** [Hostinger â€” 20% off code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) Â· or Â· [ Hetzner â€” 20â‚¬ free credit](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
+> **No VPS yet?** [Hostinger — 20% off code **WP7SERVERWR1**](https://www.hostinger.com/fr?REFERRALCODE=WP7SERVERWR1) · or · [ Hetzner — 20€ free credit](https://hetzner.cloud/?ref=9x8yLdZS8Btd)
 
 ---
 
-### Step 1 â€” Generate your SSH key (on your local machine)
+### Step 1 — Generate your SSH key (on your local machine)
 
 Open a terminal on your computer:
-- **Mac** â€” Spotlight (`Cmd+Space`) â€” type `Terminal` â€” Enter
-- **Windows** â€” `Windows` key â€” type `Windows Terminal` or `PowerShell` â€” Enter
+- **Mac** — Spotlight (`Cmd+Space`) — type `Terminal` — Enter
+- **Windows** — `Windows` key — type `Windows Terminal` or `PowerShell` — Enter
 
 Then run:
 ```bash
@@ -280,7 +193,7 @@ Press Enter 3 times to skip the passphrase (quick option).
 > it will be unusable without this password.
 > If you use ssh-agent, you'll only type it once per session.
 
-Retrieve your public key â€” you'll need it during the script:
+Retrieve your public key — you'll need it during the script:
 ```bash
 cat ~/.ssh/id_ed25519_vps.pub
 ```
@@ -289,7 +202,7 @@ Copy the output (it starts with `ssh-ed25519`) and paste it into the [Installati
 
 ---
 
-### Step 2 â€” Connect as root
+### Step 2 — Connect as root
 
 ```bash
 ssh root@YOUR_VPS_IP
@@ -297,7 +210,7 @@ ssh root@YOUR_VPS_IP
 
 Replace `YOUR_VPS_IP` with the IP you noted in the interactive guide.
 
-The server will ask for a password â€” that's the root password provided by your hosting provider by email after provisioning.
+The server will ask for a password — that's the root password provided by your hosting provider by email after provisioning.
 
 > [!TIP]
 > This is the only time this password is used. After installation, root password login is permanently disabled.
@@ -310,7 +223,7 @@ The server will ask for a password â€” that's the root password provided by
 
 ---
 
-### Step 3 â€” Run the script
+### Step 3 — Run the script
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
@@ -320,7 +233,7 @@ curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/instal
 
 > [!IMPORTANT]
 > **`install-secure.sh`** verifies the GPG signature of `install.sh` before running it.
-> This is the recommended command â€” it guarantees the script has not been tampered with.
+> This is the recommended command — it guarantees the script has not been tampered with.
 
 The script is interactive. It asks **3 mandatory questions** at the start of installation:
 
@@ -341,7 +254,7 @@ And **1 optional question** at the end: configure Telegram alerts.
 
 ---
 
-### Step 4 â€” Reconnect as vpsadmin (after reboot)
+### Step 4 — Reconnect as vpsadmin (after reboot)
 
 ```bash
 ssh vpsadmin@YOUR_VPS_IP -p 2222 -i ~/.ssh/id_ed25519_vps
@@ -351,9 +264,9 @@ Your VPS is secured. Time to verify everything is running.
 
 ---
 
-### Step 5 â€” Verify the installation
+### Step 5 — Verify the installation
 
-The script displayed this command at the end â€” run it now:
+The script displayed this command at the end — run it now:
 
 ```bash
 sudo vps-secure-verify
@@ -362,20 +275,20 @@ sudo vps-secure-verify
 Each component returns `[PASS]` or `[FAIL]` with the reason. Everything should be PASS.
 
 ```
-  [PASS] SSH          : port 2222 active Â· root disabled Â· PasswordAuth off Â· socket override OK
-  [PASS] UFW          : active Â· ports 2222/80/443 open Â· Docker NAT rule present Â· logging medium
-  [PASS] CrowdSec     : active Â· bouncer active Â· port 8081 Â· 2 collection(s)
-  [PASS] Docker       : active Â· v29.3.1 Â· iptables:false confirmed
-  [PASS] Endlessh     : container active Â· port 22 listening Â· UFW rule present
-  [PASS] AIDE         : baseline present (age: 0d) Â· cron 03:00 configured
-  [PASS] rkhunter     : installed Â· baseline present Â· conf.local OK Â· cron 00:00 UTC Â· last scan: never
-  [PASS] auditd       : active Â· 34 rule(s) loaded
-  [PASS] Swap         : active Â· 2048 MB Â· swappiness=10
-  [PASS] Kernel       : ASLR=2 Â· ptrace_scope=1 Â· syncookies=1 Â· ip_forward=1 Â· suid_dumpable=0
-  [PASS] DNS over TLS : systemd-resolved active Â· DoT=yes Â· primary server: 9.9.9.9
-  [PASS] Telegram     : config present Â· API OK Â· bot: @mybot
+  [PASS] SSH          : port 2222 active · root disabled · PasswordAuth off · socket override OK
+  [PASS] UFW          : active · ports 2222/80/443 open · Docker NAT rule present · logging medium
+  [PASS] CrowdSec     : active · bouncer active · port 8081 · 2 collection(s)
+  [PASS] Docker       : active · v29.3.1 · iptables:false confirmed
+  [PASS] Endlessh     : container active · port 22 listening · UFW rule present
+  [PASS] AIDE         : baseline present (age: 0d) · cron 03:00 configured
+  [PASS] rkhunter     : installed · baseline present · conf.local OK · cron 00:00 UTC · last scan: never
+  [PASS] auditd       : active · 34 rule(s) loaded
+  [PASS] Swap         : active · 2048 MB · swappiness=10
+  [PASS] Kernel       : ASLR=2 · ptrace_scope=1 · syncookies=1 · ip_forward=1 · suid_dumpable=0
+  [PASS] DNS over TLS : systemd-resolved active · DoT=yes · primary server: 9.9.9.9
+  [PASS] Telegram     : config present · API OK · bot: @mybot
 
-  Installation 100% complete â€” all components are operational.
+  Installation 100% complete — all components are operational.
 ```
 
 That's IT. Done in under 15 minutes, fully automated.
@@ -388,18 +301,18 @@ Your VPS is now **SECURED**. It's officially a **FORTRESS**.
 
 At the end of installation, the script offers two alert levels:
 
-- **Daily report at 09:00** â€” global server status (CrowdSec, rkhunter, auditd)
-- **Instant alert** â€” Telegram notification on every successful SSH login (user + source IP)
+- **Daily report at 09:00** — global server status (CrowdSec, rkhunter, auditd)
+- **Instant alert** — Telegram notification on every successful SSH login (user + source IP)
 
 **What you need:**
-1. Create a bot â€” open [@BotFather](https://t.me/BotFather) â€” `/newbot` â€” copy the token
-2. Get your chat ID â€” open [@userinfobot](https://t.me/userinfobot) â€” `/start` â€” copy the `id`
+1. Create a bot — open [@BotFather](https://t.me/BotFather) — `/newbot` — copy the token
+2. Get your chat ID — open [@userinfobot](https://t.me/userinfobot) — `/start` — copy the `id`
 
 **What you receive every morning at 09:00:**
 
 ```
 [SECURE] vps-secure - Daily report
-[DATE]   13/04/2026 Â· monvps
+[DATE]   13/04/2026 · monvps
 
 [OK] Everything looks good on your VPS
 
@@ -426,37 +339,8 @@ If an anomaly is detected in the daily report, the message includes the details 
 
 ---
 
-## ðŸ• Automated Daily Security Schedule
-
-Every night, while you sleep, VPS-SECURE runs a full security sweep autonomously.
-
-```mermaid
-gantt
-    title VPS-SECURE â€” Automated Daily Security Jobs
-    dateFormat HH:mm
-    axisFormat %H:%M
-
-    section Scans
-    rkhunter rootkit scan           :00:00, 30m
-    auditd voidlink-detect          :02:30, 15m
-    AIDE file integrity check       :03:00, 45m
-
-    section Maintenance
-    unattended-upgrades             :02:00, 60m
-
-    section Reports
-    Telegram daily report           :09:00, 5m
-
-    section Continuous
-    CrowdSec active monitoring      :active, 00:00, 1440m
-    Endlessh honeypot               :active, 00:00, 1440m
-    Security stats cache (5min TTL) :crit,   00:00, 1440m
-```
-
----
-
 > [!WARNING]
-> **Docker & Firewall: The "UFW Bypass" â€” fixed**
+> **Docker & Firewall: The "UFW Bypass" — fixed**
 >
 > By default, Docker manipulates iptables and completely ignores your firewall (UFW) rules, exposing your ports directly to the internet. This script fixes this critical vulnerability present in virtually all standard installations.
 >
@@ -519,21 +403,21 @@ Health score 0-100 with a secret mascot at perfect score.
 
 | Card | What it measures |
 |---|---|
-| Threat Map | Interactive globe â€” real-time attack arcs Â· geolocated IPs (Endlessh + CrowdSec) |
-| Endlessh | Total trapped bots Â· 24h Â· avg trap duration |
-| CrowdSec | Active banned IPs Â· 24h alerts Â· iptables bouncer status |
-| System | CPU Â· RAM Â· Disk (donuts) Â· uptime |
+| Threat Map | Interactive globe — real-time attack arcs · geolocated IPs (Endlessh + CrowdSec) |
+| Endlessh | Total trapped bots · 24h · avg trap duration |
+| CrowdSec | Active banned IPs · 24h alerts · iptables bouncer status |
+| System | CPU · RAM · Disk (donuts) · uptime |
 | UFW Firewall | Total blocks from logs |
 | Auditd | Today's sudo escalations |
-| rkhunter | Clean/alert status Â· last scan date |
-| AIDE File Integrity | Binary SHA512 integrity Â· last scan date |
-| Updates | Available apt packages Â· last check date |
+| rkhunter | Clean/alert status · last scan date |
+| AIDE File Integrity | Binary SHA512 integrity · last scan date |
+| Updates | Available apt packages · last check date |
 | TCP Connections | Real-time established connections |
-| Open Ports | Listening TCP ports Â· detection of unexpected ports |
+| Open Ports | Listening TCP ports · detection of unexpected ports |
 
-Timeline of the last 25 security events with animated scrolling. Interactive Telegram toggles (09:00 report Â· SSH alert).
+Timeline of the last 25 security events with animated scrolling. Interactive Telegram toggles (09:00 report · SSH alert).
 
-> **Threat Map** â€” zoom centered on the server, automatic rotation, mouse zoom enabled. Permanent starfield background. Red dots = active attack sources, green dot = server location. 5-min backend cache.
+> **Threat Map** — zoom centered on the server, automatic rotation, mouse zoom enabled. Permanent starfield background. Red dots = active attack sources, green dot = server location. 5-min backend cache.
 
 ### Security log tab
 
@@ -541,48 +425,16 @@ All events over 1d / 7d / 30d: SSH attempts, UFW blocks, CrowdSec bans, rkhunter
 
 ### Containers tab
 
-Automatic detection of all Docker containers via socket. Cards per service with live status (Running Â· Stopped Â· Unhealthy Â· Starting), CPU, RAM, exposed ports. Background version check via Docker Hub registry â€” **Up to date** or **Update available** badge (1h cache). Monitored services: n8n, Baserow, MinIO, PostgreSQL, Caddy.
+Automatic detection of all Docker containers via socket. Cards per service with live status (Running · Stopped · Unhealthy · Starting), CPU, RAM, exposed ports. Background version check via Docker Hub registry — **Up to date** or **Update available** badge (1h cache). Monitored services: n8n, Baserow, MinIO, PostgreSQL, Caddy.
 
 ### Tech stack
 
-- Python stdlib backend â€” zero external dependencies
+- Python stdlib backend — zero external dependencies
 - HTTP Basic Auth + rate limiting + lockout
 - TTL 30s cache, 24h history persisted on disk
-- Vanilla HTML/CSS/JS frontend â€” Phosphor Icons, Chart.js, DM Sans
+- Vanilla HTML/CSS/JS frontend — Phosphor Icons, Chart.js, DM Sans
 - Light/dark mode with persistence
 - Caddy reverse proxy + automatic TLS
-
-#### ðŸ—‚ï¸ Component Dependency Map
-
-```mermaid
-graph LR
-    subgraph Dashboard["ðŸ“Š VPS-SECURE Dashboard"]
-        UI["Frontend<br/>Vanilla JS Â· Chart.js<br/>Phosphor Icons"]
-        API["Python Backend<br/>HTTP Basic Auth<br/>Rate limiting Â· lockout"]
-    end
-
-    subgraph DataSources["ðŸ“¡ Live Data Sources"]
-        CS["CrowdSec API<br/>:8081"]
-        AUDITD_LOG["auditd logs<br/>/var/log/audit"]
-        UFW_LOG["UFW logs<br/>/var/log/ufw.log"]
-        DOCKER_SOCK["Docker socket<br/>/var/run/docker.sock"]
-        ENDLESSH_LOG["Endlessh logs<br/>docker logs"]
-        AIDE_LOG["AIDE report<br/>/var/log/aide"]
-        RKH_LOG["rkhunter log<br/>/var/log/rkhunter"]
-    end
-
-    CACHE[("security-stats.json<br/>5min TTL cache")]
-
-    UI --> API
-    API --> CS
-    API --> AUDITD_LOG
-    API --> UFW_LOG
-    API --> DOCKER_SOCK
-    API --> ENDLESSH_LOG
-    API --> AIDE_LOG
-    API --> RKH_LOG
-    API -->|"read/write"| CACHE
-```
 
 ---
 
@@ -593,22 +445,22 @@ graph LR
   <img src="./screenshots/lynis_audit.png" alt="Score Lynis" width="40%">
 </p>
 
-A bare VPS is a target. VPS-Secure turns it into a hardened, monitored, production-ready server â€” with a level of polish rarely found in a public script.
+A bare VPS is a target. VPS-Secure turns it into a hardened, monitored, production-ready server — with a level of polish rarely found in a public script.
 
-VPS-Secure does not "guarantee" absolute security â€” no serious tool can. Instead, it automates a complete and advanced hardening of Ubuntu 24.04 LTS, applying a large portion of the relevant controls from **CIS Benchmark Level 1** and **DISA STIG**, while remaining deployable on a standard VPS.
+VPS-Secure does not "guarantee" absolute security — no serious tool can. Instead, it automates a complete and advanced hardening of Ubuntu 24.04 LTS, applying a large portion of the relevant controls from **CIS Benchmark Level 1** and **DISA STIG**, while remaining deployable on a standard VPS.
 
 | Standard | What it is |
 |---|---|
 | CIS Benchmark L1 | Industry-recognized hardening baseline for production servers |
 | DISA STIG Ubuntu 24.04 | A more demanding security level, inspired by the most controlled environments |
 | OWASP Infrastructure | Special attention to supply chain, secrets, traceability and integrity |
-| Lynis Audit | Open-source security audit tool that scans the system and produces a hardening score â€” the reference in the Linux community for assessing real server security posture |
+| Lynis Audit | Open-source security audit tool that scans the system and produces a hardening score — the reference in the Linux community for assessing real server security posture |
 
-**CIS Benchmark L1** â€” The CIS Benchmark from the Center for Internet Security is a recognized reference for securing Linux systems. Level L1 targets a good balance between security and compatibility, making it a suitable baseline for production servers. VPS-Secure automates a large portion of the applicable controls for an Ubuntu 24.04 VPS, without imposing an overly heavy or restrictive configuration.
+**CIS Benchmark L1** — The CIS Benchmark from the Center for Internet Security is a recognized reference for securing Linux systems. Level L1 targets a good balance between security and compatibility, making it a suitable baseline for production servers. VPS-Secure automates a large portion of the applicable controls for an Ubuntu 24.04 VPS, without imposing an overly heavy or restrictive configuration.
 
-**DISA STIG** â€” The DISA STIG is a more demanding hardening framework, used in high-security contexts. Not all its controls apply to a standard VPS, but its general logic remains relevant for strengthening an internet-facing server. VPS-Secure applies this logic to go beyond "basic" hardening, while remaining deployable without enterprise infrastructure.
+**DISA STIG** — The DISA STIG is a more demanding hardening framework, used in high-security contexts. Not all its controls apply to a standard VPS, but its general logic remains relevant for strengthening an internet-facing server. VPS-Secure applies this logic to go beyond "basic" hardening, while remaining deployable without enterprise infrastructure.
 
-**Lynis** â€” Lynis is a widely-used Linux security audit tool among system administrators. It assigns a hardening score out of 100 and highlights configuration weaknesses. On a reference installation, VPS-Secure achieves a Lynis hardening index of **86/100** â€” a very high hardening level for a public VPS.
+**Lynis** — Lynis is a widely-used Linux security audit tool among system administrators. It assigns a hardening score out of 100 and highlights configuration weaknesses. On a reference installation, VPS-Secure achieves a Lynis hardening index of **86/100** — a very high hardening level for a public VPS.
 
 *Structural ceiling: certain controls (PIV/FIPS, DoD infrastructure) are out of scope for a public VPS.*
 
@@ -619,24 +471,6 @@ VPS-Secure does not "guarantee" absolute security â€” no serious tool can. 
 > The goal is to turn a bare VPS into a significantly more robust server from day one.
 > This is not a comfort script: it's a serious security foundation for hosting applications, containers, or a SaaS.
 
-### Security Posture â€” VPS-SECURE vs. Typical Setups
-
-```mermaid
-quadrantChart
-    title Security Posture: Coverage vs. Automation Level
-    x-axis "Low Coverage" --> "High Coverage"
-    y-axis "Manual" --> "Automated"
-    quadrant-1 Best of both worlds
-    quadrant-2 Automated but shallow
-    quadrant-3 Vulnerable by default
-    quadrant-4 Secure but fragile
-    VPS-SECURE: [0.85, 0.90]
-    Typical VPS default: [0.10, 0.05]
-    Manual hardening guide: [0.65, 0.20]
-    Enterprise SIEM: [0.95, 0.75]
-    UFW-only setup: [0.30, 0.60]
-```
-
 ---
 
 ## vpsadmin user security
@@ -645,7 +479,7 @@ The script creates a dedicated user, vpsadmin, for day-to-day server administrat
 
 - **Simplified sudo**: vpsadmin can run admin commands without retyping their password each time. An additional configuration (`use_pty`) strengthens the security of this delegation.
 
-- **Docker** implies privilege escalation: since vpsadmin can run Docker, they have a potentially very high level of control over the server. This is normal â€” it's the necessary trade-off for easily managing containers on a VPS.
+- **Docker** implies privilege escalation: since vpsadmin can run Docker, they have a potentially very high level of control over the server. This is normal — it's the necessary trade-off for easily managing containers on a VPS.
 
 > [!WARNING]
 > **The golden rule: Protect your SSH key!**
@@ -659,7 +493,7 @@ The script creates a dedicated user, vpsadmin, for day-to-day server administrat
 ## What this script does NOT do
 
 - **No application deployment** (n8n, WordPress, etc).
-The script sets up a hardened infrastructure. Once the script runs, your server is a fortress ready to host your services. You install your apps â€” they'll automatically benefit from the system's protection (Firewall, CrowdSec, etc.).
+The script sets up a hardened infrastructure. Once the script runs, your server is a fortress ready to host your services. You install your apps — they'll automatically benefit from the system's protection (Firewall, CrowdSec, etc.).
 
 - **No HTTPS management** for your future sites.
 The script doesn't guess your domain names. To put your own sites on HTTPS, you'll need to install a Reverse Proxy (such as Caddy, Nginx Proxy Manager, or Traefik).
@@ -669,8 +503,6 @@ The script doesn't guess your domain names. To put your own sites on HTTPS, you'
 ---
 
 ## Useful commands after installation
-
-### ðŸ” Diagnostics
 
 ```bash
 # Full installation check (12 checks)
@@ -682,23 +514,22 @@ sudo vps-secure-verify
 sudo vps-secure-stats
 ```
 
----
-
-### ðŸ›¡ï¸ Intrusion Detection (CrowdSec)
+```bash
+# Open a port for an app (e.g. n8n on 8080)
+sudo ufw allow 8080/tcp
+```
 
 ```bash
-# View alerts from the last 24h
+# View CrowdSec alerts (last 24h)
 sudo cscli alerts list --since 24h
 ```
 
 ```bash
-# Manually ban an IP
-sudo cscli decisions add --ip 1.2.3.4 --reason "manual ban" --duration 24h
+# View audit logs
+sudo ausearch -k privilege_escalation --start today -i
+sudo ausearch -k docker_socket --start today -i
+sudo aureport --summary
 ```
-
----
-
-### ðŸ”¬ Integrity & Rootkit
 
 ```bash
 # Run a manual rootkit scan
@@ -711,56 +542,19 @@ sudo cat /var/log/rkhunter-cron.log
 ```
 
 ```bash
-# Check if rkhunter was updated by apt
-sudo cat /var/log/rkhunter-propupd.log
+# Endlessh honeypot — live logs
+sudo docker logs -f endlessh
 ```
 
 ```bash
-# AIDE â€” run a manual integrity scan
-sudo /usr/local/bin/vps-secure-aide-check.sh
+# Check ports exposed by Docker
+sudo docker ps --format "table {{.Names}}\t{{.Ports}}"
 ```
-
-```bash
-# AIDE â€” update the baseline after apt upgrade
-sudo vps-secure-aide-rebase
-```
-
----
-
-### ðŸ”¥ Firewall
 
 ```bash
 # Firewall status
 sudo ufw status verbose
 ```
-
-```bash
-# Open a port for an app (e.g. n8n on 8080)
-sudo ufw allow 8080/tcp comment 'My application'
-```
-
----
-
-### ðŸ“‹ Audit Logs
-
-```bash
-# View audit logs â€” privilege escalations today
-sudo ausearch -k privilege_escalation --start today -i
-```
-
-```bash
-# View audit logs â€” Docker socket usage today
-sudo ausearch -k docker_socket --start today -i
-```
-
-```bash
-# Auditd summary report
-sudo aureport --summary
-```
-
----
-
-### ðŸ“² Telegram
 
 ```bash
 # Test the Telegram report manually
@@ -773,34 +567,31 @@ sudo sed -i 's/^0 [0-9]* \* \* \*/0 8 * * */' /etc/cron.d/vps-secure
 sudo cat /etc/cron.d/vps-secure  # verify
 ```
 
----
-
-### ðŸ³ Docker
-
 ```bash
-# Endlessh honeypot â€” live logs
-sudo docker logs -f endlessh
+# AIDE — run a manual integrity scan
+sudo /usr/local/bin/vps-secure-aide-check.sh
 ```
 
 ```bash
-# Check ports exposed by Docker
-sudo docker ps --format "table {{.Names}}\t{{.Ports}}"
+# AIDE — update the baseline after apt upgrade
+sudo vps-secure-aide-rebase
 ```
 
----
-
-### ðŸ—„ï¸ Cache & Misc
-
 ```bash
-# Security cache (Endlessh + CrowdSec) â€” updated every 5 min
+# Security cache (Endlessh + CrowdSec) — updated every 5 min
 cat /var/cache/vps-secure/security-stats.json
+```
+
+```bash
+# Check if rkhunter was updated by apt
+sudo cat /var/log/rkhunter-propupd.log
 ```
 
 ---
 
 ## Compatibility
 
-Tested and verified on May 18, 2026 on **Ubuntu 24.04 LTS** â€” **v2.7.5** â€” Hostinger KVM4 and Hetzner CPX42
+Tested and verified on May 18, 2026 on **Ubuntu 24.04 LTS** — **v2.7.5** — Hostinger KVM4 and Hetzner CPX42
 
 Full installation 100% functional in **13 min** (dashboard installation included)
 
@@ -812,51 +603,6 @@ Full installation 100% functional in **13 min** (dashboard installation included
 
 ---
 
-## â­ Star History
-
-If VPS-SECURE saved your server, a star goes a long way. It helps other developers find this project and keeps the patches coming.
-
-[![Star History Chart](https://api.star-history.com/svg?repos=rockballslab/vps-secure&type=Date)](https://github.com/rockballslab/vps-secure)
-
----
-
-## â“ Frequently Asked Questions
-
-<details>
-<summary>Click to expand</summary>
-
-**Q: Does this work on non-Ubuntu systems?**
-
-A: Currently only Ubuntu 24.04 LTS is officially supported and tested. Other Debian-based distributions may work but are not guaranteed.
-
-**Q: Will this break my existing services?**
-
-A: No â€” the script hardens the OS layer without touching running applications. Docker containers continue to work. Only ports 2222/80/443 remain open by default. Any additional port your apps need must be explicitly opened with `ufw allow`.
-
-**Q: Can I run this on an existing (non-fresh) VPS?**
-
-A: It's designed for fresh installs. Running on an existing server is possible but proceed with caution â€” review each step in the interactive guide first, and make sure your current SSH setup won't be locked out.
-
-**Q: What happens if my SSH connection drops during installation?**
-
-A: The script asks you to confirm connectivity from a 2nd terminal before disabling root access. This safety net is built-in â€” you confirm the new SSH connection works before the old one is closed.
-
-**Q: Does the script store my activation key?**
-
-A: The key is verified online at install time and is not stored on the server afterward.
-
-**Q: How do I open a port for a new application after installation?**
-
-A: `sudo ufw allow YOUR_PORT/tcp comment 'App name'` â€” Docker containers also benefit automatically once the port is open in UFW.
-
-**Q: What's the difference between rkhunter, AIDE, and CrowdSec?**
-
-A: They operate at different layers. **CrowdSec** stops attacks at the network edge in real time. **rkhunter** scans for known rootkits and backdoors on disk. **AIDE** detects any modification to system binaries using SHA512 hashes â€” it catches what the others miss (e.g. a sophisticated backdoor that evades signature detection).
-
-</details>
-
----
-
 ## License
 
 VPS-SECURE COMMERCIAL LICENSE
@@ -865,4 +611,4 @@ https://vps-secure.aiforceone.fr/offre-en.html
 
 ---
 
-*Made with love by Fabrice [@rockballslab](https://github.com/rockballslab) â€” part of AIFORCEONE*
+*Made with love by Fabrice [@rockballslab](https://github.com/rockballslab) — part of AIFORCEONE*

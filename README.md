@@ -45,7 +45,7 @@ A bare or default-configured server is an easy target — visible and attackable
 
 - [👋 Who built this?](#who-built-this)
 - [⚙️ What VPS-SECURE does — 15 automated steps](#what-vps-secure-does)
-- [⚡ Security responsiveness — live CVE patches](#security-responsiveness)
+- [🛡️ Security responsiveness — live CVE patches](#security-responsiveness)
 - [✅ Requirements](#requirements)
 - [🚀 Installation — step by step (15 min)](#automatic-installation-in-15-minutes-flat)
   - [Step 0 — Interactive guide *(recommended)*](#step-0--start-with-the-interactive-guide-recommended)

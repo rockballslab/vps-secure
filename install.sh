@@ -1156,6 +1156,12 @@ rmmod esp4 esp6 rxrpc 2>/dev/null || true
 log_success "Dirty Frag mitigé — esp4/esp6/rxrpc blacklistés (CVE-2026-43284, CVSS 7.8)."
 log_warn "  ⚠️ Temporaire — retirer dès patch kernel Noble disponible (USN)."
 
+# ── Blacklist nvmet_tcp — CVE-2026-23112 "nvmet-tcp Bounds" (issue #147) ──
+echo "install nvmet_tcp /bin/false" > /etc/modprobe.d/blacklist-rare-network.conf
+chmod 644 /etc/modprobe.d/blacklist-rare-network.conf
+rmmod nvmet_tcp 2>/dev/null || true
+log_success "nvmet_tcp blacklisté — CVE-2026-23112 'nvmet-tcp Bounds' (issue #147)."
+
 # Blacklist protocoles réseau inutiles (NETW-3200 — CIS 3.x)
 cat >> /etc/modprobe.d/vps-secure-blacklist.conf << 'EOF'
 install dccp /bin/false

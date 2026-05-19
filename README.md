@@ -197,6 +197,7 @@ graph TD
 >
 > Fix: permanent module blacklist via `modprobe.d` — integrated in `install.sh` step 8.
 
+
 ### CVE Response Timeline
 
 ```mermaid
@@ -212,6 +213,10 @@ timeline
                                  : ptrace race leaks SSH host keys and /etc/shadow
                                  : v2.7.5 patch same day
                                  : ptrace_scope hardened from 1 to 3
+        CVE-2026-23112 published : CVSS MEDIUM - nvmet-tcp Bounds - 2026-05-19
+                                 : out-of-bounds kernel crash via NVMe/TCP
+                                 : v2.7.6 patch within 24h
+                                 : nvmet_tcp blacklisted via modprobe.d
 ```
 
 ---

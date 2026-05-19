@@ -13,13 +13,13 @@
 ![Last Commit](https://img.shields.io/github/last-commit/rockballslab/vps-secure)
 ![ShellCheck](https://img.shields.io/badge/ShellCheck-Passed-brightgreen?logo=shellcheck)
 
-**:closed_lock_with_key: VPS-SECURE turns a bare VPS into a hardened fortress — honeypot, collaborative IPS, real-time dashboard, Telegram alerts — with a single command. No Linux expertise required.**
+**:closed_lock_with_key: Your VPS hardens itself while you sleep with a single command. No Linux expertise required.**
 
 <p align="center">
   <img src="./screenshots/header.png" alt="My Fortress with VPS-SECURE" width="100%">
 </p>
 
-**15 minutes. One command. Done.**
+**One script. 15 minutes. Never think about it again.**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \

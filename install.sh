@@ -1764,13 +1764,20 @@ else
 fi
 
 # ── Endlessh (honeypot port 22) ──
-if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^endlessh$'; then
+ENDLESSH_STATE=$(docker inspect endlessh --format '{{.State.Status}}' 2>/dev/null || echo "absent")
+if [[ "$ENDLESSH_STATE" == "running" ]]; then
     HONEY_COUNT=$(docker logs endlessh --since 1440m 2>&1 | grep -ci "accept" || echo "0")
     DETAILS+="🍯 Endlessh : ${HONEY_COUNT} bot(s) piégé(s) en 24h
 "
+elif [[ "$ENDLESSH_STATE" == "absent" ]]; then
+    ISSUES=$((ISSUES + 1))
+    DETAILS+="🔴 Endlessh : container absent — honeypot port 22 inactif
+    → Recréer le container (voir install.sh étape 14)
+"
 else
-    DETAILS+="⚠️ Endlessh : container non actif
-  → Relance : sudo docker start endlessh
+    ISSUES=$((ISSUES + 1))
+    DETAILS+="🔴 Endlessh : panne (état: ${ENDLESSH_STATE}) — port 22 non piégé
+    → Diagnostic : docker logs endlessh --tail 20
 "
 fi
 
@@ -1941,11 +1948,12 @@ fi
 docker run -d \
     --name endlessh \
     --restart unless-stopped \
-    --network=host \
     --security-opt no-new-privileges:true \
     --cap-drop ALL \
     --cap-add NET_BIND_SERVICE \
     --read-only \
+    --sysctl net.ipv4.ip_unprivileged_port_start=0 \
+    -p 22:22 \
     shizunge/endlessh-go@sha256:c9c5cd7084fda893f2b9f2c15d0b5867ba91ed06727375a3ca0f2678474fc09a \
     -logtostderr -v=1 -port=22 > /dev/null || true
 

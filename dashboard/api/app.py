@@ -1186,6 +1186,28 @@ def get_alerts(period_hours: int = 24) -> list:
     except Exception:
         pass
 
+    # Endlessh down / restarting — fix #149
+    try:
+        containers = get_containers_cached()
+        endlessh_c = next(
+            (c for c in containers if 'endlessh' in c.get('name', '').lower()), None
+        )
+        if endlessh_c is None:
+            live.append({
+                "service": "Endlessh", "ip": "---", "datetime": fmt_dt(now),
+                "detail": "Container introuvable — honeypot port 22 hors ligne",
+                "status": "action", "icon": "🔴", "label": "Action requise", "ts": now,
+            })
+        elif endlessh_c.get('health') not in ('running', 'healthy'):
+            state_label = endlessh_c.get('health', '?')
+            live.append({
+                "service": "Endlessh", "ip": "---", "datetime": fmt_dt(now),
+                "detail": f"Honeypot port 22 en panne (état: {state_label}) — port 22 exposé sans piège",
+                "status": "action", "icon": "🔴", "label": "Action requise", "ts": now,
+            })
+    except Exception:
+        pass
+
     # Ports inattendus
     try:
         for p in get_open_ports().get("unexpected", []):
@@ -1575,6 +1597,18 @@ def get_score(metrics: dict) -> dict:
     if bouncer != "active":
         score -= 30
         issues.append({"sev": "critical", "msg": "Bouncer CrowdSec inactif"})
+
+    # Endlessh down — score -15 — fix #149
+    try:
+        containers = get_containers_cached()
+        endlessh_c = next(
+            (c for c in containers if 'endlessh' in c.get('name', '').lower()), None
+        )
+        if endlessh_c is None or endlessh_c.get('health') not in ('running', 'healthy'):
+            score -= 15
+            issues.append({"sev": "high", "msg": "Endlessh hors ligne — honeypot port 22 inactif"})
+    except Exception:
+        pass
 
     rk = metrics.get("rkhunter", {}).get("status", "unknown")
     if rk == "warning":

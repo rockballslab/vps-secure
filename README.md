@@ -799,7 +799,7 @@ cat /var/cache/vps-secure/security-stats.json
 
 ## Compatibility
 
-Tested and verified on May 20, 2026 on **Ubuntu 24.04 LTS** — **v2.7.6** — Hostinger KVM4 and Hetzner CPX42
+Tested and verified on May 20, 2026 on **Ubuntu 24.04 LTS** — **v2.7.7** — Hostinger KVM4 and Hetzner CPX42
 
 Full installation 100% functional in **13 min** (dashboard installation included)
 

@@ -1008,6 +1008,7 @@ Unattended-Upgrade::Origins-Pattern {
     "origin=Docker,suite=noble";
 };
 DOCKERUPDEOF
+chmod 644 /etc/apt/apt.conf.d/52docker-upgrade    # fix: umask 077 → 600 sans ce chmod
 log_success "Auto-upgrade Docker CE activé (52docker-upgrade) — live-restore: true actif."
 
 # ============================================================
@@ -1561,7 +1562,7 @@ DPkg::Post-Invoke {
     "if command -v rkhunter >/dev/null 2>&1; then rkhunter --propupd --nocolors >> /var/log/rkhunter-propupd.log 2>&1 || true; fi";
 };
 RKHAPTEOF
-chmod 640 /etc/apt/apt.conf.d/99-rkhunter-propupd
+chmod 644 /etc/apt/apt.conf.d/99-rkhunter-propupd
 touch /var/log/rkhunter-propupd.log
 chmod 640 /var/log/rkhunter-propupd.log
 log_success "Hook apt rkhunter configuré — baseline mise à jour automatiquement après chaque apt upgrade."

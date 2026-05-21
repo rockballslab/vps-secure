@@ -2052,6 +2052,13 @@ function applyLang(lang) {
   document.documentElement.lang = lang === 'fr' ? 'fr' : 'en';
   localStorage.setItem('vpssecure_lang', lang);
 
+  // Synchroniser la langue vers le serveur (issue #142)
+  fetch('/api/lang', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ lang })
+  }).catch(() => {}); // silent fail — ne bloque pas l'UI
+
   /* Sync bouton toggle */
   const btn = document.getElementById('btn-lang-toggle');
   if (btn) btn.textContent = lang === 'fr' ? '🇫🇷 FR' : '🇺🇸 EN';

@@ -42,6 +42,34 @@ RESTART_BLACKLIST = {
     if name.strip()
 }
 
+# ── i18n helpers (issue #142) ────────────────────────────────────────────────
+def get_config_value(key: str, default: str = '') -> str:
+    """Lit une valeur KEY depuis /etc/vps-secure.conf (format KEY="value")."""
+    try:
+        with open('/etc/vps-secure.conf') as f:
+            for line in f:
+                m = re.match(rf'^{re.escape(key)}="([^"]*)"', line.strip())
+                if m:
+                    return m.group(1)
+    except Exception:
+        pass
+    return default
+
+def update_config_value(filepath: str, key: str, value: str) -> None:
+    """Met à jour ou ajoute KEY="value" dans un fichier de config bash."""
+    try:
+        path = Path(filepath)
+        content = path.read_text() if path.exists() else ''
+        pattern = rf'^{re.escape(key)}=.*$'
+        new_line = f'{key}="{value}"'
+        if re.search(pattern, content, re.MULTILINE):
+            content = re.sub(pattern, new_line, content, flags=re.MULTILINE)
+        else:
+            content = content.rstrip('\n') + f'\n{new_line}\n'
+        path.write_text(content)
+    except Exception:
+        pass
+
 # ── AIDE trigger file (issue #109) ───────────────────────────────────────────
 AIDE_TRIGGER = Path("/var/lib/vps-monitor/aide_rebase_trigger")
 AIDE_RESULT  = Path("/var/lib/vps-monitor/aide_rebase_result")
@@ -2244,12 +2272,21 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(resp)
                 return
             # Telegram AVANT le lancement (BLOCKER #2)
-            _send_telegram_api(
-                f"⚠️ AIDE rebase déclenché depuis le dashboard\n"
-                f"🌐 IP source : {ip}\n"
-                f"📅 {time.strftime('%d/%m/%Y %H:%M:%S')}\n"
-                f"ℹ️  La baseline AIDE va être mise à jour."
-            )
+            lang = get_config_value('REPORT_LANG', 'en')
+            if lang == 'en':
+                _send_telegram_api(
+                    f"⚠️ AIDE rebase triggered from dashboard\n"
+                    f"🌐 Source IP: {ip}\n"
+                    f"📅 {time.strftime('%d/%m/%Y %H:%M:%S')}\n"
+                    f"ℹ️ AIDE baseline will be updated."
+                )
+            else:
+                _send_telegram_api(
+                    f"⚠️ AIDE rebase déclenché depuis le dashboard\n"
+                    f"🌐 IP source : {ip}\n"
+                    f"📅 {time.strftime('%d/%m/%Y %H:%M:%S')}\n"
+                    f"ℹ️ La baseline AIDE va être mise à jour."
+                )
             # Thread background (BLOCKER #1 — app.py single-threaded)
             threading.Thread(target=_run_rebase_bg, daemon=True).start()
             resp = json.dumps({"status": "started"}).encode()
@@ -2303,12 +2340,21 @@ class Handler(BaseHTTPRequestHandler):
                     return
 
                 # Notif Telegram avant le restart
-                _send_telegram_api(
-                    f"🔄 Container redémarré depuis le dashboard\n"
-                    f"📦 Container : {container_name}\n"
-                    f"🌐 IP source : {ip}\n"
-                    f"📅 {time.strftime('%d/%m/%Y %H:%M:%S')}"
-                )
+                lang = get_config_value('REPORT_LANG', 'en')
+                if lang == 'en':
+                    _send_telegram_api(
+                        f"🔄 Container restarted from dashboard\n"
+                        f"📦 Container: {container_name}\n"
+                        f"🌐 Source IP: {ip}\n"
+                        f"📅 {time.strftime('%d/%m/%Y %H:%M:%S')}"
+                    )
+                else:
+                    _send_telegram_api(
+                        f"🔄 Container redémarré depuis le dashboard\n"
+                        f"📦 Container : {container_name}\n"
+                        f"🌐 IP source : {ip}\n"
+                        f"📅 {time.strftime('%d/%m/%Y %H:%M:%S')}"
+                    )
 
                 # Docker restart (timeout 30s)
                 result = subprocess.run(
@@ -2349,8 +2395,28 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_error(500, str(exc))
             return
 
+        elif path == "/api/lang":
+    try:
+        length = int(self.headers.get("Content-Length", 0))
+        body = json.loads(self.rfile.read(length)) if length else {}
+        lang = body.get("lang", "en")
+        if lang not in ["fr", "en"]:
+            resp = json.dumps({"error": "invalid"}).encode()
+            self.send_response(400)
         else:
-            self.send_error(404)
+            update_config_value("/etc/vps-secure.conf", "REPORT_LANG", lang)
+            resp = json.dumps({"ok": True}).encode()
+            self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(resp)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(resp)
+    except Exception as exc:
+        self.send_error(500, str(exc))
+    return
+else:
+    self.send_error(404)
 
     def log_message(self, fmt: str, *args) -> None:
         ts = time.strftime("%Y-%m-%d %H:%M:%S")

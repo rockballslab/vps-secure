@@ -1684,7 +1684,11 @@ TELEGRAM_CHAT_ID=$(grep '^TELEGRAM_CHAT_ID=' "$CONFIG" | cut -d'"' -f2)
 
 [[ -z "$TELEGRAM_TOKEN" ]] || [[ -z "$TELEGRAM_CHAT_ID" ]] && exit 0
 
-DATE=$(date '+%d/%m/%Y')
+# i18n (issue #142) — Lecture de la langue   ← AJOUTER ICI
+REPORT_LANG="en"
+[[ -f /etc/vps-secure.conf ]] && \
+    REPORT_LANG=$(grep '^REPORT_LANG=' /etc/vps-secure.conf | cut -d'"' -f2 || echo "en")
+REPORT_LANG="${REPORT_LANG:-en}"
 HOST=$(hostname)
 DETAILS=""
 ISSUES=0
@@ -1953,7 +1957,6 @@ CURLCFG=$(mktemp)
 chmod 600 "$CURLCFG"
 printf 'url = "https://api.telegram.org/bot%s/sendMessage"\ndata = "chat_id=%s"\n' \
     "$TELEGRAM_TOKEN" "$TELEGRAM_CHAT_ID" > "$CURLCFG"
-curl -s --config "$CURLCFG" \
 if [ "$REPORT_LANG" = "en" ]; then
     SSH_MSG="🔐 SSH connection on ${HOST}
 👤 User: ${PAM_USER:-unknown}

@@ -1606,6 +1606,24 @@ log_info "  Pour voir les services actifs : systemctl list-units --type=service 
 # ============================================================
 # Étape 13 : Alertes Telegram (optionnel)
 # ============================================================
+# ── i18n (issue #142) — Question de langue des rapports ──────────────────────
+echo ""
+echo -e " ${BLANC}Langue des rapports Telegram / Reports language :${RESET}"
+read -rp "  [fr/en] (défaut / default: en) : " REPORT_LANG
+REPORT_LANG="${REPORT_LANG:-en}"
+if [[ "$REPORT_LANG" != "fr" && "$REPORT_LANG" != "en" ]]; then
+    log_warn "Langue invalide '$REPORT_LANG' — fallback sur 'en'."
+    REPORT_LANG="en"
+fi
+mkdir -p /etc/vps-secure
+chmod 700 /etc/vps-secure
+if grep -q "^REPORT_LANG=" /etc/vps-secure.conf 2>/dev/null; then
+    sed -i "s|^REPORT_LANG=.*|REPORT_LANG=\"$REPORT_LANG\"|" /etc/vps-secure.conf
+else
+    echo "REPORT_LANG=\"$REPORT_LANG\"" >> /etc/vps-secure.conf
+fi
+chmod 600 /etc/vps-secure.conf
+log_success "Langue rapports : $REPORT_LANG → /etc/vps-secure.conf"
 etape "13" "$TOTAL_ETAPES" "Alertes de sécurité Telegram (optionnel)"
 
 echo ""
@@ -1671,6 +1689,59 @@ HOST=$(hostname)
 DETAILS=""
 ISSUES=0
 
+# Labels FR/EN (issue #142)
+if [ "$REPORT_LANG" = "en" ]; then
+    LBL_CS_OK="✅ CrowdSec: no alerts"
+    LBL_CS_ALERT="🛡️ CrowdSec: %s alert(s) in 24h\n → Normal if IPs banned — CrowdSec is working.\n → Details: sudo cscli alerts list --since 24h\n"
+    LBL_RK_OK="✅ rkhunter: no anomaly"
+    LBL_RK_WARN="🔴 rkhunter: %s anomaly/anomalies detected\n → Run: sudo rkhunter --check --report-warnings-only\n → Log: /var/log/rkhunter.log\n"
+    LBL_AUDIT_OK="✅ auditd: no suspicious event"
+    LBL_AUDIT_HIGH="🔴 auditd: %s suspicious events (threshold: %s)\n Privilege escalations: %s | Docker: %s | SSH config: %s\n"
+    LBL_AUDIT_NORMAL="ℹ️ auditd: %s normal event(s) (daily admin)\n"
+    LBL_HONEY_OK="🍯 Endlessh: %s bot(s) trapped in 24h"
+    LBL_HONEY_ABSENT="🔴 Endlessh: container absent — honeypot port 22 inactive\n → Recreate the container (see install.sh step 14)\n"
+    LBL_HONEY_DOWN="🔴 Endlessh: down (state: %s) — port 22 not trapped\n → Diagnostics: docker logs endlessh --tail 20\n"
+    LBL_AIDE_MISSING="⚠️ AIDE — result file missing (cron disabled?)\n"
+    LBL_AIDE_STALE="⚠️ AIDE — no scan in +28h (cron broken?)\n"
+    LBL_AIDE_SIG="⚠️ AIDE — system error (signal %s)\n"
+    LBL_AIDE_ERR="⚠️ AIDE — technical error (code %s)\n"
+    LBL_AIDE_APT_CTX="ℹ️ AIDE — apt updated ~%s pkg(s). OK if expected — validate: aide --update\n"
+    LBL_AIDE_APT_FALLBACK="ℹ️ AIDE — %s pkg(s) via apt after scan. OK if expected — rebase: sudo vps-secure-aide-rebase\n"
+    LBL_AIDE_CHANGES="ℹ️ AIDE — new or modified files (outside apt)\n → OK if recent app activity. Check: sudo cat /var/log/aide-daily.log\n → If OK: sudo vps-secure-aide-rebase\n"
+    LBL_AIDE_OK="✅ AIDE OK"
+    LBL_PROPUPD="ℹ️ rkhunter baseline updated by apt on %s"
+    LBL_HEADER_OK="✅ All clear on your VPS"
+    LBL_HEADER_ISSUES="⚠️ %s point(s) to check on your VPS"
+    LBL_FOOTER_OK="No action required."
+    LBL_FOOTER_ISSUES="Follow the instructions above for each point."
+    LBL_REPORT_TITLE="🔐 vps-secure — Daily Security Report"
+else
+    LBL_CS_OK="✅ CrowdSec : aucune alerte"
+    LBL_CS_ALERT="🛡️ CrowdSec : %s alerte(s) en 24h\n → Normal si IPs bannies : CrowdSec fait son travail.\n → Détail : sudo cscli alerts list --since 24h\n"
+    LBL_RK_OK="✅ rkhunter : aucune anomalie"
+    LBL_RK_WARN="🔴 rkhunter : %s anomalie(s) détectée(s)\n → Lance : sudo rkhunter --check --report-warnings-only\n → Log : /var/log/rkhunter.log\n"
+    LBL_AUDIT_OK="✅ auditd : aucun événement suspect"
+    LBL_AUDIT_HIGH="🔴 auditd : %s événements suspects (seuil : %s)\n Escalades privilèges : %s | Docker : %s | SSH config : %s\n"
+    LBL_AUDIT_NORMAL="ℹ️ auditd : %s événement(s) normal(aux) (admin quotidien)\n"
+    LBL_HONEY_OK="🍯 Endlessh : %s bot(s) piégé(s) en 24h"
+    LBL_HONEY_ABSENT="🔴 Endlessh : container absent — honeypot port 22 inactif\n → Recréer le container (voir install.sh étape 14)\n"
+    LBL_HONEY_DOWN="🔴 Endlessh : panne (état: %s) — port 22 non piégé\n → Diagnostic : docker logs endlessh --tail 20\n"
+    LBL_AIDE_MISSING="⚠️ AIDE — fichier résultat manquant (cron désactivé ?)\n"
+    LBL_AIDE_STALE="⚠️ AIDE — pas de scan depuis +28h (cron en panne ?)\n"
+    LBL_AIDE_SIG="⚠️ AIDE — erreur système (signal %s)\n"
+    LBL_AIDE_ERR="⚠️ AIDE — erreur technique (code %s)\n"
+    LBL_AIDE_APT_CTX="ℹ️ AIDE — apt a mis à jour ~%s pkg(s). OK si attendu — validez : aide --update\n"
+    LBL_AIDE_APT_FALLBACK="ℹ️ AIDE — %s pkg(s) via apt après le scan. OK si attendu — rebase : sudo vps-secure-aide-rebase\n"
+    LBL_AIDE_CHANGES="ℹ️ AIDE — fichiers nouveaux ou modifiés détectés (hors apt)\n → Normal si activité applicative récente. Vérifier : sudo cat /var/log/aide-daily.log\n → Si tout est OK : sudo vps-secure-aide-rebase\n"
+    LBL_AIDE_OK="✅ AIDE OK"
+    LBL_PROPUPD="ℹ️ Baseline rkhunter mise à jour par apt le %s"
+    LBL_HEADER_OK="✅ Tout va bien sur ton VPS"
+    LBL_HEADER_ISSUES="⚠️ %s point(s) à vérifier sur ton VPS"
+    LBL_FOOTER_OK="Aucune action requise."
+    LBL_FOOTER_ISSUES="Suis les instructions ci-dessus pour chaque point."
+    LBL_REPORT_TITLE="🔐 vps-secure — Rapport quotidien"
+fi
+
 send_telegram() {
     local CURLCFG
     CURLCFG=$(mktemp)
@@ -1692,13 +1763,9 @@ except:
 
 if [[ "$CS_COUNT" -gt 0 ]]; then
     ISSUES=$((ISSUES + 1))
-    DETAILS+="🛡️ CrowdSec : ${CS_COUNT} alerte(s) en 24h
-  → Normal si IPs bannies : CrowdSec fait son travail.
-  → Détail : sudo cscli alerts list --since 24h
-
-"
+    DETAILS+="$(printf "$LBL_CS_ALERT" "$CS_COUNT")"
 else
-    DETAILS+="✅ CrowdSec : aucune alerte
+    DETAILS+="${LBL_CS_OK}
 "
 fi
 
@@ -1722,14 +1789,9 @@ RK_WARNINGS=$(grep -c "Warning" "$RKHUNTER_LOG" 2>/dev/null || true); RK_WARNING
 
 if [[ "$RK_WARNINGS" -gt 0 ]]; then
     ISSUES=$((ISSUES + 1))
-    DETAILS+="🔴 rkhunter : ${RK_WARNINGS} anomalie(s) détectée(s)
-  → Lance : sudo rkhunter --check --report-warnings-only
-  → Si faux positif : sudo rkhunter --propupd
-  → Log : /var/log/rkhunter.log
-
-"
+    DETAILS+="$(printf "$LBL_RK_WARN" "$RK_WARNINGS")"
 else
-    DETAILS+="✅ rkhunter : aucune anomalie
+    DETAILS+="${LBL_RK_OK}
 "
 fi
 
@@ -1738,7 +1800,7 @@ PROPUPD_LOG="/var/log/rkhunter-propupd.log"
 PROPUPD_RECENT=""
 if [[ -f "$PROPUPD_LOG" ]] && [[ -n "$(find "$PROPUPD_LOG" -mmin -1620 2>/dev/null)" ]]; then
     PROPUPD_DATE=$(stat -c "%y" "$PROPUPD_LOG" 2>/dev/null | cut -d'.' -f1 | sed 's/ /T/' | cut -c1-16 || echo "jamais")
-    PROPUPD_RECENT="ℹ️ Baseline rkhunter mise à jour par apt le ${PROPUPD_DATE}"
+    PROPUPD_RECENT="$(printf "$LBL_PROPUPD" "$PROPUPD_DATE")"
 fi
 
 # ── auditd ──
@@ -1755,30 +1817,26 @@ AUDIT_THRESHOLD=100
 
 if [[ "$AUDIT_TOTAL" -gt "$AUDIT_THRESHOLD" ]]; then
     ISSUES=$((ISSUES + 1))
-    DETAILS+="🔴 auditd : ${AUDIT_TOTAL} événements suspects (seuil : ${AUDIT_THRESHOLD})\n"
-    DETAILS+="   Escalades privilèges : ${PRIV_COUNT} | Docker : ${DOCK_COUNT} | SSH config : ${SSH_COUNT}\n"
+    DETAILS+="$(printf "$LBL_AUDIT_HIGH" "$AUDIT_TOTAL" "$AUDIT_THRESHOLD" "$PRIV_COUNT" "$DOCK_COUNT" "$SSH_COUNT")"
 elif [[ "$AUDIT_TOTAL" -gt 0 ]]; then
-    DETAILS+="ℹ️ auditd : ${AUDIT_TOTAL} événement(s) normal(aux) (admin quotidien)\n"
+    DETAILS+="$(printf "$LBL_AUDIT_NORMAL" "$AUDIT_TOTAL")"
 else
-    DETAILS+="✅ auditd : aucun événement suspect\n"
+    DETAILS+="${LBL_AUDIT_OK}
+"
 fi
 
 # ── Endlessh (honeypot port 22) ──
 ENDLESSH_STATE=$(docker inspect endlessh --format '{{.State.Status}}' 2>/dev/null || echo "absent")
 if [[ "$ENDLESSH_STATE" == "running" ]]; then
     HONEY_COUNT=$(docker logs endlessh --since 1440m 2>&1 | grep -ci "accept" || echo "0")
-    DETAILS+="🍯 Endlessh : ${HONEY_COUNT} bot(s) piégé(s) en 24h
+    DETAILS+="$(printf "$LBL_HONEY_OK" "$HONEY_COUNT")
 "
 elif [[ "$ENDLESSH_STATE" == "absent" ]]; then
     ISSUES=$((ISSUES + 1))
-    DETAILS+="🔴 Endlessh : container absent — honeypot port 22 inactif
-    → Recréer le container (voir install.sh étape 14)
-"
+    DETAILS+="$LBL_HONEY_ABSENT"
 else
     ISSUES=$((ISSUES + 1))
-    DETAILS+="🔴 Endlessh : panne (état: ${ENDLESSH_STATE}) — port 22 non piégé
-    → Diagnostic : docker logs endlessh --tail 20
-"
+    DETAILS+="$(printf "$LBL_HONEY_DOWN" "$ENDLESSH_STATE")"
 fi
 
 # ── AIDE (integrity monitoring) ──
@@ -1786,65 +1844,56 @@ AIDE_EXIT_FILE="/var/log/aide-daily.exit"
 AIDE_CONTEXT_FILE="/var/log/aide-daily.exit.context"
 # E1 : Vérification de fraîcheur — le scan AIDE tourne à 03h00, rapport à 07h00, marge = 28h
 if [[ ! -f "$AIDE_EXIT_FILE" ]]; then
-    DETAILS+="⚠️ AIDE — fichier résultat manquant (cron désactivé ?)
-"
+    DETAILS+="$LBL_AIDE_MISSING"
     ISSUES=$(( ISSUES + 1 ))
+
 elif [[ -z "$(find "$AIDE_EXIT_FILE" -mmin -1680 2>/dev/null)" ]]; then
-    DETAILS+="⚠️ AIDE — pas de scan depuis +28h (cron en panne ?)
-"
+    DETAILS+="$LBL_AIDE_STALE"
     ISSUES=$(( ISSUES + 1 ))
+
 else
     AIDE_EXIT=$(cat "$AIDE_EXIT_FILE" 2>/dev/null || echo "99")
-    # C2 : Tester les erreurs techniques EN PREMIER (& 56 avant & 7)
-    # Évite de classifier les exits 14/15/17/18/19 comme "modifications détectées"
+
     if [[ "$AIDE_EXIT" -ge 128 ]]; then
-        DETAILS+="⚠️ AIDE — erreur système (signal $(( AIDE_EXIT - 128 )))
-"
+        DETAILS+="$(printf "$LBL_AIDE_SIG" "$(( AIDE_EXIT - 128 ))")"
         ISSUES=$(( ISSUES + 1 ))
+
     elif [[ $(( AIDE_EXIT & 120 )) -ne 0 ]]; then
-        DETAILS+="⚠️ AIDE — erreur technique (code $AIDE_EXIT)
-"
+        DETAILS+="$(printf "$LBL_AIDE_ERR" "$AIDE_EXIT")"
         ISSUES=$(( ISSUES + 1 ))
+
     elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]]; then
-        # C1 : Message contextuel non-anxiogène si apt a tourné
         if [[ -f "$AIDE_CONTEXT_FILE" ]]; then
             DPKG_PKG_COUNT=$(grep -oP 'dpkg_active:\K[0-9]+' "$AIDE_CONTEXT_FILE" 2>/dev/null || echo "?")
-            DETAILS+="ℹ️ AIDE — apt a mis à jour ~${DPKG_PKG_COUNT} pkg(s). OK si attendu — validez : aide --update
-"
+            DETAILS+="$(printf "$LBL_AIDE_APT_CTX" "$DPKG_PKG_COUNT")"
         else
-            # Fix #44 : context file absent — apt a peut-être tourné APRÈS le scan AIDE (01h UTC)
-            # Double vérification via dpkg.log (couvre unattended-upgrades post-01h UTC)
             APT_ACTIVITY=$(awk -v cutoff="$(date -d '12 hours ago' '+%Y-%m-%d %H:%M:%S')" \
                 '$0 > cutoff && / status installed / {count++} END {print count+0}' \
                 /var/log/dpkg.log 2>/dev/null | tr -d '[:space:]')
-                APT_ACTIVITY="${APT_ACTIVITY:-0}"
+            APT_ACTIVITY="${APT_ACTIVITY:-0}"
             if [[ "$APT_ACTIVITY" -gt 0 ]]; then
-                DETAILS+="ℹ️ AIDE — ${APT_ACTIVITY} pkg(s) via apt après le scan. OK si attendu — rebase : sudo vps-secure-aide-rebase
-"
+                DETAILS+="$(printf "$LBL_AIDE_APT_FALLBACK" "$APT_ACTIVITY")"
             else
-                DETAILS+="ℹ️ AIDE — fichiers nouveaux ou modifiés détectés (hors apt)
-  → Normal si activité applicative récente. Vérifier : sudo cat /var/log/aide-daily.log
-  → Si tout est OK : sudo vps-secure-aide-rebase
-"
+                DETAILS+="$LBL_AIDE_CHANGES"
                 ISSUES=$(( ISSUES + 1 ))
             fi
         fi
     else
-        DETAILS+="✅ AIDE OK
+        DETAILS+="${LBL_AIDE_OK}
 "
     fi
 fi
 
 # ── Envoi du rapport ──
 if [[ "$ISSUES" -eq 0 ]]; then
-    HEADER="✅ Tout va bien sur ton VPS"
-    FOOTER="Aucune action requise."
+    HEADER="$LBL_HEADER_OK"
+    FOOTER="$LBL_FOOTER_OK"
 else
-    HEADER="⚠️ ${ISSUES} point(s) à vérifier sur ton VPS"
-    FOOTER="Suis les instructions ci-dessus pour chaque point."
+    HEADER="$(printf "$LBL_HEADER_ISSUES" "$ISSUES")"
+    FOOTER="$LBL_FOOTER_ISSUES"
 fi
 
-MESSAGE="🔐 vps-secure — Rapport quotidien
+MESSAGE="${LBL_REPORT_TITLE}
 📅 ${DATE} · ${HOST}
 
 ${HEADER}
@@ -1886,19 +1935,38 @@ CONFIG="/etc/vps-secure/telegram.conf"
 TELEGRAM_TOKEN=$(grep '^TELEGRAM_TOKEN=' "$CONFIG" | cut -d'"' -f2)
 TELEGRAM_CHAT_ID=$(grep '^TELEGRAM_CHAT_ID=' "$CONFIG" | cut -d'"' -f2)
 [[ -z "$TELEGRAM_TOKEN" ]] || [[ -z "$TELEGRAM_CHAT_ID" ]] && exit 0
+# i18n (issue #142) — Lecture de la langue
+REPORT_LANG="en"
+[[ -f /etc/vps-secure.conf ]] && \
+    REPORT_LANG=$(grep '^REPORT_LANG=' /etc/vps-secure.conf | cut -d'"' -f2 || echo "en")
+REPORT_LANG="${REPORT_LANG:-en}"
 
 DATE=$(date '+%d/%m/%Y %H:%M:%S')
 HOST=$(hostname)
+# i18n (issue #142)
+REPORT_LANG="en"
+[[ -f /etc/vps-secure.conf ]] && \
+    REPORT_LANG=$(grep '^REPORT_LANG=' /etc/vps-secure.conf | cut -d'"' -f2 || echo "en")
+REPORT_LANG="${REPORT_LANG:-en}"
 
 CURLCFG=$(mktemp)
 chmod 600 "$CURLCFG"
 printf 'url = "https://api.telegram.org/bot%s/sendMessage"\ndata = "chat_id=%s"\n' \
     "$TELEGRAM_TOKEN" "$TELEGRAM_CHAT_ID" > "$CURLCFG"
 curl -s --config "$CURLCFG" \
-    --data-urlencode "text=🔐 Connexion SSH sur ${HOST}
+if [ "$REPORT_LANG" = "en" ]; then
+    SSH_MSG="🔐 SSH connection on ${HOST}
+👤 User: ${PAM_USER:-unknown}
+🌐 Source IP: ${PAM_RHOST:-unknown}
+📅 ${DATE}"
+else
+    SSH_MSG="🔐 Connexion SSH sur ${HOST}
 👤 Utilisateur : ${PAM_USER:-inconnu}
-🌐 IP source   : ${PAM_RHOST:-inconnue}
-📅 ${DATE}" > /dev/null 2>&1
+🌐 IP source : ${PAM_RHOST:-inconnue}
+📅 ${DATE}"
+fi
+curl -s --config "$CURLCFG" \
+    --data-urlencode "text=${SSH_MSG}" > /dev/null 2>&1
 rm -f "$CURLCFG"
 SSHALERTEOF
 

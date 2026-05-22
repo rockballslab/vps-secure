@@ -2441,7 +2441,8 @@ chattr +i "$AIDE_EXIT_FILE" "$AIDE_LOG" 2>/dev/null || true  # optionnel : symé
 chattr -i "$AIDE_CONTEXT_FILE" 2>/dev/null || true
 
 [[ "$AIDE_EXIT" -eq 0 ]] && { rm -f "$AIDE_CONTEXT_FILE"; exit 0; }
-[[ $(( AIDE_EXIT & 56 )) -ne 0 ]] && exit 0
+[[ "$AIDE_EXIT" -ge 128 ]] && exit 0
+[[ $(( AIDE_EXIT & 120 )) -ne 0 ]] && exit 0
 
 CUTOFF=$(date -d "${DPKG_WINDOW_HOURS} hours ago" '+%Y-%m-%d %H:%M:%S')
 DPKG_ACTIVITY=$(awk -v c="$CUTOFF" '$0 > c && / status installed / {count++} END {print count+0}' "$DPKG_LOG" 2>/dev/null || echo 0)
@@ -2554,7 +2555,15 @@ echo "🔄 Rebase baseline AIDE en cours (~5-10 min)..."
 chattr -i "$AIDE_DB" 2>/dev/null || true
 _db_unprotected=1
 
-aide --update --config "$AIDE_CONF" > /dev/null 2>&1 || true
+AIDE_UPDATE_EXIT=0
+aide --update --config "$AIDE_CONF" > /var/log/aide-rebase.log 2>&1 || AIDE_UPDATE_EXIT=$?
+
+if (( AIDE_UPDATE_EXIT >= 128 )) || (( AIDE_UPDATE_EXIT & 120 )); then
+    echo "❌ aide --update a échoué (exit ${AIDE_UPDATE_EXIT}) — rebase annulé."
+    echo "   Log : /var/log/aide-rebase.log"
+    rm -f "$AIDE_DB_NEW" 2>/dev/null || true
+    exit 1
+fi
 
 if [[ -f "$AIDE_DB_NEW" ]]; then
     cp "$AIDE_DB_NEW" "$AIDE_DB"
@@ -2711,7 +2720,7 @@ if [[ -f /var/log/aide-daily.exit ]]; then
         AIDE_STATUS="${JAUNE}Fichier exit invalide — sudo aide --check${RESET}"
     elif [[ "$AIDE_EXIT" -eq 0 ]]; then
         AIDE_STATUS="${VERT}Aucune modification${RESET}"
-    elif [[ $(( AIDE_EXIT & 56 )) -ne 0 ]]; then
+    elif [[ "$AIDE_EXIT" -ge 128 ]] || [[ $(( AIDE_EXIT & 120 )) -ne 0 ]]; then
         # C2 : erreurs techniques testées AVANT les modifications (évite faux positifs bitmask)
         AIDE_STATUS="${JAUNE}Erreur technique AIDE (exit ${AIDE_EXIT}) — sudo aide --check 2>&1 | tail -5${RESET}"
     elif [[ $(( AIDE_EXIT & 7 )) -ne 0 ]]; then

@@ -1263,6 +1263,7 @@ cat > /etc/audit/rules.d/vps-secure.rules << 'AUDITEOF'
 -a always,exit -F arch=b64 -S init_module -S finit_module -S delete_module -F auid!=-1 -k kernel_module_load
 -a always,exit -F arch=b32 -S init_module -S finit_module -S delete_module -F auid!=-1 -k kernel_module_load
 -a always,exit -F arch=b64 -S bpf -F auid>=1000 -F auid!=4294967295 -k suspicious_bpf
+-a always,exit -F arch=b64 -S bpf -F euid=0 -k root_bpf_load
 -a always,exit -F arch=b64 -S memfd_create -F auid>=1000 -F auid!=4294967295 -k fileless_exec
 -a always,exit -F arch=b64 -S execveat -F auid>=1000 -F auid!=4294967295 -k fileless_exec
 -a always,exit -F arch=b64 -S bpf -F a0=8 -k bpf_obj_pin

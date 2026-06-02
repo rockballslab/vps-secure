@@ -10,7 +10,7 @@
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04%20LTS-E95420?logo=ubuntu&logoColor=white)
 ![Lynis Score](https://img.shields.io/badge/Lynis%20Score-86%2F100-success)
-![Last Release](https://badgen.net/github/release/rockballslab/vps-secure)
+![Last Modified](https://badgen.net/github/last-commit/rockballslab/vps-secure?label=last+modified)
 ![ShellCheck](https://img.shields.io/badge/ShellCheck-Passed-brightgreen?logo=shellcheck)
 
 **:closed_lock_with_key: Your VPS hardens itself while you sleep with a single command. No Linux expertise required.**

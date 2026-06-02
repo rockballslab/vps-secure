@@ -1168,6 +1168,7 @@ cat >> /etc/modprobe.d/vps-secure-blacklist.conf << 'EOF'
 install dccp /bin/false
 install sctp /bin/false
 install rds /bin/false
+install rds_tcp /bin/false  # CVE-2026-43494 PinTheft — défense en profondeur
 install tipc /bin/false
 EOF
 log_success "Protocoles réseau inutiles blacklistés (dccp, sctp, rds, tipc)."

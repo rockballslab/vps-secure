@@ -1172,6 +1172,12 @@ install rds_tcp /bin/false  # CVE-2026-43494 PinTheft — défense en profondeur
 install tipc /bin/false
 EOF
 log_success "Protocoles réseau inutiles blacklistés (dccp, sctp, rds, tipc)."
+# ── Blacklist AF_RDS + rmmod — CVE-2026-43494 "PinTheft" (défense en profondeur) ──
+# alias net-pf-21 off = mitigation canonique Canonical (désactive la famille AF_RDS socket)
+# rds_tcp est déjà dans le bloc ci-dessus — ce bloc ajoute la couche socket-family + cleanup live
+echo "alias net-pf-21 off" >> /etc/modprobe.d/vps-secure-blacklist.conf
+rmmod rds_tcp rds 2>/dev/null || true  # optionnel : non chargés par défaut sur Ubuntu 24.04 — non bloquant
+log_success "AF_RDS (net-pf-21) désactivé — CVE-2026-43494 PinTheft mitigé (rds + rds_tcp + socket family)."
 
 # Désactiver les core dumps (KRNL-5820 — CIS 1.5.1)
 grep -q "hard core" /etc/security/limits.conf \

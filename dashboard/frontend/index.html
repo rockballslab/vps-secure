@@ -1294,8 +1294,8 @@ function updatePorts(op) {
   const list = $('ports-list'), ports = op.ports || [];
   if (!ports.length) { list.innerHTML = `<div class="tl-empty">${t('js_no_ports')}</div>`; return; }
   list.innerHTML = ports.map(p => {
-    const cls  = !p.expected ? 'port-alert' : p.local_only ? 'port-local' : 'port-ok';
-    const icon = !p.expected ? '⚠' : p.local_only ? '⚙' : '●';
+    const cls = p.local_only ? 'port-local' : !p.expected ? 'port-alert' : 'port-ok';
+    const icon = p.local_only ? '⚙' : !p.expected ? '⚠' : '●';
     return `<span class="port-chip ${cls}" title="${p.local_only ? p.port+' — '+t('js_port_internal') : p.port}">${icon} ${p.port}</span>`;
   }).join('');
   setCard('card-ports', op.alert ? 'a-red' : 'a-green');

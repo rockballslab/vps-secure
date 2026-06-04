@@ -6,7 +6,7 @@
 
 # VPS-SECURE | From naked to bulletproof. One command.
 
-![GitHub stars](https://img.shields.io/github/stars/rockballslab/vps-secure?style=social)
+![GitHub stars](https://img.shields.io/badge/stars-⭐-yellow)
 ![Version](https://img.shields.io/github/v/release/rockballslab/vps-secure)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04%20LTS-E95420?logo=ubuntu&logoColor=white)
 ![Lynis Score](https://img.shields.io/badge/Lynis%20Score-86%2F100-success)

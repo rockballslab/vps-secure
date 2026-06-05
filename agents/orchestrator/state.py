@@ -22,13 +22,16 @@ from typing import Any
 DEFAULT_STATE = {
     "schema_version": "1.0",
     "last_run": None,
-    "cves_seen": {},          # cve_id -> {first_seen, last_notified, class, component_id, user_acked_at, user_snoozed_until, fix_applied_at}
+    "cves_seen": {},          # cve_id -> {first_seen, last_notified, class, component_id, user_acked_at, user_snoozed_until, fix_applied_at, user_dismissed_at, issue_url, issue_number, issue_created_at}
     "last_inventory_sha": None,
     "drift_alert_pending": False,
     "stats": {
         "total_runs": 0,
         "total_cves_processed": 0,
         "total_notifications_sent": 0,
+        "total_acked": 0,
+        "total_dismissed": 0,
+        "total_issues_created": 0,
     }
 }
 
@@ -106,6 +109,7 @@ def debounce_check(state: dict, cve_id: str, component_id: str, debounce_days: i
       - Si vue < debounce_days → False
       - Si vue > debounce_days → True
       - Si user_acked_at ou fix_applied_at → False (silence)
+      - Si user_dismissed_at → False (silence définitif — l'utilisateur a tranché)
       - Si user_snoozed_until > now → False
     """
     key = cve_id
@@ -114,6 +118,8 @@ def debounce_check(state: dict, cve_id: str, component_id: str, debounce_days: i
         return True
     if seen.get("user_acked_at") or seen.get("fix_applied_at"):
         return False
+    if seen.get("user_dismissed_at"):
+        return False  # dismiss = silence définitif
     snoozed_until = seen.get("user_snoozed_until")
     if snoozed_until:
         try:
@@ -131,3 +137,50 @@ def debounce_check(state: dict, cve_id: str, component_id: str, debounce_days: i
         return age.days >= debounce_days
     except ValueError:
         return True
+
+
+# ════════════════════════════════════════════════════════════════════
+# Actions utilisateur via Telegram callbacks
+# ════════════════════════════════════════════════════════════════════
+
+def mark_dismissed(state: dict, cve_id: str, user: str = "telegram") -> dict:
+    """Marque la CVE comme dismissed (l'utilisateur a cliqué 'Pas OK').
+
+    Retourne l'état modifié. Idempotent.
+    """
+    if "cves_seen" not in state:
+        state["cves_seen"] = {}
+    if cve_id not in state["cves_seen"]:
+        state["cves_seen"][cve_id] = {}
+    entry = state["cves_seen"][cve_id]
+    if not entry.get("user_dismissed_at"):
+        entry["user_dismissed_at"] = now_utc_iso()
+        entry["user_dismissed_by"] = user
+        state["stats"]["total_dismissed"] = state["stats"].get("total_dismissed", 0) + 1
+    return state
+
+
+def mark_issue_created(state: dict, cve_id: str, issue_url: str, issue_number: int) -> dict:
+    """Enregistre qu'une GitHub issue a été créée pour cette CVE.
+
+    Retourne l'état modifié. Idempotent (n'écrase pas une issue existante).
+    """
+    if "cves_seen" not in state:
+        state["cves_seen"] = {}
+    if cve_id not in state["cves_seen"]:
+        state["cves_seen"][cve_id] = {}
+    entry = state["cves_seen"][cve_id]
+    if not entry.get("issue_url"):
+        entry["issue_url"] = issue_url
+        entry["issue_number"] = issue_number
+        entry["issue_created_at"] = now_utc_iso()
+        state["stats"]["total_issues_created"] = state["stats"].get("total_issues_created", 0) + 1
+    return state
+
+
+def is_dismissed(state: dict, cve_id: str) -> bool:
+    return bool(state.get("cves_seen", {}).get(cve_id, {}).get("user_dismissed_at"))
+
+
+def is_issue_created(state: dict, cve_id: str) -> bool:
+    return bool(state.get("cves_seen", {}).get(cve_id, {}).get("issue_url"))

@@ -131,12 +131,19 @@ def step_notify(verdicts: list[dict], inventory: dict, cve_watch: dict, states: 
     notifier.send(digest_text)
     print("  → digest envoyé")
 
-    # Envoi alertes individuelles P0
+    # Envoi alertes individuelles P0 AVEC BOUTONS inline
+    # (✅ OK → crée issue, ❌ Pas OK → dismiss)
     p0 = [v for v in to_send if v.get("impact_class") == "critical"]
     for v in p0[:3]:  # cap à 3 P0 détaillés
-        notifier.send(format_p0_alert(v))
+        text, buttons = format_p0_alert_with_buttons(v)
+        resp = notifier.send_with_buttons(text, buttons)
+        try:
+            sent_msg_id = (resp.get("result") or {}).get("message_id")
+        except Exception:
+            sent_msg_id = None
+        v["_telegram_message_id"] = sent_msg_id
     if p0:
-        print(f"  → {len(p0[:3])} alertes P0 individuelles envoyées")
+        print(f"  → {len(p0[:3])} alertes P0 individuelles envoyées (avec boutons inline)")
 
     # Update state
     cto["last_run"] = now_utc_iso()
@@ -145,22 +152,26 @@ def step_notify(verdicts: list[dict], inventory: dict, cve_watch: dict, states: 
     cto["stats"]["total_notifications_sent"] += len(to_send) + 1
     for v in to_send:
         cid = v.get("matched_components", [{}])[0].get("component_id", "?")
-        cto["cves_seen"].setdefault(v["cve_id"], {
-            "first_seen": now_utc_iso(),
-            "last_notified": now_utc_iso(),
-            "class": v.get("impact_class"),
-            "component_id": cid,
-            "user_acked_at": None,
-            "user_snoozed_until": None,
-            "fix_applied_at": None,
-        })
-        cto["cves_seen"][v["cve_id"]]["last_notified"] = now_utc_iso()
+        # On stocke le verdict complet dans cves_seen[id] pour que
+        # callback_handler.handle_ack puisse reconstruire l'issue
+        # sans relire impact_cache.
+        existing = cto["cves_seen"].get(v["cve_id"], {})
+        existing.setdefault("first_seen", now_utc_iso())
+        existing["last_notified"] = now_utc_iso()
+        existing["class"] = v.get("impact_class")
+        existing["component_id"] = cid
+        existing["verdict"] = v
+        existing.setdefault("user_acked_at", None)
+        existing.setdefault("user_snoozed_until", None)
+        existing.setdefault("fix_applied_at", None)
+        existing.setdefault("user_dismissed_at", None)
+        cto["cves_seen"][v["cve_id"]] = existing
     states["cto"].write(cto)
     print(f"  → state updated: {len(cto['cves_seen'])} CVE vues au total")
 
 
 def cmd_run(args) -> int:
-    """Run complet: inventaire + cve + assess + notify."""
+    """Run complet: inventaire + cve + assess + notify. Avec --poll enchaîne le polling."""
     dry_run = args.dry or os.environ.get("DRY_RUN", "false").lower() == "true" or not os.environ.get("TELEGRAM_BOT_TOKEN")
     window_hours = int(os.environ.get("CVE_WINDOW_HOURS", "24"))
     if dry_run:
@@ -173,7 +184,52 @@ def cmd_run(args) -> int:
     verdicts = step_assess(cve_watch, inv)
     step_notify(verdicts, inv, cve_watch, states, dry_run)
     print("\n=== DONE ===")
+
+    # Chaînage optionnel vers le polling
+    if getattr(args, "poll", False):
+        from telegram_polling import run_polling_loop
+        from pathlib import Path
+        from telegram_notifier import TelegramNotifier
+        print("\n=== ENTERING POLLING MODE (--poll) ===\n")
+        notifier = TelegramNotifier(dry_run=dry_run)
+        repo = os.environ.get("GITHUB_REPO", "rockballslab/vps-secure")
+        lock_path = Path(os.environ.get("STATE_DIR", str(PROJECT_ROOT / "state"))) / ".polling.lock"
+        poll_result = run_polling_loop(
+            notifier=notifier,
+            states=states,
+            repo=repo,
+            lock_path=lock_path,
+            max_runtime_seconds=int(os.environ.get("POLL_MAX_RUNTIME", "86340")),
+            dry_run=dry_run,
+        )
+        print(f"polling terminé: {poll_result}")
+        return 0 if poll_result.get("ok") else 1
     return 0
+
+
+def cmd_poll(args) -> int:
+    """Lance juste la boucle de polling (sans faire le run)."""
+    from telegram_polling import run_polling_loop
+    from pathlib import Path
+    from telegram_notifier import TelegramNotifier
+    dry_run = args.dry or os.environ.get("DRY_RUN", "false").lower() == "true" or not os.environ.get("TELEGRAM_BOT_TOKEN")
+    if dry_run:
+        print("=== DRY RUN MODE (polling) ===\n")
+    states = _get_state_files()
+    notifier = TelegramNotifier(dry_run=dry_run)
+    repo = os.environ.get("GITHUB_REPO", "rockballslab/vps-secure")
+    lock_path = Path(os.environ.get("STATE_DIR", str(PROJECT_ROOT / "state"))) / ".polling.lock"
+    poll_result = run_polling_loop(
+        notifier=notifier,
+        states=states,
+        repo=repo,
+        lock_path=lock_path,
+        max_runtime_seconds=args.max_runtime,
+        poll_timeout=args.poll_timeout,
+        dry_run=dry_run,
+    )
+    print(json.dumps(poll_result, indent=2, ensure_ascii=False))
+    return 0 if poll_result.get("ok") else 1
 
 
 def cmd_inventory(args) -> int:
@@ -230,10 +286,20 @@ def main():
     p = argparse.ArgumentParser(description="vps-secure-agents orchestrator")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    sub.add_parser("run", help="Run complet (inventaire + cve + assess + notify)").add_argument("--dry", action="store_true")
+    # run: inventaire + cve + assess + notify (--dry | --poll)
+    run_p = sub.add_parser("run", help="Run complet (inventaire + cve + assess + notify)")
+    run_p.add_argument("--dry", action="store_true", help="DRY-RUN: pas de Telegram, pas de gh")
+    run_p.add_argument("--poll", action="store_true", help="Après le run, entre en polling Telegram (~24h)")
+
+    # poll: juste la boucle de polling
+    poll_p = sub.add_parser("poll", help="Lance la boucle de polling Telegram (callback_query)")
+    poll_p.add_argument("--dry", action="store_true")
+    poll_p.add_argument("--max-runtime", type=int, default=86340, help="secondes (défaut 23h59)")
+    poll_p.add_argument("--poll-timeout", type=int, default=30, help="getUpdates long-poll timeout")
+
     sub.add_parser("inventory", help="Collecte juste l'inventaire")
     sub.add_parser("digest", help="Regénère un digest depuis le state actuel")
-    ack_p = sub.add_parser("ack", help="Acquitte une CVE")
+    ack_p = sub.add_parser("ack", help="Acquitte une CVE (CLI)")
     ack_p.add_argument("cve_id")
     sub.add_parser("status", help="Affiche les stats du state")
 
@@ -244,6 +310,7 @@ def main():
         "digest": cmd_digest,
         "ack": cmd_ack,
         "status": cmd_status,
+        "poll": cmd_poll,
     }[args.cmd](args)
 
 

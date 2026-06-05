@@ -36,6 +36,130 @@ class TelegramNotifier:
         r.raise_for_status()
         return r.json()
 
+    def send_with_buttons(
+        self,
+        text: str,
+        buttons: list[list[dict[str, str]]],
+        parse_mode: str = "HTML",
+        disable_preview: bool = True,
+    ) -> dict[str, Any]:
+        """
+        Envoie un message avec un clavier inline (boutons sous le message).
+
+        buttons: liste de rangées, chaque rangée = liste de boutons.
+        Chaque bouton = {"text": "Label", "callback_data": "action|param"}.
+        callback_data DOIT faire ≤ 64 bytes (limite Telegram).
+
+        Exemple:
+            [[
+                {"text": "✅ OK — créer issue", "callback_data": "ack|CVE-2026-41567"},
+                {"text": "❌ Pas OK",            "callback_data": "dismiss|CVE-2026-41567"},
+            ]]
+        """
+        for row in buttons:
+            for btn in row:
+                if len(btn.get("callback_data", "").encode("utf-8")) > 64:
+                    raise ValueError(
+                        f"callback_data > 64 bytes: {btn['callback_data']!r} "
+                        f"({len(btn['callback_data'].encode('utf-8'))} bytes)"
+                    )
+
+        if self.dry_run:
+            print(f"[DRY-RUN Telegram → chat_id={self.chat_id}] (avec {sum(len(r) for r in buttons)} boutons)")
+            print(f"{text}\n---")
+            return {"ok": True, "dry_run": True, "result": {"message_id": 0}}
+
+        url = API_BASE.format(token=self.token, method="sendMessage")
+        payload = {
+            "chat_id": self.chat_id,
+            "text": text,
+            "parse_mode": parse_mode,
+            "disable_web_page_preview": disable_preview,
+            "reply_markup": {"inline_keyboard": buttons},
+        }
+        r = requests.post(url, json=payload, timeout=15)
+        r.raise_for_status()
+        return r.json()
+
+    def edit_message(
+        self,
+        chat_id: str | int,
+        message_id: int,
+        new_text: str,
+        new_buttons: list[list[dict[str, str]]] | None = None,
+        parse_mode: str = "HTML",
+    ) -> dict[str, Any]:
+        """Édite un message existant (utile après un callback pour confirmer l'action)."""
+        if self.dry_run:
+            print(f"[DRY-RUN editMessage chat_id={chat_id} msg_id={message_id}]")
+            print(f"{new_text}\n---")
+            return {"ok": True, "dry_run": True}
+
+        url = API_BASE.format(token=self.token, method="editMessageText")
+        payload: dict[str, Any] = {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "text": new_text,
+            "parse_mode": parse_mode,
+        }
+        if new_buttons is not None:
+            payload["reply_markup"] = {"inline_keyboard": new_buttons}
+        r = requests.post(url, json=payload, timeout=15)
+        r.raise_for_status()
+        return r.json()
+
+    def answer_callback_query(
+        self,
+        callback_query_id: str,
+        text: str = "",
+        show_alert: bool = False,
+    ) -> dict[str, Any]:
+        """Répond à un callback_query (acknowledge le clic, optionnellement avec un toast)."""
+        if self.dry_run:
+            print(f"[DRY-RUN answerCallbackQuery id={callback_query_id}] {text}")
+            return {"ok": True, "dry_run": True}
+
+        url = API_BASE.format(token=self.token, method="answerCallbackQuery")
+        payload: dict[str, Any] = {
+            "callback_query_id": callback_query_id,
+            "show_alert": show_alert,
+        }
+        if text:
+            payload["text"] = text[:200]  # Telegram limite
+        r = requests.post(url, json=payload, timeout=15)
+        r.raise_for_status()
+        return r.json()
+
+    def get_updates(
+        self,
+        offset: int | None = None,
+        timeout: int = 30,
+        allowed_updates: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Long-polling des updates Telegram.
+
+        offset: dernier update_id + 1 (pour ack et ne pas le revoir).
+        timeout: secondes d'attente longue côté Telegram (max 50).
+        allowed_updates: ex. ['callback_query'] pour ne recevoir que les clics.
+        """
+        if self.dry_run:
+            return []  # Pas d'updates en dry-run
+
+        url = API_BASE.format(token=self.token, method="getUpdates")
+        payload: dict[str, Any] = {
+            "timeout": min(timeout, 50),
+        }
+        if offset is not None:
+            payload["offset"] = offset
+        if allowed_updates:
+            payload["allowed_updates"] = allowed_updates
+
+        r = requests.post(url, json=payload, timeout=timeout + 10)
+        r.raise_for_status()
+        data = r.json()
+        return data.get("result", [])
+
 
 def format_digest(verdicts: list[dict], stats: dict) -> str:
     """Formate le digest quotidien (tous verdicts groupés)."""
@@ -98,3 +222,26 @@ def format_p0_alert(verdict: dict) -> str:
         f"<b>Rationale:</b>\n<i>{verdict.get('rationale', '')}</i>\n\n"
         f"<i>Run: <code>cat state/inventory.json | jq</code> pour détails.</i>"
     )
+
+
+def cve_action_buttons(cve_id: str) -> list[list[dict[str, str]]]:
+    """
+    Construit les 2 boutons inline pour une CVE:
+      - "✅ OK — créer issue"  → callback_data: ack|CVE-XXXX-YYYY
+      - "❌ Pas OK"            → callback_data: dismiss|CVE-XXXX-YYYY
+
+    Le préfixe (ack| / dismiss|) est dispatché par callback_handler.
+    La limite Telegram callback_data = 64 bytes (CVE-2025-XXXXX = 13 chars → OK).
+    """
+    if len(cve_id.encode("utf-8")) > 50:
+        # Garde-fou: nos CVE IDs font <20 chars, mais on valide quand même
+        raise ValueError(f"cve_id trop long pour callback_data: {cve_id!r}")
+    return [[
+        {"text": "✅ OK — créer issue", "callback_data": f"ack|{cve_id}"},
+        {"text": "❌ Pas OK",            "callback_data": f"dismiss|{cve_id}"},
+    ]]
+
+
+def format_p0_alert_with_buttons(verdict: dict) -> tuple[str, list[list[dict[str, str]]]]:
+    """Formate une alerte P0 + ses 2 boutons. Retourne (text, buttons)."""
+    return format_p0_alert(verdict), cve_action_buttons(verdict["cve_id"])

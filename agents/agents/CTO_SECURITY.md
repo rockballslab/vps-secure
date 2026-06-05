@@ -100,46 +100,74 @@ Tu es le **seul** agent autorisé à parler à l'utilisateur final. Tous les aut
 - **Grouping:** si ≥ 3 CVE P2 survenues dans la même fenêtre 24h → 1 seul Telegram groupé.
 - **Silence P3:** jamais notifié, consultable via `query-state` manuel.
 
-### Étape 5 — Acquittement
-- L'utilisateur peut répondre au Telegram: `ack <cve_id>`, `snooze <cve_id> <duration>`, `fix <cve_id>`.
-- Mets à jour le state file en conséquence.
-- Si `fix` reçu → vérifie la présence du fix (re-scan inventaire après délai 1h) → confirme.
+### Étape 5 — Acquittement (via boutons inline Telegram)
+Chaque alerte P0/P1 individuelle est envoyée avec **2 boutons inline** sous le message:
+- **✅ OK — créer issue** → callback `ack|CVE-XXXX-YYYY`
+- **❌ Pas OK** → callback `dismiss|CVE-XXXX-YYYY`
+
+**Comportement attendu du handler** (`orchestrator/callback_handler.py`):
+
+| Action user | Effet | Persistance state |
+|---|---|---|
+| `ack|CVE-...` (1er clic) | `gh issue create --repo rockballslab/vps-secure --label security,cve,impact:<class>,kev` | `cves_seen[id].issue_url = <url>`, `issue_number = N`, `issue_created_at = now` |
+| `ack|CVE-...` (clic suivant) | Detecté comme déjà créé → retourne l'URL existante | noop (idempotent) |
+| `dismiss|CVE-...` | Marque silence définitif sur cette CVE | `cves_seen[id].user_dismissed_at = now`, `user_dismissed_by = <username>` |
+| `dismiss|CVE-...` (re-clic) | Idempotent | noop |
+
+**Après action**, le message original est édité en place avec confirmation et les boutons sont retirés.
+
+**Debounce update** (`debounce_check` dans `state.py`): une CVE avec `user_dismissed_at` n'est **plus jamais re-notifiée** (silence définitif — l'utilisateur a tranché). Différent de `user_acked_at` (temporaire) qui peut être ré-éveillé par un changement de score.
+
+**Long-polling** (`orchestrator/telegram_polling.py`):
+- Lancé par `cto_orchestrator.py run --poll` après l'envoi du digest
+- `getUpdates` avec `allowed_updates=["callback_query"]`, long-poll 30s
+- Stop conditions: `SIGTERM`/`SIGINT`, `max_runtime=86340s` (23h59), lock file déjà pris
+- Lock file `state/.polling.lock` empêche 2 instances simultanées
 
 ## Output format
 
-### Telegram — message P0/P1+ (critique)
+### Telegram — message P0/P1+ (critique, avec boutons)
 ```
 🚨 P0 — Action immédiate
 
-CVE-2024-XXXXX (CVSS 9.8)
+CVE-2024-XXXXX (score 9.8)
 Composant: openssh-server 1:9.6p1-3ubuntu13.13
-Sur ton VPS: OUI (inventaire 2026-06-06)
-Exploit public: OUI (Metasploit module dispo)
-Dans CISA KEV: OUI
+Match reason: version 1:9.6p1-3ubuntu13.13 < 1:9.6p1-3ubuntu13.3
+CISA KEV: OUI
+Exposure: {...}
 
-Fix:
-  sudo apt-get install --only-upgrade openssh-server=1:9.6p1-3ubuntu13.16
+Rationale:
+<LLM rationale>
 
-Downtime requis: aucun (service en place, pas de restart SSH)
-
-Ack: répondre "ack CVE-2024-XXXXX"
-Snooze: répondre "snooze CVE-2024-XXXXX 24h"
+[ ✅ OK — créer issue ]  [ ❌ Pas OK ]
 ```
 
-### Telegram — digest quotidien
+Après clic sur ✅ OK, le message est édité en:
 ```
-📋 Daily digest — 2026-06-06
+~~<texte original>~~
 
-P0: 0
-P1: 2 (ci-dessous)
-P2: 5 (silence — query-state pour détails)
-Drift: aucun
-
-[1] CVE-2024-YYYYY (openssh-server, CVSS 7.5)
-[2] CVE-2024-ZZZZZ (docker-ce, CVSS 8.1)
+✅ Issue créée: https://github.com/rockballslab/vps-secure/issues/42
 ```
 
-### State file `/var/lib/vps-secure/cto_state.json`
+### Telegram — digest quotidien (sans boutons, juste résumé)
+```
+🛡️ vps-secure daily digest
+📅 2026-06-06
+
+Impact:
+  🔴 P0 (KEV): 1
+  🟠 P1+ (KEV): 0
+  🟠 P1: 2
+  🟡 P2: 5 (silence — query-state pour détails)
+  ⚪ P3 / no-match: 14
+
+⚠️ Action requise:
+  • CVE-2024-XXXXX — openssh-server (score 9.8, class critical)
+  • CVE-2024-YYYYY — docker-ce (score 8.1, class high)
+  …
+```
+
+### State file `state/cto_state.json` (champs étendus)
 ```json
 {
   "schema_version": "1.0",
@@ -150,12 +178,27 @@ Drift: aucun
       "last_notified": "2026-06-06T04:15:00Z",
       "class": "P0",
       "component_id": "openssh-server",
+      "verdict": { ... verdict IMPACT_ASSESSOR complet ... },
       "user_acked_at": null,
       "user_snoozed_until": null,
+      "user_dismissed_at": "2026-06-06T04:20:00Z",
+      "user_dismissed_by": "fab_aiforceone",
+      "issue_url": "https://github.com/rockballslab/vps-secure/issues/42",
+      "issue_number": 42,
+      "issue_created_at": "2026-06-06T04:18:00Z",
       "fix_applied_at": null
     }
+  },
+  "stats": {
+    "total_runs": 42,
+    "total_cves_processed": 1280,
+    "total_notifications_sent": 87,
+    "total_acked": 12,
+    "total_dismissed": 3,
+    "total_issues_created": 9
   }
 }
+```
 ```
 
 ## Contraintes strictes

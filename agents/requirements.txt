@@ -1,0 +1,13 @@
+# vps-secure-agents — dependencies
+# Install: uv venv .venv && uv pip install -r requirements.txt
+# OR:      python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
+
+openai>=1.40.0          # OpenAI SDK (compatible OpenRouter)
+requests>=2.31.0        # HTTP client pour CVE_WATCHER (NVD, GHSA, etc.)
+python-dotenv>=1.0.0    # .env loader
+pydantic>=2.0.0         # JSON schema validation
+croniter>=2.0.0         # DST-aware cron scheduling (Europe/Paris)
+tenacity>=8.2.0         # retry decorator (LLM + HTTP)
+defusedxml>=0.7.1       # XXE-safe XML parsing (Ubuntu SN RSS)
+pyyaml>=6.0.1           # parse STACK_CANON.md (embedded YAML blocks)
+packaging>=21.0         # Debian/Ubuntu version comparison (epoch:upstream-rev)

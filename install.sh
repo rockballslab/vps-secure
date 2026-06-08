@@ -1155,7 +1155,21 @@ log_success "algif_aead blacklisté — CVE-2026-31431 'Copy Fail' (CVSS 7.8, CI
 chmod 644 /etc/modprobe.d/dirty-frag.conf
 rmmod esp4 esp6 rxrpc 2>/dev/null || true
 log_success "Dirty Frag mitigé — esp4/esp6/rxrpc blacklistés (CVE-2026-43284, CVSS 7.8)."
-log_warn "  ⚠️ Temporaire — retirer dès patch kernel Noble disponible (USN)."
+log_info " ✅ Patch définitif disponible : USN-8373-1 (kernel 6.8.0-124)."
+log_info " Après reboot sur kernel 6.8.0-124+ :"
+log_info "   sudo rm /etc/modprobe.d/dirty-frag.conf && sudo update-initramfs -u"
+
+# ── Auto-nettoyage dirty-frag si kernel >= 6.8.0-124 ──────────────────────
+KERNEL_VERSION=$(uname -r | grep -oP '^\d+\.\d+\.\d+-\d+' | head -1)
+KERNEL_MIN_CLEAN="6.8.0-124"
+version_gte() { printf '%s\n%s\n' "$2" "$1" | sort -V -C; }
+if version_gte "$KERNEL_VERSION" "$KERNEL_MIN_CLEAN" 2>/dev/null; then
+  if [[ -f /etc/modprobe.d/dirty-frag.conf ]]; then
+    rm -f /etc/modprobe.d/dirty-frag.conf
+    update-initramfs -u -k all > /dev/null 2>&1 || true
+    log_success "dirty-frag.conf retiré — kernel $KERNEL_VERSION inclut USN-8373-1."
+  fi
+fi
 
 # ── Blacklist nvmet_tcp — CVE-2026-23112 "nvmet-tcp Bounds" (issue #147) ──
 echo "install nvmet_tcp /bin/false" > /etc/modprobe.d/blacklist-rare-network.conf

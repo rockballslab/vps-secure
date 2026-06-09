@@ -38,6 +38,9 @@ A bare or default-configured server is an easy target — visible and attackable
 <p align="center">
   <img src="./screenshots/VPS-SECURE-en.png" alt="My Fortress with VPS-SECURE" width="100%">
 </p>
+<p align="center">
+  <img src="./dashboard/dashboard-preview2-en.png" alt="VPS Secure Dashboard" width="100%">
+</p>
 
 ---
 
@@ -137,9 +140,6 @@ This project took serious effort to get right. The depth of what it covers — a
 </p>
 <p align="center">
   <img src="./screenshots/sticker1-en.png" alt="My Fortress with VPS-SECURE" width="100%">
-</p>
-<p align="center">
-  <img src="./dashboard/dashboard-preview2-en.png" alt="VPS Secure Dashboard" width="100%">
 </p>
 
 ---

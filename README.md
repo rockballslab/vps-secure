@@ -372,7 +372,7 @@ Each component returns `[PASS]` or `[FAIL]` with the reason. Everything should b
   [PASS] rkhunter     : installed - baseline present - conf.local OK - cron 00:00 UTC - last scan: never
   [PASS] auditd       : active - 34 rule(s) loaded
   [PASS] Swap         : active - 2048 MB - swappiness=10
-  [PASS] Kernel       : ASLR=2 - ptrace_scope=1 - syncookies=1 - ip_forward=1 - suid_dumpable=0
+  [PASS] Kernel       : ASLR=2 - ptrace_scope=3 - syncookies=1 - ip_forward=1 - suid_dumpable=0
   [PASS] DNS over TLS : systemd-resolved active - DoT=yes - primary server: 9.9.9.9
   [PASS] Telegram     : config present - API OK - bot: @mybot
 

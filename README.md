@@ -59,7 +59,7 @@ A bare or default-configured server is an easy target — visible and attackable
 
 ---
 
-**VPS-SECURE: One script. 15 minutes. Never think about it again.**
+## VPS-SECURE: One script. 15 minutes. Never think about it again.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \

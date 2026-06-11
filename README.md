@@ -21,17 +21,6 @@
 
 **One script. 15 minutes. Never think about it again.**
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
-  && chmod +x install-secure.sh \
-  && sudo ./install-secure.sh
-```
-
-> [!NOTE]
-> :key: **This script requires a license** — [Get it here](https://vps-secure.aiforceone.fr/offre-en.html)
->
-> :technologist: **Developer?** Want to audit or contribute to the code? [Request a free license](https://tally.so/r/Y5JGjJ) — activation key sent within minutes.
-
 ---
 
 ## :shield: What makes this script different?
@@ -66,6 +55,19 @@ A bare or default-configured server is an easy target — visible and attackable
 | Automatic security patches | ❌ No | ✅ Yes — incl. Docker CE |
 | Lynis hardening score | ❌ ~50 / 100 | ✅ **86 / 100** |
 | Time to harden | ❌ Days of research | ✅ **15 minutes** |
+
+**VPS-SECURE: One script. 15 minutes. Never think about it again.**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rockballslab/vps-secure/main/install-secure.sh -o install-secure.sh \
+  && chmod +x install-secure.sh \
+  && sudo ./install-secure.sh
+```
+
+> [!NOTE]
+> :key: **This script requires a license** — [Get it here](https://vps-secure.aiforceone.fr/offre-en.html)
+>
+> :technologist: **Developer?** Want to audit or contribute to the code? [Request a free license](https://tally.so/r/Y5JGjJ) — activation key sent within minutes.
 
 ---
 

@@ -19,7 +19,6 @@
   <img src="./screenshots/header.png" alt="My Fortress with VPS-SECURE" width="100%">
 </p>
 
-
 # One script. 15 minutes. Never think about it again.
 
 ---

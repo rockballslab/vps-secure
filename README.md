@@ -56,6 +56,9 @@ A bare or default-configured server is an easy target — visible and attackable
 | Lynis hardening score | ❌ ~50 / 100 | ✅ **86 / 100** |
 | Time to harden | ❌ Days of research | ✅ **15 minutes** |
 
+
+---
+
 **VPS-SECURE: One script. 15 minutes. Never think about it again.**
 
 ```bash

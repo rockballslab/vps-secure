@@ -1,5 +1,0 @@
-# Runtime state files (gitignored).
-# Generated on first run by the orchestrator:
-#   - cto_state.json    : dedup, last run, ack/snooze
-#   - cve_watch.json    : raw CVE feed snapshot
-#   - inventory.json    : live stack inventory (machine-specific)

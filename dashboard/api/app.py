@@ -2396,27 +2396,27 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         elif path == "/api/lang":
-    try:
-        length = int(self.headers.get("Content-Length", 0))
-        body = json.loads(self.rfile.read(length)) if length else {}
-        lang = body.get("lang", "en")
-        if lang not in ["fr", "en"]:
-            resp = json.dumps({"error": "invalid"}).encode()
-            self.send_response(400)
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length)) if length else {}
+                lang = body.get("lang", "en")
+                if lang not in ["fr", "en"]:
+                    resp = json.dumps({"error": "invalid"}).encode()
+                    self.send_response(400)
+                else:
+                    update_config_value("/etc/vps-secure.conf", "REPORT_LANG", lang)
+                    resp = json.dumps({"ok": True}).encode()
+                    self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(resp)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(resp)
+            except Exception as exc:
+                self.send_error(500, str(exc))
+            return
         else:
-            update_config_value("/etc/vps-secure.conf", "REPORT_LANG", lang)
-            resp = json.dumps({"ok": True}).encode()
-            self.send_response(200)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(resp)))
-        self.send_header("Cache-Control", "no-store")
-        self.end_headers()
-        self.wfile.write(resp)
-    except Exception as exc:
-        self.send_error(500, str(exc))
-    return
-else:
-    self.send_error(404)
+            self.send_error(404)
 
     def log_message(self, fmt: str, *args) -> None:
         ts = time.strftime("%Y-%m-%d %H:%M:%S")
